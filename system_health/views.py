@@ -1,0 +1,542 @@
+# system_health/views.py
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser # Use IsAdminUser for staff-only access
+from rest_framework.response import Response
+import logging
+
+from .monitoring import system_monitor
+# Consolidate all imports from the background manager at the top
+from .background_task_manager import (
+    get_health_status,
+    health_task_manager, # Used to access the new thread-safe method
+    start_health_monitoring,
+    stop_health_monitoring
+)
+
+logger = logging.getLogger(__name__)
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def health_check(request):
+    """Get comprehensive system health status."""
+    try:
+        health_data = system_monitor.check_health()
+        return Response(health_data)
+    except Exception as e:
+        logger.error(f"Health check API error: {e}", exc_info=True)
+        return Response({'error': 'An unexpected error occurred.'}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def health_metrics(request):
+    """Get current system metrics like CPU, memory, etc."""
+    try:
+        metrics = system_monitor.get_system_metrics()
+        return Response({
+            'cpu_percent': metrics.cpu_percent,
+            'memory_percent': metrics.memory_percent,
+            'disk_usage': metrics.disk_usage,
+            'active_tasks': metrics.active_tasks,
+            'failed_tasks_24h': metrics.failed_tasks_24h,
+            'services': {
+                'indexer': metrics.indexer_status,
+                'health_monitor': metrics.health_worker_status,
+                'redis': 'connected' if metrics.redis_connected else 'disconnected'
+            }
+        })
+    except Exception as e:
+        logger.error(f"Health metrics API error: {e}", exc_info=True)
+        return Response({'error': 'An unexpected error occurred while fetching metrics.'}, status=500)
+
+@login_required
+def health_dashboard(request):
+    """Render health monitoring dashboard for admin users."""
+    if not request.user.is_staff:
+        return render(request, 'admin/permission_denied.html', status=403)
+
+    # Simple template render - all data loaded via JavaScript API calls
+    return render(request, 'system_health/dashboard.html')
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def health_task_status(request):
+    """Get the status of the background health task manager."""
+    try:
+        status_data = get_health_status()
+        return Response(status_data)
+    except Exception as e:
+        logger.error(f"Health task status API error: {e}", exc_info=True)
+        return Response({'error': 'An unexpected error occurred.'}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def health_task_history(request):
+    """Get the recent execution history of health tasks."""
+    try:
+        history = health_task_manager.get_task_history()
+        recent_history = history[-20:]
+        return Response({
+            'task_history': recent_history,
+            'total_recorded_tasks': len(history)
+        })
+    except Exception as e:
+        logger.error(f"Health task history API error: {e}", exc_info=True)
+        return Response({'error': 'An unexpected error occurred.'}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def restart_health_monitoring(request):
+    """Stops and starts the background health monitoring service."""
+    try:
+        logger.warning(f"Health monitoring restart triggered by user: {request.user.username}")
+        stop_health_monitoring()
+        start_health_monitoring()
+        return Response({'message': 'Health monitoring service has been restarted.'})
+    except Exception as e:
+        logger.error(f"Health monitoring restart API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to restart the service.'}, status=500)
+
+
+# ============================================================================
+# ECOSYSTEM HEALTH API ENDPOINTS
+# ============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def ecosystem_health_latest(request):
+    """Get the latest ecosystem health snapshot."""
+    try:
+        from .models import EcosystemHealth
+        latest = EcosystemHealth.get_latest()
+
+        if not latest:
+            return Response({'message': 'No ecosystem health data available yet.'}, status=404)
+
+        return Response({
+            'timestamp': latest.timestamp,
+            'status': latest.status,
+            'system_resources': {
+                'cpu_percent': latest.cpu_percent,
+                'memory_percent': latest.memory_percent,
+                'disk_percent': latest.disk_percent,
+            },
+            'services': {
+                'indexer_running': latest.indexer_running,
+                'redis_connected': latest.redis_connected,
+                'database_connected': latest.database_connected,
+            },
+            'tasks': {
+                'active': latest.active_tasks,
+                'failed_24h': latest.failed_tasks_24h,
+                'successful_24h': latest.successful_tasks_24h,
+            },
+            'indexer': {
+                'events_indexed_24h': latest.events_indexed_24h,
+                'indexing_lag_minutes': latest.indexing_lag_minutes,
+                'last_successful_index': latest.last_successful_index,
+            },
+            'marketplace': {
+                'active_listings': latest.active_listings_count,
+                'sales_24h': latest.sales_24h,
+                'volume_24h': float(latest.volume_24h),
+                'unique_traders_24h': latest.unique_traders_24h,
+            },
+            'users': {
+                'total': latest.total_users,
+                'active_24h': latest.active_users_24h,
+                'new_24h': latest.new_users_24h,
+            },
+            'nft_data': {
+                'total_nfts': latest.total_nfts_tracked,
+                'total_collections': latest.total_collections_tracked,
+                'collections_updated_24h': latest.collections_updated_24h,
+            },
+            'alerts': latest.alerts,
+            'alert_count': latest.alert_count,
+        })
+    except Exception as e:
+        logger.error(f"Ecosystem health latest API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch ecosystem health data.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def ecosystem_health_trend(request):
+    """Get ecosystem health trend for the last N hours."""
+    try:
+        from .models import EcosystemHealth
+        hours = int(request.GET.get('hours', 24))
+
+        health_records = EcosystemHealth.get_health_trend(hours=hours)
+
+        trend_data = [{
+            'timestamp': record.timestamp,
+            'status': record.status,
+            'cpu_percent': record.cpu_percent,
+            'memory_percent': record.memory_percent,
+            'disk_percent': record.disk_percent,
+            'active_tasks': record.active_tasks,
+            'failed_tasks_24h': record.failed_tasks_24h,
+            'sales_24h': record.sales_24h,
+            'volume_24h': float(record.volume_24h),
+            'active_users_24h': record.active_users_24h,
+            'alert_count': record.alert_count,
+        } for record in health_records]
+
+        return Response({
+            'hours': hours,
+            'data_points': len(trend_data),
+            'trend': trend_data
+        })
+    except Exception as e:
+        logger.error(f"Ecosystem health trend API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch trend data.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def ecosystem_health_summary(request):
+    """Get ecosystem health summary statistics."""
+    try:
+        from .utils import get_ecosystem_health_summary
+        hours = int(request.GET.get('hours', 24))
+
+        summary = get_ecosystem_health_summary(hours=hours)
+        return Response(summary)
+    except Exception as e:
+        logger.error(f"Ecosystem health summary API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch summary data.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def system_alerts_active(request):
+    """Get all active system alerts."""
+    try:
+        from .models import SystemAlert
+
+        active_alerts = SystemAlert.objects.filter(
+            is_resolved=False
+        ).order_by('-triggered_at')[:50]
+
+        alerts_data = [{
+            'id': alert.id,
+            'alert_level': alert.alert_level,
+            'category': alert.category,
+            'title': alert.title,
+            'message': alert.message,
+            'triggered_at': alert.triggered_at,
+            'duration_seconds': alert.duration_seconds,
+            'source_component': alert.source_component,
+        } for alert in active_alerts]
+
+        return Response({
+            'count': len(alerts_data),
+            'alerts': alerts_data
+        })
+    except Exception as e:
+        logger.error(f"Active alerts API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch active alerts.'}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def system_alert_resolve(request, alert_id):
+    """Mark a system alert as resolved."""
+    try:
+        from .models import SystemAlert
+
+        alert = SystemAlert.objects.get(id=alert_id)
+        resolution_notes = request.data.get('notes', f'Resolved by {request.user.username}')
+
+        alert.mark_resolved(notes=resolution_notes)
+
+        logger.info(f"Alert {alert_id} resolved by {request.user.username}")
+        return Response({
+            'message': 'Alert marked as resolved.',
+            'alert_id': alert_id,
+            'resolved_at': alert.resolved_at
+        })
+    except SystemAlert.DoesNotExist:
+        return Response({'error': 'Alert not found.'}, status=404)
+    except Exception as e:
+        logger.error(f"Alert resolve API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to resolve alert.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def service_health_checks(request):
+    """Get recent service health checks."""
+    try:
+        from .models import ServiceHealthCheck
+
+        service_type = request.GET.get('service_type')
+        limit = int(request.GET.get('limit', 50))
+
+        queryset = ServiceHealthCheck.objects.all()
+
+        if service_type:
+            queryset = queryset.filter(service_type=service_type)
+
+        checks = queryset.order_by('-timestamp')[:limit]
+
+        checks_data = [{
+            'service_type': check.service_type,
+            'timestamp': check.timestamp,
+            'is_healthy': check.is_healthy,
+            'response_time_ms': check.response_time_ms,
+            'error_message': check.error_message,
+        } for check in checks]
+
+        return Response({
+            'count': len(checks_data),
+            'checks': checks_data
+        })
+    except Exception as e:
+        logger.error(f"Service health checks API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch service health checks.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def performance_metrics(request):
+    """Get recent performance metrics."""
+    try:
+        from .models import PerformanceMetric
+
+        metric_type = request.GET.get('metric_type')
+        hours = int(request.GET.get('hours', 24))
+        from datetime import timedelta
+        from django.utils import timezone
+
+        cutoff = timezone.now() - timedelta(hours=hours)
+        queryset = PerformanceMetric.objects.filter(timestamp__gte=cutoff)
+
+        if metric_type:
+            queryset = queryset.filter(metric_type=metric_type)
+
+        metrics = queryset.order_by('-timestamp')[:200]
+
+        metrics_data = [{
+            'metric_type': metric.metric_type,
+            'timestamp': metric.timestamp,
+            'value': metric.value,
+            'unit': metric.unit,
+            'component': metric.component,
+        } for metric in metrics]
+
+        return Response({
+            'hours': hours,
+            'count': len(metrics_data),
+            'metrics': metrics_data
+        })
+    except Exception as e:
+        logger.error(f"Performance metrics API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch performance metrics.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def docker_services_status(request):
+    """Get status of all services based on internal checks."""
+    try:
+        from indexer.background_task_manager import task_manager as indexer_task_manager
+        from .background_task_manager import health_task_manager
+
+        # Define expected services and their descriptions
+        services_config = {
+            'main': {'description': 'Web Server (Django)', 'check': 'self'},
+            'indexer-live': {'description': 'Live WebSocket Indexer', 'check': 'indexer'},
+            'indexer-scheduled': {'description': 'Scheduled Indexer', 'check': 'indexer'},
+            'vitality-analytics': {'description': 'Vitality Analytics Worker', 'check': 'indexer'},
+            'health': {'description': 'Health Monitoring Worker', 'check': 'health'},
+            'postgres': {'description': 'PostgreSQL Database', 'check': 'database'},
+            'redis': {'description': 'Redis Cache', 'check': 'redis'},
+        }
+
+        services_status = []
+
+        # Check each service
+        for service_name, config in services_config.items():
+            check_type = config['check']
+            description = config['description']
+
+            if check_type == 'self':
+                # Main service is running if this code executes
+                services_status.append({
+                    'name': service_name,
+                    'description': description,
+                    'status': 'running',
+                    'status_class': 'success',
+                    'health': 'N/A'
+                })
+
+            elif check_type == 'indexer':
+                # Check if indexer task manager is running
+                try:
+                    is_running = hasattr(indexer_task_manager, 'is_running') and indexer_task_manager.is_running
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'running' if is_running else 'not running',
+                        'status_class': 'success' if is_running else 'error',
+                        'health': 'N/A'
+                    })
+                except:
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'unknown',
+                        'status_class': 'warning',
+                        'health': 'N/A'
+                    })
+
+            elif check_type == 'health':
+                # Check if health task manager is running
+                try:
+                    is_running = hasattr(health_task_manager, 'is_running') and health_task_manager.is_running
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'running' if is_running else 'not running',
+                        'status_class': 'success' if is_running else 'error',
+                        'health': 'N/A'
+                    })
+                except:
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'unknown',
+                        'status_class': 'warning',
+                        'health': 'N/A'
+                    })
+
+            elif check_type == 'database':
+                # Check database connection
+                try:
+                    from django.db import connection
+                    connection.ensure_connection()
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'running',
+                        'status_class': 'success',
+                        'health': 'N/A'
+                    })
+                except:
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'not running',
+                        'status_class': 'error',
+                        'health': 'N/A'
+                    })
+
+            elif check_type == 'redis':
+                # Check Redis connection
+                try:
+                    from django.core.cache import cache
+                    cache.set('health_check', 'ok', 1)
+                    is_connected = cache.get('health_check') == 'ok'
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'running' if is_connected else 'not running',
+                        'status_class': 'success' if is_connected else 'error',
+                        'health': 'N/A'
+                    })
+                except:
+                    services_status.append({
+                        'name': service_name,
+                        'description': description,
+                        'status': 'not running',
+                        'status_class': 'error',
+                        'health': 'N/A'
+                    })
+
+        return Response({
+            'services': services_status,
+            'total': len(services_status),
+            'running': len([s for s in services_status if s['status'] == 'running'])
+        })
+
+    except Exception as e:
+        logger.error(f"Docker services status API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch services status.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def system_error_logs(request):
+    """Get recent system error logs from SystemAlert and log files."""
+    try:
+        from .models import SystemAlert
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Get time range (default last 24 hours)
+        hours = int(request.GET.get('hours', 24))
+        cutoff = timezone.now() - timedelta(hours=hours)
+
+        # Get recent alerts (errors and warnings)
+        alerts = SystemAlert.objects.filter(
+            triggered_at__gte=cutoff,
+            alert_level__in=['ERROR', 'CRITICAL', 'WARNING']
+        ).order_by('-triggered_at')[:100]
+
+        error_logs = []
+
+        for alert in alerts:
+            error_logs.append({
+                'timestamp': alert.triggered_at,
+                'level': alert.alert_level,
+                'category': alert.category,
+                'title': alert.title,
+                'message': alert.message,
+                'source': alert.source_component or 'Unknown',
+                'resolved': alert.is_resolved,
+                'duration': alert.duration_seconds if not alert.is_resolved else None
+            })
+
+        # Try to get recent errors from ecosystem health snapshots
+        try:
+            from .models import EcosystemHealth
+            recent_snapshots = EcosystemHealth.objects.filter(
+                timestamp__gte=cutoff,
+                status__in=['ERROR', 'CRITICAL']
+            ).order_by('-timestamp')[:50]
+
+            for snapshot in recent_snapshots:
+                if snapshot.alerts:
+                    for alert_msg in snapshot.alerts:
+                        error_logs.append({
+                            'timestamp': snapshot.timestamp,
+                            'level': snapshot.status,
+                            'category': 'SYSTEM',
+                            'title': 'System Health Issue',
+                            'message': alert_msg,
+                            'source': 'Health Monitor',
+                            'resolved': True,
+                            'duration': None
+                        })
+        except Exception as e:
+            logger.warning(f"Could not fetch ecosystem health errors: {e}")
+
+        # Sort all logs by timestamp
+        error_logs.sort(key=lambda x: x['timestamp'], reverse=True)
+
+        # Limit to most recent 100
+        error_logs = error_logs[:100]
+
+        return Response({
+            'count': len(error_logs),
+            'hours': hours,
+            'logs': error_logs
+        })
+
+    except Exception as e:
+        logger.error(f"Error logs API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch error logs.'}, status=500)

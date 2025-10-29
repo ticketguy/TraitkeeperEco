@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+
+{% block admin_inner_content %}
+<div class="space-y-8 animate-fade-in">
+    <!-- NFT Data Models -->
+    <div class="bg-background-light dark:bg-background-dark rounded-lg p-6 shadow-brand border border-gray-200 dark:border-gray-800">
+        <h2 class="text-2xl font-bold mb-4 flex items-center text-brand-black dark:text-brand-white">
+            <i class="fas fa-database text-primary mr-2"></i>
+            NFT Data Models
+        </h2>
+        <p class="text-brand-black dark:text-brand-white mb-4">Manage NFT-related data models.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <!-- NFT Model Cards -->
+            {% for model in nft_models %}
+                <div class="bg-background-light dark:bg-background-dark p-5 rounded-lg shadow-brand transition-transform duration-300 hover:scale-105 admin-card border border-gray-200 dark:border-gray-800">
+                    <h3 class="font-bold text-lg mb-2 flex items-center text-brand-black dark:text-brand-white">
+                        <i class="fas fa-folder text-primary mr-2"></i>
+                        {{ model.name }}
+                    </h3>
+                    <p class="text-brand-black/70 dark:text-brand-white/70 mb-3">{{ model.count }} records</p>
+                    <a href="{% url 'admin:'|add:model.app_label|add:'_'|add:model.model|add:'_changelist' %}" class="text-primary hover:text-brand-black dark:hover:text-brand-white inline-flex items-center px-4 py-2 rounded-lg transition-colors duration-300 shadow-sm hover:shadow-md hover-effect">
+                        <span>Manage {{ model.name }}</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'dashboard_base.html'%}
+{% load static %}
+
+{% block title %}Trait Virtual Reality | TraitKeeper{% endblock %}
+
+{% block content %}
+<section id="vr-integration">
+        <div class="container">
+
+    <div class="section-header">
+            <h2>Virtual Reality Integration</h2>       
+    </div>
+
+            <div class="vr-controls">
+                <div class="vr-mode-selection">
+                    <h3>Select VR Experience</h3>
+                    <select id="vrExperienceType">
+                        <option value="traitGallery">Trait Gallery</option>
+                        <option value="nftShowcase">NFT Showcase</option>
+                        <option value="traitEvolution">Trait Evolution Timeline</option>
+                        <option value="marketVisualizer">Market Value Visualizer</option>
+                    </select>
+                </div>
+
+                <div class="vr-settings">
+                    <h3>VR Settings</h3>
+                    <label for="vrQuality">Graphics Quality:</label>
+                    <select id="vrQuality">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+
+                    <label for="vrAudio">Audio:</label>
+                    <input type="checkbox" id="vrAudio" checked>
+
+                    <label for="vrInteractionMode">Interaction Mode:</label>
+                    <select id="vrInteractionMode">
+                        <option value="gaze">Gaze</option>
+                        <option value="controller" selected>Controller</option>
+                        <option value="handTracking">Hand Tracking</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="vr-launch">
+                <button id="launchVRBtn" onclick="launchVR()">Launch VR Experience</button>
+            </div>
+
+            <div id="vrPreview">
+                <h3>VR Preview</h3>
+                <div id="vrPreviewContent">
+                    <img src="vr-preview-placeholder.jpg" alt="VR Preview Placeholder" id="vrPreviewImage">
+                </div>
+            </div>
+
+            <div id="vrInstructions">
+                <h3>VR Instructions</h3>
+                <ul id="vrInstructionsList">
+                    <!-- Instructions will be populated dynamically -->
+                </ul>
+            </div>
+
+            <div id="vrCompatibility">
+                <h3>VR Compatibility Check</h3>
+                <button id="checkVRCompatibilityBtn" onclick="checkVRCompatibility()">Check VR Compatibility</button>
+                <p id="vrCompatibilityResult"></p>
+            </div>
+        </section>
+
+          {% endblock %}
+
+            {% block extra_js %}
+              <script src="{% static 'js/scripts/dashboard/vr-integration.js' %}"></script>
+            {% endblock %}

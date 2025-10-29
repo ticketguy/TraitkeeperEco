@@ -1,0 +1,152 @@
+#social-proof {
+    background-color: var(--background-color);
+    padding: 40px 0;
+}
+
+.social-proof-flex {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    /* Added to allow wrapping on smaller screens */
+}
+
+#recent-transfers,
+#x-feed {
+    flex: 1;
+    min-width: 300px;
+    /* Ensures both sections have a minimum width */
+}
+
+#recent-transfers h2,
+#x-feed h2 {
+    margin-bottom: 20px;
+}
+
+#recent-transfers ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#recent-transfers li,
+.x-post {
+    background-color: var(--accent-color);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.username {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.timestamp {
+    font-size: 0.8em;
+    color: var(--text-color-muted);
+    display: block;
+    margin-top: 5px;
+}
+
+.transfer-content,
+.x-content {
+    flex-grow: 1;
+}
+
+.x-content p {
+    margin: 5px 0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .social-proof-flex {
+        flex-direction: column;
+        gap: 20px;
+        /* Adjusted gap for smaller screens */
+    }
+
+    #recent-transfers li,
+    .x-post {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-avatar {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .view-more {
+        width: 100%;
+        /* Makes the button full width on smaller screens */
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    #recent-transfers h2,
+    #x-feed h2 {
+        font-size: 1.5em;
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+    }
+
+    .username {
+        font-size: 0.9em;
+    }
+
+    .timestamp {
+        font-size: 0.7em;
+    }
+}
+
+/* Responsive design for very large screens */
+@media (min-width: 1200px) {
+    .social-proof-flex {
+        gap: 80px;
+        /* Further increase the gap for very large screens */
+    }
+
+    #recent-transfers h2,
+    #x-feed h2 {
+        font-size: 2.5em;
+        /* Even larger headings */
+    }
+
+    #recent-transfers li,
+    .x-post {
+        padding: 25px;
+        /* More padding for extra-large screens */
+        margin-bottom: 25px;
+    }
+
+    .user-avatar {
+        width: 60px;
+        /* Further increase avatar size */
+        height: 60px;
+    }
+
+    .username {
+        font-size: 1.4em;
+        /* Larger username font */
+    }
+
+    .timestamp {
+        font-size: 1em;
+        /* Larger timestamp text */
+    }
+}

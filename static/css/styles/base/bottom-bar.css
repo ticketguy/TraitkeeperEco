@@ -1,0 +1,97 @@
+/* Bottom Bar Styles */
+.bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: var(--bottom-bar-height);
+    padding: 0 15px;
+    /* Added padding to provide space inside the bottom-bar */
+}
+
+.legal-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #ffffff;
+    height: 100%;
+    /* Ensures the legal info uses the full height of the bottom-bar */
+}
+
+.legal-info svg {
+    width: 18px;
+    height: 18px;
+}
+
+.scroll-stats {
+    display: flex;
+    color: #ffffff;
+    gap: 15px;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    height: 100%;
+    /* Ensures the scroll-stats section uses the full height of the bottom-bar */
+}
+
+.solana-price,
+.solana-tps,
+.support {
+    display: inline-flex;
+    /* Use inline-flex for better alignment */
+    align-items: center;
+    margin-right: 15px;
+    height: 100%;
+    /* Ensures each item uses the full height of the bottom-bar */
+    white-space: nowrap;
+    /* Prevents text from wrapping */
+}
+
+.support {
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.support:hover {
+    text-decoration: none;
+    color: darkgrey;
+}
+
+/* Responsive Styles for Bottom Bar */
+@media (max-width: 768px) {
+    .bottom-bar {
+        padding: 0 10px;
+        /* Adjust padding for smaller screens */
+    }
+
+    .scroll-stats {
+        gap: 10px;
+        /* Reduce gap for smaller screens */
+    }
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+    .bottom-bar {
+        padding: 0 8px;
+        font-size: 12px;
+    }
+
+    .legal-info svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .scroll-stats {
+        gap: 8px;
+        /* Further reduce gap for small screens */
+    }
+}

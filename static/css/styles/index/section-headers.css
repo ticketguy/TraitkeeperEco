@@ -1,0 +1,29 @@
+/* Section headers with "View More" button */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.button-small {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+
+#trait-rankings .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#trait-rankings .button-small {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+
+
+

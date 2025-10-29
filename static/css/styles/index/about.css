@@ -1,0 +1,81 @@
+#learn {
+    background-color: var(--background-color);
+    padding: 60px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 60px;
+}
+
+.section {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.section-header {
+    background-color: var(--light-gray);
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--secondary-color);
+}
+
+.section-content {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.section.active .section-content {
+    max-height: 2000px;
+    padding: 20px;
+}
+
+.feature {
+    margin-bottom: 20px;
+}
+
+.feature h3 {
+    color: var(--primary-color);
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: var(--primary-color-dark);
+    text-decoration: none;
+    color: white;
+}
+
+.icon {
+    transition: transform 0.3s;
+}
+
+.section.active .icon {
+    transform: rotate(180deg);
+}
+
+.subsection {
+    margin-top: 20px;
+    padding-left: 20px;
+    border-left: 3px solid var(--primary-color);
+}

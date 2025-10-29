@@ -1,0 +1,48 @@
+#vr-integration {
+    padding: 60px 20px;
+}
+
+.vr-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.vr-mode-selection, .vr-settings {
+    width: 48%;
+}
+
+.vr-settings label {
+    display: block;
+    margin-top: 10px;
+}
+
+.vr-launch {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#vrPreview {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#vrPreviewImage {
+    max-width: 100%;
+    height: auto;
+}
+
+#vrInstructions, #vrCompatibility {
+    margin-top: 20px;
+}
+
+#vrInstructionsList {
+    padding-left: 20px;
+}
+
+#vrCompatibilityResult {
+    margin-top: 10px;
+    font-weight: bold;
+}

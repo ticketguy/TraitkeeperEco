@@ -1,0 +1,17 @@
+
+/* Import register NFT styles */
+@import 'register nft/register-nft.css';
+
+/* Import dashboard styles */
+@import 'dashboard/side-menu.css';
+@import 'dashboard/dashboard.css';
+@import 'dashboard/trait-comparison.css';
+@import 'dashboard/trait-analytics.css';
+@import 'dashboard/trait-history.css';
+@import 'dashboard/trait-overview.css';
+@import 'dashboard/vr-integration.css';
+
+/* Import learn styles */
+@import 'learn/academy.css';
+@import 'learn/course_details.css';
+

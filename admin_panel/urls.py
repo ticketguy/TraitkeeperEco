@@ -1,0 +1,53 @@
+"""
+URL patterns for the TraitKeeper admin panel, mapping routes to views for authentication,
+NFT data management, statistics, and API endpoints for dashboard charts.
+"""
+
+from django.urls import path
+from . import views
+from traitkeeper.admin_site import admin_site
+
+app_name = 'admin_panel'
+
+urlpatterns = [
+    # Admin site URLs
+    path('', admin_site.urls, name='index'),
+
+    # Authentication URLs
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.admin_logout, name='logout'),
+    path('password-reset/', views.password_reset_request, name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
+
+    # Admin User Management URLs
+    path('select-admin-user/', views.select_admin_user, name='select_admin_user'),
+
+    # Statistics URLs
+    path('statistics/', views.statistics, name='statistics'),
+    path('statistics/export/', views.export_statistics, name='export_statistics'),
+
+    # NFT Data Management URLs
+    path('nft_data/', views.nft_data_models, name='nft_data_models'),
+    path('nft-data/collections/', views.nft_collections, name='nft_collections'),
+    path('nft-data/collections/<str:collection_address>/', views.nft_collection_detail, name='nft_collection_detail'),
+    path('nft-data/trait-types/', views.trait_types, name='trait_types'),
+    path('nft-data/trait-types/<int:trait_type_id>/', views.trait_values, name='trait_values'),
+    path('nft-data/pending-collections/', views.pending_collections, name='pending_collections'),
+    path('nft-collection-action/<str:address>/<str:action>/', views.nft_collection_action, name='nft_collection_action'),  # Added for NFTCollection actions
+    path('nft-data/transactions/', views.nft_transactions, name='nft_transactions'),
+
+    # API Endpoints for Dashboard Charts
+    path('api/user-activity/', views.user_activity_data, name='user_activity_data'),
+    path('api/nft-stats/', views.nft_stats_data, name='nft_stats_data'),
+    path('api/user-stats/', views.user_stats_data, name='user_stats_data'),
+    path('api/signup-activity/', views.signup_activity_data, name='signup_activity_data'),
+
+        # New task management endpoints
+    path('task-dashboard/', views.task_dashboard, name='task-dashboard'),
+
+    path('task-manager/status/', views.task_manager_status, name='task-manager-status'),
+    path('task-manager/trigger-indexing/', views.trigger_collection_indexing, name='trigger-indexing'),
+    path('task-manager/trigger-stats/', views.trigger_stats_update, name='trigger-stats'),
+    path('task-manager/history/', views.task_history, name='task-history'),
+    path('task-manager/restart/', views.restart_task_manager, name='restart-task-manager'),
+]

@@ -1,0 +1,121 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+
+{% block title %}Trait Analysis | TraitKeeper{% endblock %}
+
+{% block content %}
+<section id="trait-analysis" class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2>Advanced Trait Analysis Tool</h2>
+        </div>
+    </div>
+    
+    <div class="analysis-controls row">
+        <div class="col-md-4 mb-3">
+            <select id="analysisType" class="form-control">
+                    <option value="distribution">Trait Distribution</option>
+                    <option value="correlation">Trait Correlation</option>
+                    <option value="marketImpact">Market Impact</option>
+                    <option value="predictiveAnalysis">Predictive Analysis</option>
+                    <option value="aiPrediction">AI Trait Prediction</option>
+                    <option value="clusterAnalysis">Cluster Analysis</option>
+                    <option value="temporalTrends">Temporal Trends</option>
+                    <option value="traitComparison">Trait Comparison</option>
+                </select>
+            </div>
+ <div class="col-md-4 mb-3">
+            <select id="primaryTrait" class="form-control">
+                <option value="">Select Primary Trait</option>
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <button id="runAnalysis" class="btn btn-primary w-100">Run Analysis</button>
+        </div>
+    </div>
+
+    <div id="analysisResults">
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="analysisTitle">Analysis Results</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="chartContainer"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Analysis Insights</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="analysisInsights"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Trait Recommendations</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul id="recommendationsList"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Related Traits</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="relatedTraitsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Advanced Options</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select id="secondaryTrait" class="form-control mb-2">
+                                    <option value="">Select Secondary Trait (for comparison)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="timeRange" class="form-control mb-2">
+                                    <option value="1m">Last Month</option>
+                                    <option value="3m">Last 3 Months</option>
+                                    <option value="6m">Last 6 Months</option>
+                                    <option value="1y">Last Year</option>
+                                    <option value="all">All Time</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button id="applyAdvancedOptions" class="btn btn-secondary">Apply Options</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/scripts/dashboard/trait-analysis.js' %}"></script>
+{% endblock %}

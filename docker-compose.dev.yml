@@ -1,0 +1,253 @@
+
+
+services:
+  # ===================================================================
+  # SHARED INFRASTRUCTURE
+  # ===================================================================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: traitkeeper-postgres-dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - traitkeeper-network-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: traitkeeper-redis-dev
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - traitkeeper-network-dev
+
+  # ===================================================================
+  # WEB SERVER (Development)
+  # ===================================================================
+  
+  main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-main-dev
+    command: >
+      sh -c "
+        echo '🌐 Dev Server: Starting Django development server...' &&
+        python manage.py migrate --noinput &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    environment:
+      - DEBUG=1
+      - RUN_BACKGROUND_TASKS=false
+    volumes:
+      - .:/app  # Hot reload for code changes
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+  # ===================================================================
+  # INDEXING SERVICES (Development)
+  # ===================================================================
+  
+  # Live WebSocket Indexer
+  indexer-live:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-live-dev
+    command: >
+      sh -c "
+        echo '🔴 Dev Live Indexer: Starting WebSocket listener...' &&
+        python manage.py run_live_indexer
+      "
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_live_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+  # Scheduled/Historical Indexer
+  indexer-scheduled:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-scheduled-dev
+    command: >
+      sh -c "
+        echo '⏰ Dev Scheduled Indexer: Starting periodic polling...' &&
+        python manage.py run_scheduled_indexer
+      "
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_scheduled_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+  # ===================================================================
+  # ANALYTICS SERVICES (Development)
+  # ===================================================================
+  
+  # Vitality Analytics
+  vitality-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-vitality-analytics-dev
+    command: >
+      sh -c "
+        echo '📊 Dev Vitality Analytics: Starting service...' &&
+        python manage.py run_vitality_analytics_service
+      "
+    environment:
+      - DEBUG=1
+      - RUN_BACKGROUND_TASKS=true
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_vitality_analytics_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+  # ===================================================================
+  # MONITORING SERVICES (Development)
+  # ===================================================================
+  
+  # System Health Monitor
+  health:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-health-dev
+    command: >
+      sh -c "
+        echo '🏥 Dev Health: Starting monitoring...' &&
+        python manage.py run_health_service
+      "
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_health_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+  # Config Listener
+  config-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-config-listener-dev
+    command: >
+      sh -c "
+        echo '⚙️  Dev Config Listener: Starting...' &&
+        python manage.py listen_for_config_updates
+      "
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[l]isten_for_config_updates' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+
+networks:
+  traitkeeper-network-dev:
+    driver: bridge

@@ -1,0 +1,169 @@
+/* traitkeeper/static/css/admin.css */
+
+/* General typography */
+body, p, td, th, select, input {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Glassmorphism border for dark mode */
+.dark .border-glass-600 {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Chevron rotation animations */
+.rotate-up {
+    transform: rotate(180deg);
+    transition: transform 0.2s ease;
+}
+.rotate-down {
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+th, td {
+    text-align: left;
+    padding: 0.75rem;
+}
+
+/* Form elements */
+select, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+select:focus, input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(128, 0, 128, 0.15);
+}
+
+/* Chart container */
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .section-header {
+        font-size: 1.125rem;
+    }
+    .section-card {
+        padding: 1rem;
+    }
+    .admin-card {
+        padding: 1rem;
+    }
+    th, td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    select, input[type="text"], input[type="number"] {
+        padding: 0.375rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Mobile Navigation Styles for admin.css */
+
+/* Base header style */
+.header-glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button effects */
+.glow-button {
+    background: linear-gradient(45deg, #800080, #660066);
+    transition: all 0.15s ease;
+}
+.glow-button:hover {
+    box-shadow: 0 0 6px rgba(128, 0, 128, 0.4);
+    transform: scale(1.02);
+}
+
+/* Navigation links */
+.nav-link {
+    font-family: 'Roboto', sans-serif;
+    transition: color 0.15s ease;
+}
+.nav-link:hover {
+    color: #800080;
+}
+
+/* Mobile menu trigger button */
+.hamburger-menu {
+    cursor: pointer;
+    display: none;
+}
+
+/* Fixed mobile navigation panel */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 75%;
+    max-width: 300px;
+    background: #FFFFFF;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: none;
+}
+
+/* Dark mode styling for mobile nav */
+.dark .mobile-nav {
+    background: #1E1E1E;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile nav open state */
+.mobile-nav.open {
+    transform: translateX(0);
+}
+
+/* Semi-transparent overlay behind mobile nav */
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    display: none;
+}
+.mobile-nav-overlay.active {
+    display: block;
+}
+
+/* Prevent scrolling when mobile menu is open */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Responsive styles for mobile devices */
+@media (max-width: 767px) {
+    .hamburger-menu {
+        display: block;
+    }
+    .desktop-nav {
+        display: none;
+    }
+    .mobile-nav {
+        display: flex;
+        flex-direction: column;
+    }
+}

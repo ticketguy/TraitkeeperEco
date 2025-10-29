@@ -1,0 +1,16 @@
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 1rem;
+    color: var(--text-color);
+}
+
+#theme-toggle svg {
+    transition: transform 0.3s ease;
+}
+
+#theme-toggle:hover svg {
+    transform: rotate(30deg);
+}

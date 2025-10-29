@@ -1,0 +1,257 @@
+
+
+services:
+  # ===================================================================
+  # SHARED INFRASTRUCTURE
+  # ===================================================================
+  
+  # PostgreSQL Database (Shared by all processes)
+  postgres:
+    image: postgres:15-alpine
+    container_name: traitkeeper-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - traitkeeper-network
+
+  # Redis Cache (Shared by all processes)
+  redis:
+    image: redis:7-alpine
+    container_name: traitkeeper-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - traitkeeper-network
+
+  # ===================================================================
+  # WEB SERVER (User-facing)
+  # ===================================================================
+  
+  main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-main
+    env_file:
+      - .env
+    environment:
+      RUN_BACKGROUND_TASKS: "false"  # Web server only, no background tasks
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🌐 Main App: Waiting for database...' &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        echo '🚀 Main App: Starting gunicorn...' &&
+        gunicorn traitkeeper.wsgi:application 
+          --bind 0.0.0.0:8000 
+          --workers 4 
+          --timeout 120 
+          --access-logfile - 
+          --error-logfile -
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+
+  # ===================================================================
+  # INDEXING SERVICES
+  # ===================================================================
+  
+  # Live WebSocket Indexer (Real-time transaction processing)
+  indexer-live:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-live
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🔴 Live Indexer: Starting WebSocket listener...' &&
+        python manage.py run_live_indexer
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_live_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+
+  # Scheduled/Historical Indexer (Periodic polling for historical data)
+  indexer-scheduled:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-scheduled
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏰ Scheduled Indexer: Starting periodic polling...' &&
+        python manage.py run_scheduled_indexer
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_scheduled_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+
+  # ===================================================================
+  # ANALYTICS SERVICES
+  # ===================================================================
+
+  # Vitality Analytics Service (Vitality calculations + future metrics/trends)
+  vitality-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitality-analytics
+    env_file:
+      - .env
+    environment:
+      RUN_BACKGROUND_TASKS: "true"  # Needed for vitality task manager
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '📊 Vitality Analytics: Starting vitality analytics services...' &&
+        python manage.py run_vitality_analytics_service
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_vitality_analytics_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+
+  # ===================================================================
+  # MONITORING SERVICES
+  # ===================================================================
+  
+  # System Health Monitor (Performance metrics, anomaly detection, alerts)
+  health:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-health
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🏥 Health: Starting system health monitoring...' &&
+        python manage.py run_health_service
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_health_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+
+  # Config Listener (Watches for provider config changes)
+  config-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-config-listener
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        echo '⚙️  Config Listener: Starting...' &&
+        python manage.py listen_for_config_updates
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - traitkeeper-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  traitkeeper-network:
+    driver: bridge

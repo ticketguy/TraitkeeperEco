@@ -1,0 +1,75 @@
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    transition: width 0.3s ease;
+    overflow-x: hidden;
+    z-index: 1000;
+    padding-top: 80px;
+}
+
+.sidebar-nav h2 {
+    padding: 10px 15px;
+    margin: 0;
+    color: var(--primary-color);
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar-nav li {
+    padding: 10px 15px;
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.sidebar-nav a:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.sidebar-nav i {
+    width: 20px;
+    /* Set a fixed width */
+    margin-right: 15px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.sidebar-nav span {
+    transition: opacity 0.3s ease;
+}
+
+/* Collapse sidebar */
+.sidebar:not(:hover) {
+    width: var(--sidebar-collapsed-width);
+}
+
+.sidebar:not(:hover) h2,
+.sidebar:not(:hover) .sidebar-nav span {
+    opacity: 0;
+    display: none;
+}
+
+.sidebar:not(:hover) .sidebar-nav i {
+    margin-right: 0;
+    width: 100%;
+}
+
+.sidebar:not(:hover) .sidebar-nav li {
+    text-align: center;
+    padding: 10px 0;
+}

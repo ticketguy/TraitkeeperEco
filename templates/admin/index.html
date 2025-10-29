@@ -1,0 +1,1002 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+<!-- Load custom admin CSS -->
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<!-- Particles.js for subtle background effects, deferred -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
+<!-- Inline critical CSS for immediate rendering -->
+<style>
+    .section-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .section-card:hover {
+        box-shadow: 0 2px 4px rgba(128, 0, 128, 0.1); /* Subtle shadow on hover */
+    }
+    .glow-button {
+        background: linear-gradient(45deg, #800080, #660066);
+        transition: box-shadow 0.2s ease; /* Adjusted to only affect shadow */
+    }
+    .glow-button:hover {
+        box-shadow: 0 0 4px rgba(128, 0, 128, 0.3); /* Reduced shadow effect */
+    }
+    .section-header {
+        font-family: 'Space Mono', monospace;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: linear-gradient(45deg, #800080, #660066);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    /* Simplified fade for toggling sections */
+    .fade-in {
+        animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    /* Ensure hidden class is defined */
+    .hidden {
+        display: none;
+    }
+   
+    /* Dynamic background */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, #800080, #660066, #800080);
+        background-size: 200% 200%;
+        animation: gradientShift 20s ease infinite;
+        opacity: 0.05;
+        z-index: -1;
+    }
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+{% endblock %}
+
+{% block admin_inner_content %}
+<!-- Particle background container -->
+<div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+<div class="space-y-8">
+    <!-- Dashboard Overview -->
+    <div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
+        <h2 class="section-header text-xl sm:text-2xl mb-4 flex items-center">
+            <i class="fas fa-tachometer-alt text-primary mr-2"></i>
+            Dashboard Overview
+        </h2>
+        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto">Welcome to the TraitKeeper Admin Panel. Select an application to manage its data.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            {% for app in app_list %}
+                {% if app.app_label %}
+                <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+                    <h3 class="font-bold text-base sm:text-lg mb-2 flex items-center text-brand-black dark:text-brand-white font-roboto">
+                        <i class="fas fa-folder text-primary mr-2"></i>
+                        {{ app.name }}
+                    </h3>
+                    <p class="text-brand-black/70 dark:text-brand-white/70 mb-3 font-roboto text-sm">{{ app.detailed_models|length }} models available</p>
+                    <a href="{% url 'admin:app_list' app_label=app.app_label %}" class="glow-button text-white inline-flex items-center px-3 py-1.5 rounded-lg shadow-sm text-sm">
+                        <span>Manage {{ app.name }}</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="section-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Users</h3>
+                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.total_users|default_if_none:'0' }}</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
+                    <i class="fas fa-users text-primary text-xl sm:text-2xl"></i>
+                </div>
+            </div>
+            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Total platform users</p>
+        </div>
+        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Active Users</h3>
+                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.active_users|default_if_none:'0' }}</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
+                    <i class="fas fa-user-check text-primary text-xl sm:text-2xl"></i>
+                </div>
+            </div>
+            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Users active in last 30 days</p>
+        </div>
+        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Wallet Connections</h3>
+                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.wallet_connections|default_if_none:'0' }}</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
+                    <i class="fas fa-wallet text-primary text-xl sm:text-2xl"></i>
+                </div>
+            </div>
+            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Connected wallets</p>
+        </div>
+        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Admin Users</h3>
+                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ admin_user_count|default_if_none:'0' }}</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
+                    <i class="fas fa-user-shield text-primary text-xl sm:text-2xl"></i>
+                </div>
+            </div>
+            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">View Admin Users</p>
+        </div>
+    </div>
+
+<!-- Statistics Overview -->
+<div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="section-header text-xl sm:text-2xl flex items-center">
+            <i class="fas fa-chart-line text-primary mr-2"></i>
+            Statistics Overview
+        </h2>
+        <button id="toggle-stats" class="glow-button text-white text-sm inline-flex items-center px-3 py-1.5 rounded-lg" aria-expanded="false" aria-controls="additional-stats">
+            <span>View Full Statistics</span>
+            <i class="fas fa-chevron-down ml-1 rotate-down"></i>
+        </button>
+    </div>
+    <p class="text-brand-black dark:text-brand-white mb-4 font-roboto text-sm">Key metrics and trends for platform activity.</p>
+    <div id="stats-section" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Admin User Activity Chart (Always Visible) -->
+        <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
+            <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Admin User Activity (Last 7 Days)</h3>
+            <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
+                <canvas id="userActivityChart"></canvas>
+            </div>
+        </div>
+        <!-- Additional Charts (Hidden by Default) -->
+        <div id="additional-stats" class="hidden grid grid-cols-1 gap-4 sm:gap-6">
+            <!-- User Signup Activity Chart -->
+            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
+                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">User Signups (Last 7 Days)</h3>
+                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
+                    <canvas id="signupActivityChart"></canvas>
+                </div>
+            </div>
+            <!-- NFT Statistics Chart -->
+            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
+                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">NFT Statistics</h3>
+                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
+                    <canvas id="nftStatsChart"></canvas>
+                </div>
+            </div>
+            <!-- Platform Metrics Chart -->
+            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
+                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Platform Metrics</h3>
+                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
+                    <canvas id="platformMetricsChart"></canvas>
+                </div>
+                <p class="text-sm text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto">
+                    Retention Rate: <span id="retentionRate">{{ user_stats.retention_rate|floatformat:1 }}%</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'admin_panel:export_statistics' %}" class="glow-button text-white px-3 py-1.5 rounded-lg inline-flex items-center text-sm">
+            <i class="fas fa-download mr-1"></i>Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Recent Actions -->
+    <div class="section-card bg-background-light dark:bg-background-dark rounded-xl overflow-hidden border border-gray-200 dark:border-glass-600 shadow-sm">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4">
+            <h2 class="section-header text-lg sm:text-xl text-white flex items-center">
+                <i class="fas fa-history mr-2"></i>
+                Recent Actions
+            </h2>
+        </div>
+        <div class="p-4 sm:p-6">
+            {% if admin_log %}
+            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-glass-600">
+                <table class="min-w-full font-roboto">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-purple-600 to-purple-800 text-white text-sm">
+                            <th class="w-1/6 py-3 px-4 text-left font-semibold">Time</th>
+                            <th class="w-1/6 py-3 px-4 text-left font-semibold">User</th>
+                            <th class="w-1/6 py-3 px-4 text-left font-semibold">App</th>
+                            <th class="w-1/2 py-3 px-4 text-left font-semibold">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in admin_log %}
+                        <tr class="border-b border-gray-200 dark:border-glass-600 last:border-none hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300">
+                            <td class="text-brand-black/70 dark:text-brand-white/70 py-3 px-4 text-sm font-medium">{{ entry.action_time|date:"M d, H:i" }}</td>
+                            <td class="text-brand-black/70 dark:text-brand-white/70 py-3 px-4 text-sm font-medium">{{ entry.user.username }}</td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if entry.content_type %}
+                                    {% with app_label=entry.content_type.app_label %}
+                                        {% if app_label in allowed_apps %}
+                                            {% url 'admin:app_list' app_label=app_label as app_url %}
+                                            {% if app_url %}
+                                                <a href="{{ app_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white font-medium underline underline-offset-2 transition-colors duration-200" title="View {{ app_label|capfirst }} app">
+                                                    {{ app_label|capfirst }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-brand-black/70 dark:text-brand-white/70">{{ app_label|capfirst }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-brand-black/70 dark:text-brand-white/70">{{ app_label|capfirst }}</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-gray-500 italic">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                <div class="flex items-center space-x-2">
+                                    {% if entry.action_flag == 1 %}
+                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            <i class="fas fa-plus-circle mr-1"></i> Added
+                                        </span>
+                                    {% elif entry.action_flag == 2 %}
+                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                            <i class="fas fa-edit mr-1"></i> Modified
+                                        </span>
+                                    {% elif entry.action_flag == 3 %}
+                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                            <i class="fas fa-trash mr-1"></i> Deleted
+                                        </span>
+                                    {% endif %}
+                                    {% if entry.content_type %}
+                                        {% url 'admin:'|add:entry.content_type.app_label|add:'_'|add:entry.content_type.model|add:'_change' entry.object_id as change_url %}
+                                        {% if change_url %}
+                                            <a href="{{ change_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white font-medium underline underline-offset-2 transition-colors duration-200" title="View details of this action">
+                                                {{ entry.object_repr }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-brand-black/70 dark:text-brand-white/70">{{ entry.object_repr }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-brand-black/70 dark:text-brand-white/70">{{ entry.object_repr }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-center">
+                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="glow-button text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
+                    <i class="fas fa-eye mr-2"></i>
+                    <span>View All Actions</span>
+                </a>
+            </div>
+            {% else %}
+            <p class="text-center text-brand-black/50 dark:text-brand-white/50 py-4 font-roboto text-sm">No recent actions.</p>
+            {% endif %}
+        </div>
+    </div>
+
+<!-- Pending Collections -->
+    <div class="section-card bg-background-light dark:bg-background-dark rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-glass-600 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="section-header text-xl sm:text-2xl flex items-center">
+                <i class="fas fa-list-alt text-primary mr-2"></i>
+                Pending Collections
+            </h2>
+            <button id="toggle-pending" class="glow-button text-white text-sm inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-300 hover:bg-opacity-90" aria-expanded="true" aria-controls="pending-section">
+                <span class="font-roboto">Toggle View</span>
+                <i class="fas fa-chevron-down ml-2 transition-transform duration-300"></i>
+            </button>
+        </div>
+        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto text-sm opacity-80">Review and manage pending NFT collection submissions.</p>
+        <!-- Debug: Display the count of pending collections -->
+        <p class="text-brand-black dark:text-brand-white mb-6 font-roboto text-sm font-medium bg-gray-100 dark:bg-gray-800 inline-block px-3 py-1 rounded-full">
+            Total Pending Collections: <span class="text-primary font-semibold">{{ page_obj.paginator.count }}</span>
+        </p>
+        <div id="pending-section">
+            {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                        <div class="p-3 sm:p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100{% elif message.tags == 'error' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100{% else %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100{% endif %} shadow-md font-roboto text-sm">
+                            {{ message|safe }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <form id="pending-collections-form" method="post" action="{% url 'admin_panel:pending_collections' %}">
+                {% csrf_token %}
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <select name="action" class="p-2.5 border border-gray-300 dark:border-glass-600 rounded-lg bg-white dark:bg-gray-800 text-sm font-roboto text-brand-black dark:text-brand-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-30 transition-all duration-300">
+                        <option value="">Select Action</option>
+                        <option value="approve">Approve Selected</option>
+                        <option value="reject">Reject Selected</option>
+                    </select>
+                    <button type="submit" class="glow-button text-white px-4 py-2 rounded-lg text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
+                        Apply
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-glass-600">
+                    <table class="min-w-full bg-background-light dark:bg-background-dark font-roboto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-purple-600 to-purple-800 text-white text-sm">
+                                <th class="py-3 px-4 text-left font-semibold">
+                                    <input type="checkbox" id="select-all" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer">
+                                </th>
+                                <th class="py-3 px-4 text-left font-semibold">Name</th>
+                                <th class="py-3 px-4 text-left font-semibold">Mint Address</th>
+                                <th class="py-3 px-4 text-left font-semibold">Status</th>
+                                <th class="py-3 px-4 text-left font-semibold">Submitted By</th>
+                                <th class="py-3 px-4 text-left font-semibold">Submitted At</th>
+                                <th class="py-3 px-4 text-left font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for collection in page_obj %}
+                            <tr class="border-b border-gray-200 dark:border-glass-600 last:border-none hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300">
+                                <td class="py-3 px-4">
+                                    <input type="checkbox" name="collection_ids" value="{{ collection.id }}" class="collection-checkbox w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer">
+                                </td>
+                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm font-medium">{{ collection.name|default:"N/A" }}</td>
+                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm font-mono">{{ collection.mint_address|truncatechars:10|default:"N/A" }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold {% if collection.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300{% endif %}">
+                                        {{ collection.status|capfirst|default:"N/A" }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">{{ collection.submitted_by|default:"N/A" }}</td>
+                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">{{ collection.submitted_at|date:"M d, Y"|default:"N/A" }}</td>
+                                <td class="py-3 px-4">
+                                    {% url 'admin:nft_data_pendingcollection_change' collection.id as view_url %}
+                                    {% if view_url %}
+                                        <a href="{{ view_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white text-sm font-medium underline underline-offset-2 transition-colors duration-200" title="View details of this collection">
+                                            View
+                                        </a>
+                                    {% else %}
+                                        <span class="text-gray-500 text-sm italic" title="View link unavailable">View (N/A)</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="py-4 text-center text-brand-black/50 dark:text-brand-white/50 text-sm font-roboto">No pending collections found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if page_obj.has_other_pages %}
+                <div class="flex justify-center mt-6 space-x-3">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="glow-button text-white py-2 px-4 rounded-lg inline-flex items-center text-sm font-roboto hover:bg-opacity-90 transition-all duration-300">
+                            Previous
+                        </a>
+                    {% else %}
+                        <span class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-gray-400 cursor-not-allowed text-sm font-roboto bg-gray-100 dark:bg-gray-800">Previous</span>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <span class="glow-button text-white py-2 px-4 rounded-lg mx-1 text-sm font-roboto bg-opacity-90">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}" class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-brand-purple hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors mx-1 text-sm font-roboto bg-white dark:bg-gray-800">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="glow-button text-white py-2 px-4 rounded-lg inline-flex items-center text-sm font-roboto hover:bg-opacity-90 transition-all duration-300">
+                            Next
+                        </a>
+                    {% else %}
+                        <span class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-gray-400 cursor-not-allowed text-sm font-roboto bg-gray-100 dark:bg-gray-800">Next</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+<!-- Chart.js and JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize particles.js with subtle settings (if present in your original code)
+    if (typeof particlesJS !== 'undefined') {
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 30, density: { enable: true, value_area: 1000 } },
+                color: { value: '#800080' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.3, random: true },
+                size: { value: 2, random: true },
+                move: { enable: true, speed: 0.5, direction: 'none', random: true }
+            },
+            interactivity: {
+                events: { onhover: { enable: false }, onclick: { enable: false } }
+            }
+        });
+    } else {
+        console.warn('particlesJS not loaded. Skipping particle animation.');
+    }
+
+    // Select All Checkbox for Pending Collections (if present in your original code)
+    const selectAll = document.querySelector('#select-all');
+    const checkboxes = document.querySelectorAll('.collection-checkbox');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            console.log('Select All checkbox changed:', this.checked);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    } else {
+        console.error('Select All checkbox not found');
+    }
+
+    if (checkboxes) {
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                console.log('Collection checkbox changed:', this.value, this.checked);
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+                if (selectAll) {
+                    selectAll.checked = allChecked;
+                    selectAll.indeterminate = someChecked && !allChecked;
+                }
+            });
+        });
+    } else {
+        console.error('Collection checkboxes not found');
+    }
+
+    // Toggle Statistics Section (if present in your original code)
+    const toggleStatsBtn = document.querySelector('#toggle-stats');
+    const additionalStats = document.querySelector('#additional-stats');
+
+    if (toggleStatsBtn && additionalStats) {
+        console.log('Stats toggle elements found:', { toggleStatsBtn, additionalStats });
+        const statsChevron = toggleStatsBtn.querySelector('i');
+        
+        toggleStatsBtn.addEventListener('click', function() {
+            console.log('Stats toggle button clicked');
+            const isExpanded = toggleStatsBtn.getAttribute('aria-expanded') === 'true';
+            
+            if (!isExpanded) {
+                additionalStats.classList.remove('hidden');
+                additionalStats.classList.add('fade-in');
+                toggleStatsBtn.querySelector('span').textContent = 'Hide Full Statistics';
+                if (statsChevron) {
+                    statsChevron.classList.remove('rotate-down');
+                    statsChevron.classList.add('rotate-up');
+                }
+                toggleStatsBtn.setAttribute('aria-expanded', 'true');
+                
+                if (typeof signupActivityChart === 'undefined' || !signupActivityChart) {
+                    console.log('Initializing additional charts on toggle');
+                    initializeAdditionalCharts();
+                }
+            } else {
+                additionalStats.classList.add('hidden');
+                additionalStats.classList.remove('fade-in');
+                toggleStatsBtn.querySelector('span').textContent = 'View Full Statistics';
+                if (statsChevron) {
+                    statsChevron.classList.remove('rotate-up');
+                    statsChevron.classList.add('rotate-down');
+                }
+                toggleStatsBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    } else {
+        console.error('Stats toggle elements not found:', { toggleStatsBtn, additionalStats });
+    }
+
+    // Toggle Pending Collections Section (if present in your original code)
+    const togglePendingBtn = document.querySelector('#toggle-pending');
+    const pendingSection = document.querySelector('#pending-section');
+
+    if (togglePendingBtn && pendingSection) {
+        console.log('Pending toggle elements found:', { togglePendingBtn, pendingSection });
+        const pendingChevron = togglePendingBtn.querySelector('i');
+
+        togglePendingBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            console.log('Pending toggle button clicked');
+            const isExpanded = togglePendingBtn.getAttribute('aria-expanded') === 'true';
+
+            if (!isExpanded) {
+                pendingSection.classList.remove('hidden');
+                pendingSection.classList.add('fade-in');
+                togglePendingBtn.querySelector('span').textContent = 'Hide Pending Collections';
+                if (pendingChevron) {
+                    pendingChevron.classList.remove('rotate-down');
+                    pendingChevron.classList.add('rotate-up');
+                }
+                togglePendingBtn.setAttribute('aria-expanded', 'true');
+            } else {
+                pendingSection.classList.add('hidden');
+                pendingSection.classList.remove('fade-in');
+                togglePendingBtn.querySelector('span').textContent = 'View Pending Collections';
+                if (pendingChevron) {
+                    pendingChevron.classList.remove('rotate-up');
+                    pendingChevron.classList.add('rotate-down');
+                }
+                togglePendingBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    } else {
+        console.error('Pending toggle elements not found:', { togglePendingBtn, pendingSection });
+    }
+
+    // Helper function to create gradients for charts
+    function createGradient(ctx, startColor, endColor) {
+        if (!ctx) {
+            console.warn('Chart context not provided for gradient. Using fallback color:', startColor);
+            return startColor;
+        }
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, startColor);
+        gradient.addColorStop(1, endColor);
+        return gradient;
+    }
+
+    // Chart contexts and instances
+    let userActivityChart, signupActivityChart, nftStatsChart, platformMetricsChart;
+
+    // User Activity Chart (Always Loaded)
+    try {
+        const userActivityCtx = document.querySelector('#userActivityChart')?.getContext('2d');
+        if (userActivityCtx) {
+            console.log('User Activity Chart canvas found');
+            let labels, data;
+            try {
+                labels = JSON.parse('{{ login_activity_labels|safe }}');
+                data = JSON.parse('{{ login_activity_data|safe }}');
+            } catch (e) {
+                console.error('Error parsing login activity data:', e);
+                labels = [];
+                data = [];
+            }
+            console.log('Initial User Activity Labels:', labels);
+            console.log('Initial User Activity Data:', data);
+            if (typeof Chart !== 'undefined') {
+                userActivityChart = new Chart(userActivityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Successful Admin Logins',
+                            data: data,
+                            borderColor: '#800080',
+                            backgroundColor: (ctx) => createGradient(userActivityCtx, 'rgba(128, 0, 128, 0.2)', 'rgba(128, 0, 128, 0)'),
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#800080',
+                            pointBorderColor: '#FFFFFF',
+                            pointHoverRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Date', color: '#800080' },
+                                ticks: { color: '#800080' },
+                                grid: { color: 'rgba(128, 0, 128, 0.1)' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Number of Logins', color: '#800080' },
+                                ticks: { color: '#800080', stepSize: 1 },
+                                grid: { color: 'rgba(128, 0, 128, 0.1)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: '#800080' } },
+                            tooltip: {
+                                enabled: true,
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(128, 0, 128, 0.8)',
+                                titleFont: { size: 14 },
+                                bodyFont: { size: 12 },
+                                padding: 10,
+                            }
+                        },
+                        animation: {
+                            duration: 800,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+                console.log('User Activity Chart initialized');
+            } else {
+                console.error('Chart.js is not loaded. Cannot initialize User Activity Chart.');
+            }
+        } else {
+            console.error('User Activity Chart canvas not found');
+        }
+    } catch (e) {
+        console.error('Error initializing User Activity Chart:', e);
+    }
+
+    // Additional Charts (Loaded on Demand)
+    function initializeAdditionalCharts() {
+        try {
+            const signupActivityCtx = document.querySelector('#signupActivityChart')?.getContext('2d');
+            if (signupActivityCtx) {
+                console.log('Signup Activity Chart canvas found');
+                let signupLabels, signupData;
+                try {
+                    signupLabels = JSON.parse('{{ signup_activity_labels|safe }}');
+                    signupData = JSON.parse('{{ signup_activity_data|safe }}');
+                } catch (e) {
+                    console.error('Error parsing signup activity data:', e);
+                    signupLabels = [];
+                    signupData = [];
+                }
+                console.log('Initial Signup Labels:', signupLabels);
+                console.log('Initial Signup Data:', signupData);
+                if (typeof Chart !== 'undefined') {
+                    signupActivityChart = new Chart(signupActivityCtx, {
+                        type: 'line',
+                        data: {
+                            labels: signupLabels,
+                            datasets: [{
+                                label: 'New Users',
+                                data: signupData,
+                                borderColor: '#660066',
+                                backgroundColor: (ctx) => createGradient(signupActivityCtx, 'rgba(102, 0, 102, 0.2)', 'rgba(102, 0, 102, 0)'),
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3,
+                                pointBackgroundColor: '#660066',
+                                pointBorderColor: '#FFFFFF',
+                                pointHoverRadius: 6,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Date', color: '#660066' },
+                                    ticks: { color: '#660066' },
+                                    grid: { color: 'rgba(102, 0, 102, 0.1)' }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Number of Signups', color: '#660066' },
+                                    ticks: { color: '#660066', stepSize: 1 },
+                                    grid: { color: 'rgba(102, 0, 102, 0.1)' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#660066' } },
+                                tooltip: {
+                                    enabled: true,
+                                    mode: 'index',
+                                    intersect: false,
+                                    backgroundColor: 'rgba(102, 0, 102, 0.8)',
+                                    titleFont: { size: 14 },
+                                    bodyFont: { size: 12 },
+                                    padding: 10,
+                                }
+                            },
+                            animation: {
+                                duration: 800,
+                                easing: 'easeOutQuart'
+                            }
+                        }
+                    });
+                    console.log('Signup Activity Chart initialized');
+                } else {
+                    console.error('Chart.js is not loaded. Cannot initialize Signup Activity Chart.');
+                }
+            } else {
+                console.error('Signup Activity Chart canvas not found');
+            }
+
+            const nftStatsCtx = document.querySelector('#nftStatsChart')?.getContext('2d');
+            if (nftStatsCtx) {
+                console.log('NFT Stats Chart canvas found');
+                const nftStatsData = {
+                    collections: {{ nft_stats.collections|default:0 }},
+                    nfts: {{ nft_stats.nfts|default:0 }},
+                    transactions: {{ nft_stats.transactions|default:0 }}
+                };
+                console.log('Initial NFT Stats Data:', [nftStatsData.collections, nftStatsData.nfts, nftStatsData.transactions]);
+                if (typeof Chart !== 'undefined') {
+                    nftStatsChart = new Chart(nftStatsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Collections', 'NFTs', 'Transactions'],
+                            datasets: [{
+                                label: 'Count',
+                                data: [nftStatsData.collections, nftStatsData.nfts, nftStatsData.transactions],
+                                backgroundColor: [
+                                    (ctx) => createGradient(nftStatsCtx, '#800080', '#660066'),
+                                    (ctx) => createGradient(nftStatsCtx, '#660066', '#800080'),
+                                    (ctx) => createGradient(nftStatsCtx, '#808080', '#606060')
+                                ],
+                                borderColor: ['#800080', '#660066', '#808080'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Category', color: '#800080' },
+                                    ticks: { color: '#800080' },
+                                    grid: { color: 'rgba(128, 0, 128, 0.1)' }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Count', color: '#800080' },
+                                    ticks: { color: '#800080', stepSize: 1 },
+                                    grid: { color: 'rgba(128, 0, 128, 0.1)' }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    enabled: true,
+                                    mode: 'index',
+                                    intersect: false,
+                                    backgroundColor: 'rgba(128, 0, 128, 0.8)',
+                                    titleFont: { size: 14 },
+                                    bodyFont: { size: 12 },
+                                    padding: 10,
+                                }
+                            },
+                            animation: {
+                                duration: 800,
+                                easing: 'easeOutQuart'
+                            },
+                            onClick: function(event, elements) {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const label = this.data.labels[index].toLowerCase();
+                                    const urls = {
+                                        'collections': '{% url "admin:nft_data_nftcollection_changelist" %}',
+                                        'nfts': '{% url "admin:nft_data_nft_changelist" %}',
+                                        'transactions': '{% url "admin:indexer_nftevent_changelist" %}'
+                                    };
+                                    if (urls[label]) {
+                                        window.location.href = urls[label];
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    console.log('NFT Stats Chart initialized');
+                } else {
+                    console.error('Chart.js is not loaded. Cannot initialize NFT Stats Chart.');
+                }
+            } else {
+                console.error('NFT Stats Chart canvas not found');
+            }
+
+            const platformMetricsCtx = document.querySelector('#platformMetricsChart')?.getContext('2d');
+            if (platformMetricsCtx) {
+                console.log('Platform Metrics Chart canvas found');
+                const platformMetricsData = {
+                    total_users: {{ user_stats.total_users|default:0 }},
+                    active_users: {{ user_stats.active_users|default:0 }},
+                    wallet_connections: {{ user_stats.wallet_connections|default:0 }},
+                    admin_users: {{ user_stats.admin_users|default:0 }}
+                };
+                console.log('Initial Platform Metrics Data:', [
+                    platformMetricsData.total_users,
+                    platformMetricsData.active_users,
+                    platformMetricsData.wallet_connections,
+                    platformMetricsData.admin_users
+                ]);
+                if (typeof Chart !== 'undefined') {
+                    platformMetricsChart = new Chart(platformMetricsCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Users', 'Active Users', 'Wallet Connections', 'Admin Users'],
+                            datasets: [{
+                                label: 'Platform Metrics',
+                                data: [
+                                    platformMetricsData.total_users,
+                                    platformMetricsData.active_users,
+                                    platformMetricsData.wallet_connections,
+                                    platformMetricsData.admin_users
+                                ],
+                                backgroundColor: ['#800080', '#660066', '#808080', '#A0A0A0'],
+                                borderColor: ['#FFFFFF'],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { font: { size: 12 }, color: '#800080' } },
+                                tooltip: {
+                                    enabled: true,
+                                    backgroundColor: 'rgba(128, 0, 128, 0.8)',
+                                    titleFont: { size: 14 },
+                                    bodyFont: { size: 12 },
+                                    padding: 10,
+                                }
+                            },
+                            animation: {
+                                duration: 800,
+                                easing: 'easeOutQuart'
+                            }
+                        }
+                    });
+                    console.log('Platform Metrics Chart initialized');
+                } else {
+                    console.error('Chart.js is not loaded. Cannot initialize Platform Metrics Chart.');
+                }
+            } else {
+                console.error('Platform Metrics Chart canvas not found');
+            }
+        } catch (e) {
+            console.error('Error initializing additional charts:', e);
+        }
+    }
+
+    async function updateCharts() {
+        console.log('updateCharts called at:', new Date().toISOString());
+        try {
+            // Fetch user activity data
+            const userActivityResponse = await fetch('{% url "admin_panel:user_activity_data" %}');
+            if (!userActivityResponse.ok) {
+                throw new Error('Failed to fetch user activity data: ' + userActivityResponse.statusText);
+            }
+            const userActivityData = await userActivityResponse.json();
+            console.log('Fetched User Activity Data:', userActivityData);
+            if (typeof userActivityChart !== 'undefined' && userActivityChart) {
+                userActivityChart.data.labels = userActivityData.labels;
+                userActivityChart.data.datasets[0].data = userActivityData.data;
+                userActivityChart.update();
+                console.log('User Activity Chart updated');
+            } else {
+                console.warn('User Activity Chart not initialized. Skipping update.');
+            }
+
+            // Fetch additional chart data only if additional charts are initialized
+            if (typeof signupActivityChart !== 'undefined' && signupActivityChart) {
+                const signupActivityResponse = await fetch('{% url "admin_panel:signup_activity_data" %}');
+                if (!signupActivityResponse.ok) {
+                    throw new Error('Failed to fetch signup activity data: ' + signupActivityResponse.statusText);
+                }
+                const signupActivityData = await signupActivityResponse.json();
+                console.log('Fetched Signup Activity Data:', signupActivityData);
+                signupActivityChart.data.labels = signupActivityData.labels;
+                signupActivityChart.data.datasets[0].data = signupActivityData.data;
+                signupActivityChart.update();
+                console.log('Signup Activity Chart updated');
+
+                const nftStatsResponse = await fetch('{% url "admin_panel:nft_stats_data" %}');
+                if (!nftStatsResponse.ok) {
+                    throw new Error('Failed to fetch NFT stats data: ' + nftStatsResponse.statusText);
+                }
+                const nftStatsData = await nftStatsResponse.json();
+                console.log('Fetched NFT Stats Data:', nftStatsData);
+                nftStatsChart.data.datasets[0].data = nftStatsData.data;
+                nftStatsChart.update();
+                console.log('NFT Stats Chart updated');
+
+                const platformMetricsResponse = await fetch('{% url "admin_panel:user_stats_data" %}');
+                if (!platformMetricsResponse.ok) {
+                    throw new Error('Failed to fetch platform metrics data: ' + platformMetricsResponse.statusText);
+                }
+                const platformMetricsData = await platformMetricsResponse.json();
+                console.log('Fetched Platform Metrics Data:', platformMetricsData);
+                platformMetricsChart.data.datasets[0].data = platformMetricsData.data;
+                const retentionRateElement = document.getElementById('retentionRate');
+                if (retentionRateElement) {
+                    retentionRateElement.textContent = platformMetricsData.retention_rate.toFixed(1) + '%';
+                }
+                platformMetricsChart.update();
+                console.log('Platform Metrics Chart updated');
+            } else {
+                console.log('Additional charts not initialized. Skipping update.');
+            }
+        } catch (error) {
+            console.error('Error updating charts:', error);
+        }
+    }
+
+    // Set up interval to update charts every 30 seconds
+    console.log('Setting up chart update interval');
+    setInterval(updateCharts, 30000);
+
+    // Initial update to populate charts immediately
+    updateCharts();
+
+    // Theme toggle and chart color updates (if present in your original code)
+    const html = document.documentElement;
+    function updateChartColors() {
+        console.log('Updating chart colors');
+        const textColor = html.classList.contains('dark') ? '#E0E0E0' : '#0A0A0A';
+        const bgColor = html.classList.contains('dark') ? '#1E1E1E' : '#F3F4F6';
+        const gridColor = html.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(128, 0, 128, 0.1)';
+        const tooltipColor = html.classList.contains('dark') ? '#E0E0E0' : '#0A0A0A';
+
+        if (userActivityChart) {
+            userActivityChart.canvas.style.backgroundColor = bgColor;
+            userActivityChart.options.scales.x.title.color = textColor;
+            userActivityChart.options.scales.x.ticks.color = textColor;
+            userActivityChart.options.scales.x.grid.color = gridColor;
+            userActivityChart.options.scales.y.title.color = textColor;
+            userActivityChart.options.scales.y.ticks.color = textColor;
+            userActivityChart.options.scales.y.grid.color = gridColor;
+            userActivityChart.options.plugins.legend.labels.color = textColor;
+            userActivityChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
+            userActivityChart.update();
+        }
+
+        if (signupActivityChart) {
+            signupActivityChart.canvas.style.backgroundColor = bgColor;
+            signupActivityChart.options.scales.x.title.color = textColor;
+            signupActivityChart.options.scales.x.ticks.color = textColor;
+            signupActivityChart.options.scales.x.grid.color = gridColor;
+            signupActivityChart.options.scales.y.title.color = textColor;
+            signupActivityChart.options.scales.y.ticks.color = textColor;
+            signupActivityChart.options.scales.y.grid.color = gridColor;
+            signupActivityChart.options.plugins.legend.labels.color = textColor;
+            signupActivityChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
+            signupActivityChart.update();
+        }
+
+        if (nftStatsChart) {
+            nftStatsChart.canvas.style.backgroundColor = bgColor;
+            nftStatsChart.options.scales.x.title.color = textColor;
+            nftStatsChart.options.scales.x.ticks.color = textColor;
+            nftStatsChart.options.scales.x.grid.color = gridColor;
+            nftStatsChart.options.scales.y.title.color = textColor;
+            nftStatsChart.options.scales.y.ticks.color = textColor;
+            nftStatsChart.options.scales.y.grid.color = gridColor;
+            nftStatsChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
+            nftStatsChart.update();
+        }
+
+        if (platformMetricsChart) {
+            platformMetricsChart.canvas.style.backgroundColor = bgColor;
+            platformMetricsChart.options.plugins.legend.labels.color = textColor;
+            platformMetricsChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
+            platformMetricsChart.update();
+        }
+    }
+
+    updateChartColors();
+    const themeToggle = document.querySelector('#theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', updateChartColors);
+    } else {
+        console.error('Theme toggle button not found');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+#trait-comparison {
+    margin-top: 60px;
+    padding: 60px;
+}
+
+.comparison-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.nft-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.nft-select {
+    padding: 5px;
+    min-width: 150px;
+}
+
+#addNftBtn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.comparison-options {
+    display: flex;
+    gap: 10px;
+}
+
+.comparison-view {
+    display: none;
+    margin-top: 20px;
+}
+
+#sideBySideComparison {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.nft-comparison-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    width: calc(33% - 20px);
+    margin-bottom: 20px;
+}
+
+.trait-diff {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+#traitAnalysis {
+    margin-top: 30px;
+}
+
+#radarChart {
+    max-width: 600px;
+    margin: 0 auto;
+}

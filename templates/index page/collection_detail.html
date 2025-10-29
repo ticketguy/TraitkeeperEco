@@ -1,0 +1,1027 @@
+{% extends 'index page/base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Collection - {{ collection.name }}{% endblock %}
+
+{% block extra_style %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/heroicons@1.0.6/outline/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/heroicons@1.0.6/solid/index.css">
+
+<style>
+    :root {
+        --font-serif: 'Playfair Display', serif;
+        --font-sans: 'Inter', sans-serif;
+        --primary-color: #800080;
+        --text-dark: #111827;
+        --text-light: #f9fafb;
+        --border-color-light: #E5E7EB;
+        --border-color-dark: #374151;
+        --header-height: 80px; 
+    }
+    body { 
+        font-family: var(--font-sans); 
+        background-color: white;
+    }
+    .dark body { background-color: #030712; }
+
+    /* --- Cinematic Banner --- */
+    #banner-container {
+        height: 70vh; 
+        min-height: 500px; 
+        position: relative;
+    }
+
+    /* --- Sticky Stats Bar --- */
+    #collection-stats-bar {
+        position: sticky;
+        top: var(--header-height);
+        z-index: 30;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color-light);
+        margin-top: -60px;
+    }
+    .dark #collection-stats-bar {
+        border-bottom-color: var(--border-color-dark);
+    }
+
+    /* Stats Flex Layout */
+    #collection-stats-flex {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 1rem;
+    }
+    .stat-item { text-align: center; padding: 0 0.5rem; }
+    .stat-item strong { 
+        font-size: 1.125rem; 
+        font-weight: 600; 
+        display: block;
+        color: white;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
+    }
+    .stat-item span { 
+        font-size: 0.75rem; 
+        margin-top: 0.125rem; 
+        display: block;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
+    }
+    .stat-divider { 
+        width: 1px; 
+        height: 2rem; 
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .stat-item strong { 
+        color: white;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
+    }
+    .dark .stat-item span { 
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
+    }
+    .dark .stat-divider { 
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* --- Sticky Tabs Bar --- */
+    #tabs-and-filters-bar {
+        position: sticky;
+        top: calc(var(--header-height) + var(--stats-bar-height, 60px));
+        z-index: 29;
+        background-color: white;
+        border-bottom: 1px solid var(--border-color-light);
+    }
+    .dark #tabs-and-filters-bar { 
+        background-color: #111827; 
+        border-bottom-color: var(--border-color-dark); 
+    }
+
+    /* Tab styles */
+    .tab-button { 
+        padding: 1rem 0.5rem; 
+        border-bottom: 2px solid transparent; 
+        color: #6b7280; 
+        transition: all 0.2s ease; 
+    }
+    .tab-button.active-tab { 
+        color: var(--text-dark); 
+        border-color: var(--primary-color); 
+    }
+    .dark .tab-button { color: #9ca3af; }
+    .dark .tab-button.active-tab { color: var(--text-light); }
+
+    /* Tab Contents */
+    .tab-content {
+        min-height: 100vh;
+        background-color: white;
+    }
+    .dark .tab-content {
+        background-color: #030712;
+    }
+
+    /* --- MOBILE --- */
+    #mobile-bottom-bar { display: none; }
+    .mobile-modal-container { display: none; }
+
+    @media (max-width: 1024px) {
+        #collection-stats-bar, #tabs-and-filters-bar { display: none; }
+        #mobile-bottom-bar, .mobile-modal-container { display: block; }
+
+        #mobile-bottom-bar {
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            z-index: 50;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 1rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-color-light);
+        }
+        .dark #mobile-bottom-bar {
+            background-color: rgba(17, 24, 39, 0.7);
+            border-top-color: var(--border-color-dark);
+        }
+        #mobile-bottom-bar button {
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.5rem;
+            font-weight: 600; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 9999px;
+            transition: background-color 0.2s ease;
+        }
+        #mobile-bottom-bar button svg { width: 1.25rem; height: 1.25rem; }
+        #open-stats-mobile { background-color: #e5e7eb; color: var(--text-dark); }
+        #open-filters-mobile { background-color: var(--primary-color); color: white; }
+        .dark #open-stats-mobile { background-color: #374151; color: var(--text-light); }
+
+        .mobile-modal-container {
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mobile-modal-container.is-open { transform: translateY(0); }
+        
+        .mobile-modal-content {
+            background-color: white;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            padding: 1rem; 
+            padding-top: 0.5rem;
+            max-height: 85vh; 
+            overflow-y: auto;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+        }
+        .dark .mobile-modal-content { background-color: #1f2937; }
+        .mobile-modal-handle {
+            width: 3rem; 
+            height: 0.375rem; 
+            background-color: #d1d5db; 
+            border-radius: 9999px; 
+            margin: 0.5rem auto 1rem;
+        }
+        .dark .mobile-modal-handle { background-color: #4b5563; }
+        
+        .mobile-modal-backdrop {
+            position: fixed; 
+            inset: 0; 
+            background-color: rgba(0,0,0,0.5); 
+            z-index: 99;
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+            pointer-events: none;
+        }
+        .mobile-modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+        #mobile-stats-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem; 
+            padding: 0.5rem;
+        }
+        #mobile-stats-grid .stat-item {
+            background-color: #f9fafb; 
+            padding: 0.75rem; 
+            border-radius: 0.75rem; 
+            text-align: left;
+        }
+        .dark #mobile-stats-grid .stat-item { background-color: #374151; }
+        #mobile-stats-grid strong { font-size: 1.25rem; }
+        #mobile-stats-grid span { font-size: 0.875rem; color: #6b7280; }
+        .dark #mobile-stats-grid span { color: #9ca3af; }
+        
+        #mobile-filters-modal form { space-y: 1.5rem; }
+        #mobile-filters-modal .form-input-minimal {
+            border: 1px solid var(--border-color-light); 
+            border-radius: 0.75rem; 
+            padding: 0.75rem 1rem;
+        }
+        .dark #mobile-filters-modal .form-input-minimal { border-color: var(--border-color-dark); }
+        #mobile-filters-modal .trait-accordion-toggle { padding: 0.75rem 0; font-weight: 500; }
+        #mobile-filters-modal .trait-accordion-panel { padding-left: 0.5rem; }
+
+        #nfts-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    }
+
+    /* --- General Styles --- */
+    .heading-serif { font-family: var(--font-serif); font-weight: 700; }
+    .fade-in { animation: fadeIn 0.6s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="banner-container">
+    <div class="absolute inset-0 w-full h-full z-0 overflow-hidden">
+        {% if collection.banner_video_url %}
+            <video src="{{ collection.banner_video_url }}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+        {% elif collection.banner_image_url %}
+            <img src="{{ collection.banner_image_url }}" alt="{{ collection.name }} background" class="w-full h-full object-cover">
+        {% else %}
+            <img src="{{ collection.image_url|default:'/static/img/nft-default.png' }}" alt="{{ collection.name }} background" class="w-full h-full object-cover blur-sm scale-105">
+        {% endif %}
+    </div>
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-t from-black/50 to-black/10 z-10"></div>
+
+ <div id="banner-collection-name" class="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] flex flex-col items-center">
+    <div class="inline-flex items-center bg-brand-white/80 backdrop-blur-sm border border-brand-white/20 rounded-full p-1 shadow-lg">
+            <div class="flex flex-col items-start pl-5 pr-4 py-1">
+                <span class="text-text-light font-semibold text-lg">
+                    {{ collection.name }}
+                </span>
+                <span class="text-sm text-text-secondary-light">By {{collection.creator}}</span>
+            </div>
+            <button id="open-description-modal" type="button" title="View Collection Description">
+                <img src="{{ collection.image_url|default:'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d' }}" alt="{{ collection.name }}" class="w-12 h-12 rounded-full shadow-sm cursor-pointer">
+            </button>
+        </div>
+    
+    <!-- ADD SOCIAL LINKS HERE -->
+    <div class="flex items-center justify-center gap-4 mt-4">
+        {% if collection.website_url %}<a href="{{ collection.website_url }}" target="_blank" class="text-white/80 hover:text-white transition-colors" title="Website"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1h-2v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>{% endif %}
+        {% if collection.twitter_url %}<a href="{{ collection.twitter_url }}" target="_blank" class="text-white/80 hover:text-white transition-colors" title="Twitter"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.67.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.27 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.48.75 2.79 1.9 3.55-.7-.02-1.37-.22-1.95-.5v.03c0 2.07 1.47 3.8 3.42 4.19-.36.1-.74.15-1.14.15-.28 0-.54-.03-.8-.08.55 1.7 2.14 2.93 4.03 2.96-1.46 1.14-3.3 1.82-5.3 1.82-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21c7.35 0 11.37-6.08 11.37-11.37 0-.17 0-.34-.01-.51.78-.57 1.45-1.28 1.98-2.08z"/></svg></a>{% endif %}
+        {% if collection.discord_url %}<a href="{{ collection.discord_url }}" target="_blank" class="text-white/80 hover:text-white transition-colors" title="Discord"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.3,3.7C18.9,2.8,17.5,2.1,16,1.8l-0.2,0.5c1.2,0.3,2.4,0.8,3.5,1.5C18.1,2.8,16.2,2.3,14.2,2.3h-4.4c-2,0-3.9,0.5-5.1,1.5 c1.1-0.7,2.3-1.2,3.5-1.5L8,1.8C6.5,2.1,5.1,2.8,3.7,3.7C1.7,6.8,1.8,10.2,3.9,12.5c0,0,0.5,0.6,1.3,1.2l-0.5,0.7 c-2-1.2-3.2-3.6-3.4-6.2c-0.2-3.1,1.5-6,4-7.3C6.3,0.4,7.8,0.1,9.4,0h5.2c1.6,0.1,3.1,0.4,4.5,0.9c2.5,1.3,4.2,4.2,4,7.3 c-0.2,2.6-1.4,5-3.4,6.2l-0.5-0.7c0.8-0.6,1.3-1.2,1.3-1.2C22.2,10.2,22.3,6.8,20.3,3.7z M9.4,11.2c-0.8,0-1.5-0.7-1.5-1.5 c0-0.8,0.7-1.5,1.5-1.5c0.8,0,1.5,0.7,1.5,1.5C10.9,10.5,10.2,11.2,9.4,11.2z M14.6,11.2c-0.8,0-1.5-0.7-1.5-1.5 c0-0.8,0.7-1.5,1.5-1.5c0.8,0,1.5,0.7,1.5,1.5C16.1,10.5,15.4,11.2,14.6,11.2z"/></svg></a>{% endif %}
+        {% if collection.address %}<a href="https://solscan.io/collection/{{ collection.address }}" target="_blank" class="text-white/80 hover:text-white transition-colors" title="View on Solscan"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></a>{% endif %}
+    </div>
+</div>
+
+    <div class="absolute bottom-20 left-4 z-20">
+        <a href="#" class="text-white text-sm font-semibold bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 transition-colors hover:bg-black/60">NFT Memories</a>
+    </div>
+
+    <div class="absolute bottom-20 right-4 z-20 flex items-center gap-4 bg-black/40 backdrop-blur-sm rounded-lg p-3 text-white">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <div>
+                <strong class="font-bold">{{ collection_stats.total_supply|default:"0" }}</strong>
+                <span class="text-xs opacity-80">Items</span>
+            </div>
+        </div>
+        <div class="w-px h-8 bg-white/20"></div>
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <div>
+                <strong class="font-bold">{{ collection_stats.owners|default:"0" }}</strong>
+                <span class="text-xs opacity-80">Owners</span>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+    <div id="collection-stats-bar" data-floating="true">
+        <div id="collection-stats-flex" class="container mx-auto">
+            <div class="stat-item"><strong>--</strong><span>Vitality</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><strong>--</strong><span>Performance</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><div class="flex items-baseline justify-center"><strong>-- SOL</strong><strong class="text-sm ml-1 text-gray-400">--%</strong></div><span>Floor</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><div class="flex items-baseline justify-center"><strong>-- SOL</strong><strong class="text-sm ml-1 text-gray-400">--%</strong></div><span>24h Vol</span></div>
+            <div class="stat-divider hidden md:block"></div> <div class="stat-item hidden md:block"><strong>-- SOL</strong><span>Total Vol</span></div>
+            <div class="stat-divider hidden lg:block"></div>
+            <div class="stat-item hidden lg:block"><strong>-- SOL</strong><span>Market Cap</span></div>
+            <div class="stat-divider hidden lg:block"></div>
+            <div class="stat-item hidden lg:block"><strong>--</strong><span>Bids</span></div>
+        </div>
+    </div>
+
+
+
+
+
+    
+    <div id="tabs-and-filters-bar">
+        <div class="container mx-auto px-4">
+            <nav class="flex justify-between items-center" id="initial-tabs-nav">
+                <div class="flex space-x-4 md:space-x-8 overflow-x-auto">
+                    <button id="nfts-tab" class="tab-button text-base md:text-lg active-tab whitespace-nowrap">Items</button>
+                    <button id="traits-tab" class="tab-button text-base md:text-lg whitespace-nowrap">Traits</button>
+                    <button id="activity-tab" class="tab-button text-base md:text-lg whitespace-nowrap">Activity</button>
+                    <button id="about-tab" class="tab-button text-base md:text-lg whitespace-nowrap">About</button>
+                </div>
+
+                        <div class="flex items-center justify-end gap-2 mb-4">
+            <button id="grid-view-btn" class="p-2 rounded-md bg-accent-light dark:bg-accent-dark" title="Grid View">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            </button>
+            <button id="mosaic-view-btn" class="p-2 rounded-md hover:bg-accent-light dark:hover:bg-accent-dark" title="Mosaic View">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V5a1 1 0 00-1.447-.894l-4 2A1 1 0 0011 7v10zM4 17a1 1 0 001.447.894l4-2A1 1 0 0010 15V5a1 1 0 00-1.447-.894l-4 2A1 1 0 004 7v10z"></path></svg>
+            </button>
+            <button id="art-grid-view-btn" class="p-2 rounded-md hover:bg-accent-light dark:hover:bg-accent-dark" title="Art Grid">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4zM14 4h6v10h-6zM4 14h6v6H4zM14 18h6v2h-6z"></path></svg>
+            </button>
+        </div>
+            </nav>
+        <form method="GET" action="{% url 'collection_detail' address=collection.address %}" id="collection-filter" class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <div class="flex-grow min-w-[200px]">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search by name or token address..." class="form-input-minimal w-full">
+            </div>
+            
+            <div class="flex items-center gap-x-4 gap-y-2 flex-wrap">
+                <div class="relative">
+                    <button id="trait-filter-btn" type="button" class="btn-outline px-4 py-2 rounded-full text-sm">
+                        Filter by Trait
+                    </button>
+                    <div id="trait-filter-popover" class="absolute top-full right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark border dark:border-border-dark rounded-lg shadow-xl z-20 hidden max-h-96 overflow-y-auto">
+                        <div class="p-2">
+                            {% regroup traits by trait_name as grouped_traits %}
+                            {% for group in grouped_traits %}
+                            <div class="border-b dark:border-border-dark last:border-b-0">
+                                <button type="button" class="trait-accordion-toggle w-full flex justify-between items-center p-2 hover:bg-accent-light dark:hover:bg-gray-700 rounded-md">
+                                    <span class="font-semibold text-text-light dark:text-text-dark">{{ group.grouper }}</span>
+                                    <svg class="w-4 h-4 transition-transform transform text-text-secondary-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div class="trait-accordion-panel hidden pt-2 pb-3 pl-4 space-y-2">
+                                    {% for item in group.list %}
+                                    <label class="flex items-center space-x-2 cursor-pointer text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                        <input type="checkbox" name="trait" value="{{ group.grouper }}:{{ item.trait_value }}" class="form-checkbox h-4 w-4 rounded bg-accent-light dark:bg-accent-dark border-border-light dark:border-border-dark focus:ring-primary text-primary"
+                                            {% if item.trait_value in selected_traits %}checked{% endif %}>
+                                        <span>{{ item.trait_value }} <span class="text-xs text-text-secondary-light">({{ item.count|default:0 }})</span></span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="p-4 text-sm text-text-secondary-light">No traits to filter by.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <select name="sort_by" class="form-input-minimal w-48">
+                    <option value="trait_perf_desc" {% if sort_by == 'trait_perf_desc' %}selected{% endif %}>Trait Performance: High to Low</option>
+                    <option value="trait_perf_asc" {% if sort_by == 'trait_perf_asc' %}selected{% endif %}>Trait Performance: Low to High</option>
+                    <option value="vitality_desc" {% if sort_by == 'vitality_desc' %}selected{% endif %}>Vitality: High to Low</option>
+                    <option value="vitality_asc" {% if sort_by == 'vitality_asc' %}selected{% endif %}>Vitality: Low to High</option>
+                    <option value="rarity_desc" {% if sort_by == 'rarity_desc' %}selected{% endif %}>Rarity: Rare to Common</option>
+                    <option value="rarity_asc" {% if sort_by == 'rarity_asc' %}selected{% endif %}>Rarity: Common to Rare</option>
+                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Recently Listed</option>
+                </select>
+
+                <button type="submit" class="btn-outline px-6 py-2 rounded-full flex-shrink-0">Apply</button>
+            </div>
+        </form> 
+
+        </div>
+    </div>
+
+
+
+<div class="tab-contents-container container mx-auto px-4">
+    <div id="nfts-tab-content" class="tab-content">     
+        <div id="nfts-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {% for nft in nfts %}
+            <div class="nft-card group text-left bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-xl p-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1" data-nft-id="{{ nft.mint_address }}">
+                <div class="relative overflow-hidden rounded-lg mb-4">
+                    <img src="{{ nft.image_url }}" alt="{{ nft.name }}" class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
+                    
+                    <div id="performance-badge-{{ nft.mint_address }}"
+                        class="performance-badge absolute top-2 right-2 flex items-center gap-1 bg-brand-black/50 backdrop-blur-sm text-brand-white text-xs font-semibold px-2.5 py-1 rounded-full"
+                        title="Performance Score"
+                        data-nft-id="{{ nft.mint_address }}">
+                        <span class="performance-icon">
+                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                        </span>
+                        <span class="performance-value">{{ nft.performance_score|floatformat:1|default:"N/A" }}</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg text-text-light dark:text-text-dark truncate">{{ nft.name|default:nft.mint_address|slice:":16" }}</h3>
+                    <div class="relative mt-2 h-9">
+                        <p class="absolute inset-0 font-bold text-text-secondary-light dark:text-text-secondary-dark transition-opacity duration-300 group-hover:opacity-0">
+{{ nft.buy_price|floatformat:2|default:"&nbsp;" }} {% if nft.buy_price %}SOL{% endif %}                        </p>
+                        <a href="#make-offer" class="make-offer-link absolute inset-0 flex items-center justify-center bg-primary text-brand-white text-sm font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            Make Offer
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <p class="col-span-full text-center text-text-secondary-light py-10">No NFTs found for the current filters.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="traits-tab-content" class="tab-content fade-in hidden p-4 sm:p-6 lg:p-8 bg-accent-light dark:bg-gray-950 min-h-screen">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div class="lg:col-span-2 bg-background-light dark:bg-accent-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-6">
+                <h3 class="text-xl font-semibold text-text-light dark:text-text-dark mb-5">Trait Performance Scores</h3>
+                
+                <div id="trait-performance-list" class="space-y-4">
+                    {% for trait in traits %}
+                    <div class="flex items-center justify-between p-4 bg-accent-light dark:bg-gray-800/50 rounded-lg">
+                        <p class="font-medium text-text-light dark:text-text-dark">{{ trait.trait_name }} - <span class="text-text-secondary-light">{{ trait.trait_value }}</span></p>
+                        <div class="flex items-center gap-3">
+                            {% with score=trait.performance_score|default:50.0 %}
+                            <span class="font-semibold 
+                                {% if score > 75 %}text-green-500
+                                {% elif score < 40 %}text-red-500
+                                {% else %}text-yellow-500
+                                {% endif %}">
+                                {{ score|floatformat:1 }}
+                            </span>
+                            <div class="w-24 h-2 bg-border-light dark:bg-border-dark rounded-full">
+                                <div class="h-2 rounded-full
+                                    {% if score > 75 %}bg-green-500
+                                    {% elif score < 40 %}bg-red-500
+                                    {% else %}bg-yellow-500
+                                    {% endif %}"
+                                    style="width: {{ score|default:50 }}%;">
+                                </div>
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-text-secondary-light">No trait performance data available for this collection yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 bg-background-light dark:bg-accent-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-6">
+                <h3 class="text-xl font-semibold text-text-light dark:text-text-dark mb-5">Collection Market Performance</h3>
+                </div>
+            
+        </div>
+    </div>
+
+    <div id="activity-tab-content" class="tab-content fade-in hidden">
+        <div id="activity-list" class="border-t border-gray-200 dark:border-gray-800">
+            {% for event in events %}
+            <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b border-gray-200 dark:border-gray-800">
+                <div class="col-span-2 flex items-center space-x-4">
+                    <img src="{{ event.nft_image_url|default:'/static/img/nft-default.png' }}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
+                    <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
+                </div>
+                <div class="text-text-secondary-light">{{ event.event_type|title }}</div>
+                <div class="font-medium">{{ event.amount|floatformat:2|default:"--" }} SOL</div>
+                <div class="text-text-secondary-light text-right">{{ event.timestamp|timesince }} ago</div>
+            </div>
+            {% empty %}
+            <p class="text-center text-text-secondary-light py-10">No recent activity found.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="about-tab-content" class="tab-content fade-in hidden">
+        <div class="prose dark:prose-invert max-w-4xl text-text-secondary-light dark:text-text-secondary-dark">
+            <h3 class="heading-serif text-2xl mb-4">Description</h3>
+            <p class="mb-8">{{ collection.description|default:"No description provided for this collection."|linebreaksbr }}</p>
+            
+            <h3 class="heading-serif text-2xl mb-4">About the Project</h3>
+            <p class="mb-8">{{ collection.project_details|default:"The creator has not provided additional details about the project and community."|linebreaksbr }}</p>
+            <div>
+                <strong class="text-text-light dark:text-text-dark">👑 {{ collection.royalties_percentage|default:"5" }}%</strong>
+                <span class="ml-1">Royalties</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="description-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    </div>
+
+
+<div id="nft-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="bg-background-light dark:bg-accent-dark rounded-lg shadow-xl w-full max-w-4xl m-4 transform transition-all max-h-[90vh] flex flex-col" role="dialog">
+        <div class="flex justify-between items-center border-b p-4 dark:border-border-dark flex-shrink-0">
+            <h3 id="modal-nft-name" class="text-xl font-semibold heading-serif text-text-light dark:text-text-dark">NFT Name</h3>
+            <button id="close-nft-modal" type="button" class="text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        
+                <div class="lg:col-span-2">
+                    <img id="modal-nft-image" src="" alt="NFT Image" class="w-full rounded-lg shadow-lg aspect-square object-cover">
+            
+                    <div class="mt-6">
+                        <div class="flex flex-col">
+                            <strong id="modal-nft-performance" class="text-3xl font-bold text-text-light dark:text-text-dark">--%</strong>
+                            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Performance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-3">
+                    <a href="#" id="modal-nft-collection-link" class="font-bold text-lg text-primary hover:underline"></a>
+                    <p class="text-sm text-text-secondary-light mt-1">Owned by <a href="#" id="modal-nft-owner-link" class="text-primary font-medium hover:underline"></a></p>
+                    <div class="bg-accent-light dark:bg-gray-700/50 rounded-lg p-4 my-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Current Price</p>
+                                <p id="modal-nft-price" class="text-2xl font-bold text-text-light dark:text-text-dark">-- SOL</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="btn-outline px-4 py-2 rounded-full text-sm">Make Offer</button>
+                                <button class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors">Buy Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-b dark:border-border-dark">
+                        <nav class="flex space-x-6 -mb-px">
+                            <button data-tab="traits" class="modal-tab text-sm font-medium py-3 border-b-2 border-primary text-primary">Traits</button>
+                            <button data-tab="details" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Details</button>
+                            <button data-tab="offers" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Offers</button>
+                            <button data-tab="memories" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Memories</button>
+                        </nav>
+                    </div>
+                    <div class="pt-6">
+                        <div id="modal-tab-traits" class="modal-tab-content">
+                            <div id="modal-nft-traits" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                                </div>
+                        </div>
+                        <div id="modal-tab-details" class="modal-tab-content hidden">
+                            <h5 class="font-semibold mb-2 text-text-light dark:text-text-dark">On-Chain Details</h5>
+                            <div id="modal-nft-onchain" class="text-sm space-y-1 mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                                </div>
+                            <a href="#" class="text-primary hover:underline text-sm font-medium">View NFT Memories</a>
+                        </div>
+                        <div id="modal-tab-offers" class="modal-tab-content hidden">
+                            <p class="text-sm text-text-secondary-light">No offers yet.</p>
+                            </div>
+                                                    <div id="modal-tab-memories" class="modal-tab-content hidden">
+                             <div id="modal-nft-journey" class="text-sm space-y-3 max-h-60 overflow-y-auto">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    AOS.init({ duration: 600, once: true, delay: 100 });
+
+    // --- Configuration & Elements ---
+    const collectionAddress = "{{ collection.address|escapejs }}";
+    const nftsGrid = document.getElementById('nfts-grid');
+    const nftModal = document.getElementById('nft-detail-modal');
+
+    // Mobile modal elements
+    const mobileStatsModal = document.getElementById('mobile-stats-modal');
+    const mobileStatsBackdrop = document.getElementById('mobile-stats-backdrop');
+    const openStatsMobileBtn = document.getElementById('open-stats-mobile');
+    const mobileFiltersModal = document.getElementById('mobile-filters-modal');
+    const mobileFiltersBackdrop = document.getElementById('mobile-filters-backdrop');
+    const openFiltersMobileBtn = document.getElementById('open-filters-mobile');
+
+    let currentViewMode = 'grid';
+    let previousScores = {};
+
+    // Set stats bar height for sticky positioning
+    function updateStatsBarHeight() {
+        const statsBar = document.getElementById('collection-stats-bar');
+        if (statsBar) {
+            const height = statsBar.offsetHeight;
+            document.documentElement.style.setProperty('--stats-bar-height', `${height}px`);
+            console.log('Stats bar height set to:', height + 'px');
+        }
+    }
+
+    // Run on load and resize
+    updateStatsBarHeight();
+    window.addEventListener('resize', updateStatsBarHeight);
+
+    // --- Main Page Tab Switching (Desktop) ---
+    const tabNav = document.getElementById('initial-tabs-nav');
+    const mainTabContents = document.querySelectorAll('.tab-content');
+    const collectionFilter = document.getElementById('collection-filter');
+    const tabMap = {
+        'nfts': 'nfts-tab-content',
+        'traits': 'traits-tab-content',
+        'activity': 'activity-tab-content',
+        'about': 'about-tab-content'
+    };
+
+    function switchTab(tabKey) {
+        if (!tabNav) return;
+        tabNav.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.toggle('active-tab', btn.id === `${tabKey}-tab`);
+        });
+        mainTabContents.forEach(content => {
+            content.classList.toggle('hidden', content.id !== tabMap[tabKey]);
+        });
+
+        if (collectionFilter) {
+            collectionFilter.classList.toggle('hidden', tabKey !== 'nfts');
+        }
+        window.location.hash = tabKey;
+    }
+
+    if (tabNav) {
+        tabNav.querySelectorAll('.tab-button').forEach(btn => {
+            const tabKey = btn.id.replace('-tab', '');
+            if (tabMap[tabKey]) {
+                btn.addEventListener('click', () => switchTab(tabKey));
+            }
+        });
+
+        const initialTabKey = window.location.hash.substring(1) || 'nfts';
+        switchTab(tabMap[initialTabKey] ? initialTabKey : 'nfts');
+    }
+
+    // --- Trait Filter Accordion ---
+    function initializeAccordion(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        container.querySelectorAll('.trait-accordion-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const panel = toggle.nextElementSibling;
+                const arrow = toggle.querySelector('svg');
+                panel.classList.toggle('hidden');
+                arrow.classList.toggle('rotate-180');
+            });
+        });
+    }
+    initializeAccordion('#trait-filter-popover');
+    initializeAccordion('#mobile-filters-modal');
+
+    // --- Grid View Switcher ---
+    const gridViewBtn = document.getElementById('grid-view-btn');
+    const artGridViewBtn = document.getElementById('art-grid-view-btn');
+
+    function applyGridView(viewMode) {
+        if (!nftsGrid) return;
+        currentViewMode = viewMode;
+
+        nftsGrid.querySelectorAll('.nft-card').forEach(card => {
+            card.classList.remove('sm:col-span-2', 'sm:row-span-2');
+        });
+
+        if (viewMode === 'grid') {
+            nftsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6';
+        } else if (viewMode === 'art') {
+            nftsGrid.className = 'grid grid-cols-2 sm:grid-cols-4 gap-4';
+            nftsGrid.querySelectorAll('.nft-card').forEach((card, index) => {
+                if (index % 7 === 0) {
+                    card.classList.add('sm:col-span-2', 'sm:row-span-2');
+                }
+            });
+        }
+    }
+    if (gridViewBtn) gridViewBtn.addEventListener('click', () => applyGridView('grid'));
+    if (artGridViewBtn) artGridViewBtn.addEventListener('click', () => applyGridView('art'));
+    applyGridView(currentViewMode);
+
+    // --- Mobile Modal Toggles ---
+    function toggleModal(modal, backdrop, isOpen) {
+        if (!modal || !backdrop) return;
+        if (isOpen) {
+            backdrop.style.pointerEvents = 'auto';
+            backdrop.classList.add('is-open');
+            modal.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        } else {
+            backdrop.style.pointerEvents = 'none';
+            backdrop.classList.remove('is-open');
+            modal.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    if (openStatsMobileBtn && mobileStatsModal && mobileStatsBackdrop) {
+        openStatsMobileBtn.addEventListener('click', () => toggleModal(mobileStatsModal, mobileStatsBackdrop, true));
+        mobileStatsBackdrop.addEventListener('click', () => toggleModal(mobileStatsModal, mobileStatsBackdrop, false));
+    }
+    
+    if (openFiltersMobileBtn && mobileFiltersModal && mobileFiltersBackdrop) {
+        openFiltersMobileBtn.addEventListener('click', () => toggleModal(mobileFiltersModal, mobileFiltersBackdrop, true));
+        mobileFiltersBackdrop.addEventListener('click', () => toggleModal(mobileFiltersModal, mobileFiltersBackdrop, false));
+    }
+
+    // --- NFT Detail Modal ---
+    async function openNftModal(nftCardElement) {
+        const nftId = nftCardElement.dataset.nftId;
+        if (!nftId || !nftModal) return;
+
+        nftModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        if (typeof window.populateAndShowNftModal !== 'function') {
+            console.error('populateAndShowNftModal function not found.');
+            alert('Error displaying NFT details.');
+            nftModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/get-nft-details/${nftId}/`);
+            if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+            const nftData = await response.json();
+            if (!nftData.success) throw new Error(nftData.error || 'Failed to load NFT details');
+
+            window.populateAndShowNftModal(nftData.details);
+        } catch (error) {
+            console.error("Error loading NFT:", error);
+            alert(`Could not load NFT details: ${error.message}`);
+            nftModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // --- Grid Click Listener ---
+    if (nftsGrid) {
+        nftsGrid.addEventListener('click', (e) => {
+            const makeOfferLink = e.target.closest('.make-offer-link');
+            if (makeOfferLink) {
+                e.preventDefault();
+                const card = makeOfferLink.closest('.nft-card');
+                if (card) openNftModal(card);
+                return;
+            }
+
+            const nftCard = e.target.closest('.nft-card');
+            if (nftCard && !e.target.closest('.make-offer-link')) {
+                openNftModal(nftCard);
+            }
+        });
+    }
+
+    // --- Trait Filter Popover Toggle ---
+    const traitFilterBtn = document.getElementById('trait-filter-btn');
+    const traitFilterPopover = document.getElementById('trait-filter-popover');
+    if (traitFilterBtn && traitFilterPopover) {
+        traitFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            traitFilterPopover.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!traitFilterPopover.contains(e.target) && !traitFilterBtn.contains(e.target)) {
+                traitFilterPopover.classList.add('hidden');
+            }
+        });
+    }
+
+    // --- Update Functions ---
+    function updateCollectionStats(stats) {
+        const vitality = !isNaN(stats.vitality) ? parseFloat(stats.vitality).toFixed(1) : '--';
+        const performance = !isNaN(stats.performance) ? parseFloat(stats.performance).toFixed(1) : '--';
+        const floorPrice = !isNaN(stats.floor_price) ? parseFloat(stats.floor_price).toFixed(2) : '--';
+        const floorChange = !isNaN(stats.floor_change_24h) ? parseFloat(stats.floor_change_24h).toFixed(1) : '--';
+        const volume24h = !isNaN(stats.volume_24h) ? parseFloat(stats.volume_24h).toFixed(2) : '--';
+        const volumeChange = !isNaN(stats.volume_change_24h) ? parseFloat(stats.volume_change_24h).toFixed(1) : '--';
+        const totalVolume = !isNaN(stats.total_volume) ? parseFloat(stats.total_volume).toFixed(2) : '--';
+        const marketCap = !isNaN(stats.market_cap) ? parseFloat(stats.market_cap).toFixed(2) : '--';
+        const bidsCount = !isNaN(stats.bids_count) ? parseInt(stats.bids_count) : '--';
+
+        const statsHTML = `
+            <div class="stat-item"><strong>${vitality}</strong><span>Vitality</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><strong>${performance}</strong><span>Performance</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="flex items-baseline justify-center">
+                    <strong>${floorPrice} SOL</strong>
+                    <strong class="text-sm ml-1 text-gray-400">${floorChange}%</strong>
+                </div>
+                <span>Floor</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="flex items-baseline justify-center">
+                    <strong>${volume24h} SOL</strong>
+                    <strong class="text-sm ml-1 text-gray-400">${volumeChange}%</strong>
+                </div>
+                <span>24h Vol</span>
+            </div>
+            <div class="stat-divider hidden md:block"></div>
+            <div class="stat-item hidden md:block"><strong>${totalVolume} SOL</strong><span>Total Vol</span></div>
+            <div class="stat-divider hidden lg:block"></div>
+            <div class="stat-item hidden lg:block"><strong>${marketCap} SOL</strong><span>Market Cap</span></div>
+            <div class="stat-divider hidden lg:block"></div>
+            <div class="stat-item hidden lg:block"><strong>${bidsCount}</strong><span>Bids</span></div>
+        `;
+
+        const statsContainer = document.getElementById('collection-stats-flex');
+        if (statsContainer) {
+            statsContainer.innerHTML = statsHTML;
+            // Recalculate height after content update
+            setTimeout(updateStatsBarHeight, 100);
+        }
+
+        const mobileStatsGrid = document.getElementById('mobile-stats-grid');
+        if (mobileStatsGrid) {
+            mobileStatsGrid.innerHTML = `
+                <div class="stat-item"><strong>${vitality}</strong><span>Vitality</span></div>
+                <div class="stat-item"><strong>${performance}</strong><span>Performance</span></div>
+                <div class="stat-item"><strong>${floorPrice} SOL</strong><span>Floor (${floorChange}%)</span></div>
+                <div class="stat-item"><strong>${volume24h} SOL</strong><span>24h Vol (${volumeChange}%)</span></div>
+                <div class="stat-item"><strong>${totalVolume} SOL</strong><span>Total Vol</span></div>
+                <div class="stat-item"><strong>${marketCap} SOL</strong><span>Market Cap</span></div>
+            `;
+        }
+    }
+
+    function getPerformanceIcon(currentScore, prevScore) {
+        if (isNaN(currentScore)) {
+            return '<svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"></path></svg>';
+        }
+        if (prevScore !== undefined && !isNaN(prevScore)) {
+            if (currentScore > prevScore) {
+                return '<svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>';
+            } else if (currentScore < prevScore) {
+                return '<svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+            }
+        }
+        return '<svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+    }
+
+    function updateNFTs(nfts) {
+        if (!nftsGrid) return;
+
+        nftsGrid.innerHTML = nfts.length > 0 ? nfts.map(nft => {
+            const currentScore = parseFloat(nft.performance_score);
+            const prevScore = previousScores[nft.mint_address];
+            const performanceIcon = getPerformanceIcon(currentScore, prevScore);
+            let priceHTML = '&nbsp;';
+            if (nft.buy_price) {
+                priceHTML = `${parseFloat(nft.buy_price).toFixed(2)} SOL`;
+            }
+
+            return `
+            <div class="nft-card group text-left bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 fade-in" data-nft-id="${nft.mint_address}">
+                <div class="relative overflow-hidden rounded-lg mb-3">
+                    <img src="${nft.image_url || '/static/img/nft-default.png'}" alt="${nft.name || 'NFT Image'}" class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
+                    <div class="performance-badge absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full" title="Performance Score">
+                        <span class="performance-icon">${performanceIcon}</span>
+                        <span class="performance-value">${!isNaN(currentScore) ? currentScore.toFixed(1) : 'N/A'}</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base truncate">${nft.name || nft.mint_address.slice(0,16)}</h3>
+                    <div class="relative mt-2 h-9">
+                        <p class="absolute inset-0 font-bold text-gray-700 dark:text-gray-300 transition-opacity duration-300 group-hover:opacity-0 flex items-center">
+                           ${priceHTML}
+                        </p>
+                        <a href="#make-offer" class="make-offer-link absolute inset-0 flex items-center justify-center bg-primary text-white text-sm font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            Make Offer
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+        }).join('') : '<p class="col-span-full text-center text-gray-500 py-10">No NFTs found.</p>';
+
+        nfts.forEach(nft => {
+            const score = parseFloat(nft.performance_score);
+            if (!isNaN(score)) {
+                previousScores[nft.mint_address] = score;
+            }
+        });
+
+        applyGridView(currentViewMode);
+    }
+
+    function updateTraits(traits) {
+        const list = document.getElementById('trait-performance-list');
+        if (!list) return;
+
+        list.innerHTML = traits.length > 0 ? traits.map(trait => {
+            const score = parseFloat(trait.performance_score || 50);
+            let colorClass = 'bg-yellow-500';
+            let textClass = 'text-yellow-500';
+            if (score > 75) { colorClass = 'bg-green-500'; textClass = 'text-green-500'; }
+            if (score < 40) { colorClass = 'bg-red-500'; textClass = 'text-red-500'; }
+
+            return `
+            <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-lg fade-in">
+                 <p class="font-medium">${trait.trait_name || 'Trait'} - <span class="text-gray-500">${trait.trait_value || 'None'}</span></p>
+                 <div class="flex items-center gap-3">
+                     <span class="font-semibold ${textClass}">${score.toFixed(1)}</span>
+                     <div class="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                         <div class="h-2 rounded-full ${colorClass}" style="width: ${score}%;"></div>
+                     </div>
+                 </div>
+             </div>`;
+        }).join('') : '<p class="col-span-full text-center text-gray-500 py-10">No trait performance data available.</p>';
+    }
+
+    function updateEvents(events) {
+        const list = document.getElementById('activity-list');
+        if (!list) return;
+
+        list.innerHTML = events.length > 0 ? events.map(event => {
+            const eventType = (event.event_type || 'Event').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const amount = event.amount ? `${parseFloat(event.amount).toFixed(2)} SOL` : '--';
+            const time = event.timestamp ? new Date(event.timestamp).toLocaleString() : '';
+
+            return `
+            <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b dark:border-gray-800 fade-in">
+                <div class="col-span-2 flex items-center space-x-4">
+                    <img src="${event.nft_image_url || '/static/img/nft-default.png'}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
+                    <span class="font-medium truncate">${event.nft_name || (event.nft_mint ? event.nft_mint.slice(0, 8) : 'Unknown')}</span>
+                </div>
+                <div class="text-gray-500 text-sm">${eventType}</div>
+                <div class="font-medium text-sm">${amount}</div>
+                <div class="text-gray-500 text-right text-xs">${time}</div>
+            </div>`;
+        }).join('') : '<p class="text-center text-gray-500 py-10">No recent activity found.</p>';
+    }
+
+    // --- SSE Connection ---
+    if (collectionAddress) {
+        const source = new EventSource(`/stream-site-updates/?page=collection_detail&address=${collectionAddress}`);
+
+        source.onopen = () => console.log("SSE Connected");
+        source.onerror = (error) => console.error("SSE Error:", error);
+
+        source.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.error) {
+                    console.error("SSE Error:", data.error);
+                    return;
+                }
+
+                if (data.collection_stats) updateCollectionStats(data.collection_stats);
+                if (data.nfts) updateNFTs(data.nfts);
+                if (data.traits) updateTraits(data.traits);
+                if (data.events) updateEvents(data.events);
+
+            } catch (e) {
+                console.error("Error parsing SSE data:", e);
+            }
+        };
+    }
+
+    // --- Initial Data Load ---
+    function initializePageData() {
+        try {
+            const initialDataElement = document.getElementById('initial-page-data');
+            if (initialDataElement) {
+                const initialData = JSON.parse(initialDataElement.textContent);
+                 if (initialData.collection_stats) {
+                    updateCollectionStats(initialData.collection_stats);
+                } else {
+                     updateCollectionStats({});
+                }
+            } else {
+                 updateCollectionStats({});
+            }
+        } catch (e) {
+            console.error("Error parsing initial page data:", e);
+            updateCollectionStats({});
+        }
+    }
+    initializePageData();
+
+}); // End DOMContentLoaded
+</script>
+
+<script id="initial-page-data" type="application/json">
+    {{ initial_data_json|safe }}
+</script>
+
+{% endblock %}

@@ -1,0 +1,145 @@
+/* Trait History Analysis Section Styles */
+
+#trait-history {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    max-width: 100%; /* Ensure it doesn't exceed the container width */
+    overflow-x: auto; /* Allow horizontal scrolling if content is too wide */
+}
+
+.history-controls {
+    background-color: var(--accent-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.trait-selector,
+.time-range,
+.chart-type {
+    margin-bottom: 15px;
+}
+
+.trait-selector select,
+.time-range input,
+.chart-type select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.time-range label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.analysis-options {
+    margin-bottom: 15px;
+}
+
+.analysis-options label {
+    margin-right: 15px;
+    font-weight: normal;
+    color: var(--text-color);
+}
+
+#updateHistoryChart {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#updateHistoryChart:hover {
+    background-color: var(--primary-color-dark);
+}
+
+#historyChartContainer {
+    background-color: var(--background-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--accent-color);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    border-bottom: 1px solid var(--primary-color-dark);
+    padding: 10px 15px;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--background-color);
+}
+
+.card-body {
+    padding: 15px;
+    background-color: var(--background-color);
+}
+
+#generatePrediction {
+    background-color: var(--primary-color);
+    border: none;
+    color: var(--background-color);
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#generatePrediction:hover {
+    background-color: var(--primary-color-dark);
+}
+
+#comparisonTrait {
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .history-controls>div {
+        margin-bottom: 15px;
+    }
+}
+
+/* Dark theme specific adjustments */
+body.dark-theme #trait-history {
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .history-controls,
+body.dark-theme .card {
+    border-color: var(--primary-color-dark);
+}
+
+body.dark-theme #updateHistoryChart,
+body.dark-theme #generatePrediction {
+    color: var(--background-color);
+}
+
+body.dark-theme .card-header {
+    border-bottom-color: var(--primary-color);
+}

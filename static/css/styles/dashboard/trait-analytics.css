@@ -1,0 +1,128 @@
+/* Trait Analysis Styles */
+
+#trait-analysis {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 60px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    max-width: 100%; /* Ensure it doesn't exceed the container width */
+    overflow-x: auto; /* Allow horizontal scrolling if content is too wide */
+    margin-top: 60px;
+}
+
+
+.analysis-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.analysis-controls select,
+.analysis-controls button {
+    flex: 1 1 200px;
+    /* Allow items to grow and shrink, with a base width of 200px */
+    min-width: 0;
+    /* Allow items to shrink below their content size */
+}
+
+.analysis-controls button {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.analysis-controls button:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.card {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--accent-color);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    border-bottom: 1px solid var(--primary-color-dark);
+    padding: 10px 15px;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--background-color);
+}
+
+.card-body {
+    padding: 15px;
+    background-color: var(--background-color);
+}
+
+#chartContainer {
+    height: 400px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+#analysisInsights,
+#recommendationsList,
+#relatedTraitsContent {
+    color: var(--text-color);
+}
+
+#applyAdvancedOptions {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#applyAdvancedOptions:hover {
+    background-color: var(--primary-color-dark);
+}
+
+/* Dark theme specific adjustments */
+body.dark-theme #trait-analysis {
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .analysis-controls,
+body.dark-theme .card {
+    border-color: var(--primary-color-dark);
+}
+
+body.dark-theme .analysis-controls select,
+body.dark-theme .analysis-controls button,
+body.dark-theme #applyAdvancedOptions {
+    border-color: var(--primary-color);
+}
+
+body.dark-theme .card-header {
+    border-bottom-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    #main-content {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    #main-content.sidebar-collapsed {
+        margin-left: 0;
+    }
+
+    .analysis-controls {
+        flex-direction: column;
+    }
+
+    .analysis-controls select,
+    .analysis-controls button {
+        width: 100%;
+    }
+}

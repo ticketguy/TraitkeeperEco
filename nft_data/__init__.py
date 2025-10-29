@@ -1,0 +1,1 @@
+default_app_config = 'nft_data.apps.NftDataConfig'

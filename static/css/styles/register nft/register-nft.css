@@ -1,0 +1,530 @@
+/* Base Section Styling */
+.section {
+    margin-bottom: 30px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Wallet Connection Styles */
+.wallet-connection-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.wallet-connection {
+    background-color: white;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+.wallet-connection h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.wallet-connection .subtitle {
+    color: #6c757d;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+#register-nft-wallet-dropdown-toggle {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+#register-nft-wallet-dropdown-toggle:hover {
+    background-color: #7b1fa2;
+}
+
+#register-nft-wallet-dropdown-toggle:disabled {
+    background-color: #d1d1d1;
+    cursor: not-allowed;
+}
+
+.button-text {
+    margin-right: 10px;
+}
+
+.button-icon {
+    font-size: 1.2rem;
+}
+
+/* Wallet Options Styling */
+.register-nft-wallet-options {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    background-color: var(--background-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+
+.register-nft-wallet-options-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.register-nft-wallet-chains{
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.register-nft-wallet-chains button {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    margin-right: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.register-nft-wallet-chains button.active {
+    background-color: var(--accent-color);
+    border-radius: 15px;
+}
+
+.register-nft-wallet-search {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.register-nft-wallet-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.register-nft-wallet-option:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.register-nft-wallet-option img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.register-nft-wallet-status {
+    margin-left: auto;
+    font-size: 0.8em;
+    color: var(--text-color);
+}
+
+.register-nft-wallet-options-footer{
+    padding: 10px 15px;
+    font-size: 0.8em;
+    text-align: center;
+    border-top: 1px solid var(--accent-color);
+}
+
+/* NFT Content */
+#nft-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#nft-content.visible {
+    display: block;
+    opacity: 1;
+}
+
+/* Existing styles remain unchanged */
+/* Existing styles remain unchanged */
+
+/* Adjustments for NFT sections */
+#unregistered-nfts-message,
+#registered-nfts-message {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.unregistered-nft-grid,
+.nft-grid {
+    display: none;
+    /* Initially hidden, shown after wallet connection */
+}
+
+/* NFT Grid and Card Styling */
+.nft-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.nft-card {
+    background-color:var(--background-color);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 0 1 calc(33.333% - 20px);
+    max-width: calc(33.333% - 20px);
+    position: relative;
+}
+
+.nft-card h3 {
+    color: #9c27b0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.nft-card-content {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.nft-card-content img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.nft-card-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collection-name {
+    font-size: 0.8em;
+}
+
+.verification-badge {
+    color: #00ff00;
+}
+
+/* Hover Effect for NFT Details */
+.nft-details {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.nft-card:hover .nft-details {
+    display: block;
+}
+
+/* Unregistered NFTs Section */
+.unregistered-nfts-section {
+    padding-top: 60px;
+    margin-bottom: 40px;
+}
+
+.unregistered-nfts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.unregistered-nfts-header h2 {
+    color: var(--primary-color);
+    font-size: 1.5em;
+}
+
+.unregistered-nft-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.unregistered-nft-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 0 1 calc(33.333% - 20px);
+    max-width: calc(33.333% - 20px);
+    position: relative;
+}
+
+.unregistered-nft-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.unregistered-nft-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.unregistered-nft-name {
+    font-size: 1em;
+    color: #333;
+}
+
+/* Register Button */
+.register-button {
+    padding: 8px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+.register-button:hover {
+    background-color: #7b1fa2;
+}
+
+/* Certificates Section */
+.certificates-section {
+    margin-top: 40px;
+}
+
+/* Filter Section Styling */
+.filter-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.filter-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.filter-toggle {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.filter-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.filter-content {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.filter-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.filter-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.filter-apply {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-apply:hover {
+    background-color: #7b1fa2;
+}
+
+.filter-clear {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.filter-clear:hover {
+    background-color: #e0e0e0;
+}
+
+/* Certificate List */
+.certificate-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.certificate-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.certificate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.certificate-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.certificate-details {
+    font-size: 0.9em;
+    color: #555;
+}
+
+.certificate-details p {
+    margin: 8px 0;
+}
+
+/* View Certificate Button */
+.view-certificate {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+.view-certificate:hover {
+    background-color: #7b1fa2;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination button:hover {
+    background-color: #e0e0e0;
+}
+
+.pagination button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+
+    .nft-card,
+    .unregistered-nft-card {
+        flex: 0 1 calc(50% - 20px);
+        max-width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .nft-card,
+    .unregistered-nft-card {
+        flex: 0 1 100%;
+    }
+}

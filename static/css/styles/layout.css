@@ -1,0 +1,58 @@
+/* Body and General Styles */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body.dark-theme {
+    --background-color: #121212;
+    --text-color: #e0e0e0;
+    --accent-color: #1e1e1e;
+}
+
+body.light-theme {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    --accent-color: #f0f0f0;
+}
+
+/* Container Styles */
+.container:not(.header-container) {
+    width: auto;
+    max-width: 1200px;
+    padding: 0 20px;
+    margin: 0 auto;
+}
+
+/* Header Styles */
+header {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    padding: 10px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+

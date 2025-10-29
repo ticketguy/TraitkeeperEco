@@ -1,0 +1,1513 @@
+{% load static %}
+{% load notification_tags %}
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="description" content="TraitKeeper - Secure and analyze your NFT's traits">
+    <meta name="keywords" content="NFT, traits, blockchain, crypto art">
+    <title>{% block title %}TraitKeeper - Secure Your NFT's Traits{% endblock %}</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                screens: {
+                    'xs': '360px', // Custom breakpoint for small screens
+                    'sm': '640px',
+                    'md': '768px',
+                    'lg': '1024px',
+                    'xl': '1280px',
+                    '2xl': '1536px',
+                },
+                extend: {
+                    colors: {
+                        primary: '#800080',
+                        'primary-dark': '#660066',
+                        background: { light: '#ffffff', dark: '#121212' },
+                        text: { light: '#333333', dark: '#e0e0e0' },
+                        accent: { light: '#f0f0f0', dark: '#1e1e1e' },
+                        border: { light: '#E5E7EB', dark: '#333333' },
+                        'text-secondary': { light: '#6B7280', dark: '#808080' },
+                        'brand-purple': '#800080',
+                        'brand-black': '#0A0A0A',
+                        'brand-white': '#FFFFFF',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-in-out',
+                        'pulse': 'pulse 2s infinite',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                        'particle-move': 'particleMove 10s linear infinite',
+                        'faint-pulse': 'faintPulse 2s infinite',
+                        'spin-colors': 'spinColors 3s linear infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        pulse: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.5' } },
+                        scaleIn: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+                        particleMove: {
+                            '0%': { transform: 'translate(0, 0)' },
+                            '100%': { transform: 'translate(50px, 50px)' },
+                        },
+                        faintPulse: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.02)' } },
+                        spinColors: {
+                            '0%': { background: 'linear-gradient(90deg, #800080, #660066)' },
+                            '50%': { background: 'linear-gradient(90deg, #660066, #800080)' },
+                            '100%': { background: 'linear-gradient(90deg, #800080, #660066)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Roboto:wght@100..900&family=Space+Mono:wght@400..700&family=Courier+Prime:wght@400..700&display=swap"
+        rel="stylesheet">
+
+    <!-- Favicon and Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'img/favicon/site.webmanifest' %}">
+
+    <!-- Open Graph tags for social media sharing -->
+    <meta property="og:title" content="TraitKeeper - Secure Your NFT's Traits">
+    <meta property="og:description" content="Analyze and secure your NFT traits with TraitKeeper">
+    <meta property="og:image" content="https://traitkeeper.io/trait-keeper-logo-purple-combination-mark.png">
+    <meta property="og:url" content="https://traitkeeper.io">
+
+    <!-- Preload critical assets -->
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Roboto:wght@100..900&family=Space+Mono:wght@400..700&family=Courier+Prime:wght@400..700&display=swap"
+        as="style">
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+
+    <!-- Schema.org structured data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "TraitKeeper",
+      "description": "Secure and analyze your NFT's traits",
+      "url": "https://traitkeeper.io",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All"
+    }
+    </script>
+
+    
+<style>
+    /* --- Base Resets & Variables --- */
+    :root {
+        /* Define your light mode colors */
+        --background-color-light: #ffffff;
+        --text-color-light: #333333;
+        --accent-color-light: #f0f0f0;
+        --border-color-light: #E5E7EB;
+        --text-secondary-light: #6B7280;
+        --primary-color: #800080; /* Your brand purple */
+        --primary-dark-color: #660066; /* Added from Tailwind config */
+
+         /* Define dark mode colors (applied via html.dark selector) */
+        --background-color-dark: #000000ff;
+        --text-color-dark: #e0e0e0;
+        --accent-color-dark: #1e1e1e;
+        --border-color-dark: #333333;
+        --text-secondary-dark: #808080;
+    }
+
+    body {
+        margin: 0; /* Reset default browser margins */
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        background-color: var(--background-color-light); /* Apply base background */
+        color: var(--text-color-light); /* Apply base text color */
+        /* font-family should be set by Tailwind 'font-sans' class */
+    }
+    html.dark body {
+        background-color: var(--background-color-dark);
+        color: var(--text-color-dark);
+    }
+
+    /* --- Mobile Menu & General Styles (Existing) --- */
+    .mobile-menu-toggle svg {
+        width: 20px; height: 20px;
+    }
+    @media (min-width: 360px) { /* Corresponds to 'xs' breakpoint */
+        .mobile-menu-toggle svg { width: 22px; height: 22px; }
+    }
+
+    /* --- Animations (Existing from Tailwind config & custom) --- */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+
+    @keyframes fade {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+    .animate-fade { animation: fade 1s ease-in-out; }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .animate-pulse-custom { animation: pulse 1s ease-in-out; }
+
+    .animate-fade-pulse { animation: fade 1s ease-in-out, pulse 1s ease-in-out; }
+
+    @keyframes fadeTab {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .tab-content, .tab-content-mobile { animation: fadeTab 0.3s ease-in-out; }
+
+    /* Keyframes from Tailwind Config */
+    @keyframes fadeIn { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+    @keyframes slideUp { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+    @keyframes pulseTailwind { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.5' } }
+    @keyframes scaleIn { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+    @keyframes particleMove { '0%': { transform: 'translate(0, 0)' }, '100%': { transform: 'translate(50px, 50px)' } }
+    @keyframes faintPulse { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.02)' } }
+    @keyframes spinColors { '0%': { background: 'linear-gradient(90deg, var(--primary-color), var(--primary-dark-color))' }, '50%': { background: 'linear-gradient(90deg, var(--primary-dark-color), var(--primary-color))' }, '100%': { background: 'linear-gradient(90deg, var(--primary-color), var(--primary-dark-color))' } }
+
+    /* Apply animations via classes (match Tailwind config) */
+    .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+    .animate-slide-up { animation: slideUp 0.5s ease-in-out; }
+    .animate-pulse { animation: pulseTailwind 2s infinite; } /* Tailwind's default */
+    .animate-scale-in { animation: scaleIn 0.3s ease-out; }
+    .animate-particle-move { animation: particleMove 10s linear infinite; }
+    .animate-faint-pulse { animation: faintPulse 2s infinite; }
+    .animate-spin-colors { animation: spinColors 3s linear infinite; }
+
+
+    /* --- Dark Mode Utility Classes (Using Variables) --- */
+    /* Applied via html.dark selector */
+    html.dark .bg-background-light { background-color: var(--background-color-dark); }
+    html.dark .text-text-light { color: var(--text-color-dark); }
+    html.dark .bg-accent-light { background-color: var(--accent-color-dark); }
+    html.dark .border-accent-light { border-color: var(--border-color-dark); }
+    html.dark .text-gray-600 { color: #a0a0a0; }
+    html.dark .text-text-secondary-light { color: var(--text-secondary-dark); }
+    /* Add any other specific dark mode overrides needed */
+    html.dark .border-primary\/30 { border-color: rgba(128, 0, 128, 0.3); } /* Example */
+    html.dark .bg-white { background-color: var(--accent-color-dark); } /* Example for modal inputs */
+    html.dark .dark\:bg-gray-700 { background-color: #374151; } /* Direct Tailwind dark class */
+    html.dark .dark\:border-accent-dark { border-color: var(--accent-color-dark); }
+
+
+    /* --- Specific Component Styles (Existing) --- */
+    #mobile-menu-buttons { background: none !important; }
+    .badge { font-size: 0.65rem; padding: 0.1rem 0.5rem; border-radius: 9999px; text-transform: uppercase; font-weight: 600; }
+    /* Particle Animation */
+    .modal-background { position: relative; overflow: hidden; }
+    .modal-background::before { content: ''; position: absolute; inset: 0; background: transparent; z-index: 0; }
+    .particle { position: absolute; background: rgba(128, 0, 128, 0.15); border-radius: 50%; pointer-events: none; z-index: 0; box-shadow: 0 0 8px rgba(128, 0, 128, 0.3); animation: particleMove linear infinite; }
+    .particle:nth-child(1) { width: 5px; height: 5px; top: 10%; left: 20%; animation-duration: 15s; animation-delay: 0s; }
+    .particle:nth-child(2) { width: 3px; height: 3px; top: 30%; left: 50%; animation-duration: 20s; animation-delay: 2s; }
+    .particle:nth-child(3) { width: 4px; height: 4px; top: 60%; left: 70%; animation-duration: 18s; animation-delay: 4s; }
+    .particle:nth-child(4) { width: 6px; height: 6px; top: 80%; left: 30%; animation-duration: 22s; animation-delay: 6s; }
+    .modal-content { position: relative; z-index: 1; }
+    .faint-glow-hover:hover { box-shadow: 0 0 5px rgba(128, 0, 128, 0.3); animation: faintPulse 2s infinite; }
+
+
+    /* --- General Header & Container Styles (Existing + Cleanup) --- */
+    header { overflow: visible; box-sizing: border-box; }
+    .header-container { overflow: visible; position: relative; box-sizing: border-box; }
+    /* REMOVED ::after rules that created the gradient line */
+
+    .site-container { width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; }
+    @media (min-width: 768px) { .site-container { max-width: 1280px; } } /* Adjusted to match max-w-7xl */
+    /* Responsive Padding */
+    @media (max-width: 767px) { .site-container { padding-left: clamp(8px, 2vw, 12px); padding-right: clamp(8px, 2vw, 12px); } }
+    @media (min-width: 768px) { .site-container { padding-left: clamp(24px, 4vw, 32px); padding-right: clamp(24px, 4vw, 32px); } }
+    /* Ensure header container itself has no side padding */
+    .header-container.site-container { padding-left: 0; padding-right: 0; }
+    /* Apply padding inside the desktop header div */
+    .desktop-header { padding-left: clamp(16px, 4vw, 32px); padding-right: clamp(16px, 4vw, 32px); }
+
+
+    /* User Dropdown (Existing) */
+    .user-profile { position: relative; }
+    .user-dropdown { width: 192px; max-width: calc(100vw - 40px); position: fixed; z-index: 1000; }
+    #user-profile-menu { top: 4rem; right: 50px; left: auto; transform: none; }
+    #user-profile-menu-mobile { top: 4rem; right: 50px; left: auto; transform: none; }
+    .user-dropdown[style*="display: block"] { display: block !important; }
+    .profile-link { pointer-events: auto !important; cursor: pointer; user-select: none; }
+    .profile-link img, .profile-link .profile_username { pointer-events: auto !important; cursor: pointer; }
+    #user-profile-menu, #user-profile-menu-mobile { z-index: 1000; display: none; }
+    #user-profile-menu:not(.hidden), #user-profile-menu-mobile:not(.hidden) { display: block !important; }
+
+
+
+    /* --- Header Text Visibility on Transparent Backgrounds --- */
+    .text-shadow-header {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 
+                     0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    html.dark .text-shadow-header {
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 
+                     0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Enhanced visibility for buttons and icons */
+    #notification-toggle,
+    .profile_username {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+    html.dark #notification-toggle,
+    html.dark .profile_username {
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+        filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+    }
+    /* --- NEW HEADER STYLES (Transparent + Sticky) --- */
+    #main-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 40;
+        background-color: transparent; /* Start transparent */
+        transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+        height: 80px; /* ** ADJUST THIS TO YOUR ACTUAL HEADER HEIGHT ** */
+        border-bottom: 1px solid transparent; /* Start with transparent border */
+    }
+
+    /* Style when page is scrolled */
+    #main-header.scrolled {
+        background-color: rgba(255, 255, 255, 0.85); /* White glass */
+        -webkit-backdrop-filter: blur(12px); /* Safari */
+        backdrop-filter: blur(12px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+        border-bottom-color: var(--border-color-light); /* Add border when scrolled */
+    }
+    html.dark #main-header.scrolled {
+         background-color: rgba(18, 18, 18, 0.85); /* Dark glass */
+         -webkit-backdrop-filter: blur(12px);
+         backdrop-filter: blur(12px);
+         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+         border-bottom-color: var(--border-color-dark);
+    }
+
+    /* Prevent content overlap with fixed header AND fixed footer */
+    main#main-content {
+         padding-top: 80px !important; /* !! MUST MATCH #main-header height !! */
+         padding-bottom: 60px !important; /* Adjust based on your footer height */
+    }
+     @media (max-width: 639px) { /* Adjust padding-bottom for mobile footer */
+         main#main-content { padding-bottom: 50px !important; } /* Adjust if mobile footer height differs */
+     }
+
+    /* --- CORRECTED HEADER CONTENT TEXT COLORS --- */
+/* Default Text Color (Light Mode - applies always unless overridden by dark mode) */
+#main-header .desktop-header .desktop-nav a,
+#main-header .desktop-header #theme-toggle,
+#main-header .desktop-header #notification-toggle,
+#main-header .desktop-header .profile_username {
+    color: var(--text-color-light); /* Use theme variable */
+}
+#main-header .desktop-header #wallet-dropdown-toggle {
+    /* Set default light mode style */
+    color: white;
+    background-color: var(--primary-color);
+    border-color: transparent;
+}
+#main-header .desktop-header .desktop-search input {
+    background-color: var(--background-color-light);
+    border-color: var(--border-color-light);
+    color: var(--text-color-light);
+}
+#main-header .desktop-header .desktop-search input::placeholder { color: #9ca3af; }
+
+
+/* Dark Mode Text Colors (applies always when dark mode is active) */
+html.dark #main-header .desktop-header .desktop-nav a,
+html.dark #main-header .desktop-header #theme-toggle,
+html.dark #main-header .desktop-header #notification-toggle,
+html.dark #main-header .desktop-header .profile_username {
+    color: var(--text-color-dark); /* Use theme variable */
+}
+html.dark #main-header .desktop-header #wallet-dropdown-toggle {
+     /* Ensure dark mode style is correct */
+     color: white;
+     background-color: var(--primary-color);
+     border-color: transparent;
+}
+html.dark #main-header .desktop-header .desktop-search input {
+     background-color: var(--accent-color-dark);
+     border-color: var(--border-color-dark);
+     color: var(--text-color-dark);
+ }
+html.dark #main-header .desktop-header .desktop-search input::placeholder { color: var(--text-secondary-dark); }
+
+    /* --- END NEW HEADER STYLES --- */
+
+
+    /* --- Footer Positioning & Mobile Adjustments (Existing + Cleanup) --- */
+    footer.bottom-bar {
+        position: fixed; bottom: 0; left: 0; width: 100%; z-index: 40; /* width: 100% */
+        /* background/border handled by variables */
+        background-color: var(--background-color-light);
+        border-top: 1px solid var(--border-color-light);
+    }
+    html.dark footer.bottom-bar {
+        background-color: var(--background-color-dark);
+        border-top-color: var(--border-color-dark);
+    }
+    /* main#main-content padding-bottom is now set in header styles */
+    @media (max-width: 639px) { /* sm breakpoint */
+        .bottom-bar { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .scroll-stats {
+            position: relative; width: 100%; height: 2rem; display: flex;
+            flex-direction: column; justify-content: space-between; align-items: stretch;
+        }
+        .solana-price { position: absolute; bottom: 0; right: 0; display: flex; align-items: center; gap: 0.25rem; }
+        .solana-tps { position: absolute; bottom: 0; left: 0; display: flex; align-items: center; gap: 0.25rem; }
+    }
+
+</style>
+    {% block extra_style %}
+    
+    {% endblock %}
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans min-h-screen flex flex-col transition-colors duration-300 overflow-x-hidden">
+    <!-- Loading Indicator -->
+    <div class="loading-backdrop fixed inset-0 bg-black bg-opacity-50 z-50 hidden"></div>
+    <div id="loading-indicator"
+        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col items-center hidden">
+        <div class="spinner w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin"></div>
+        <span class="mt-2 text-white">Connecting...</span>
+    </div>
+
+    <!-- SVG Symbols (for icons) -->
+    <svg class="hidden">
+        <symbol id="table-view-icon" viewBox="0 0 24 24">
+            <path d="M3 3h18v18H3V3zm16 2H5v3h14V5zM5 10h3v3H5v-3zm0 5h3v3H5v-3zm5-5h9v3h-9v-3zm0 5h9v3h-9v-3z" />
+        </symbol>
+        <symbol id="card-view-icon" viewBox="0 0 24 24">
+            <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
+        </symbol>
+        <symbol id="theme-toggle-icon" viewBox="0 0 24 24">
+            <path
+                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </symbol>
+    </svg>
+
+    <!-- Header -->
+<header id="main-header" class="fixed top-0 left-0 w-[100vw] max-w-[100vw] z-40">
+<div class="header-container site-container max-w-7xl mx-auto">
+                <!-- Desktop Header -->
+            <div class="desktop-header flex items-center gap-6 py-4 px-4 hidden md:flex">
+                <!-- Logo - Left Edge -->
+                <a href="{% url 'index' %}" class="flex-shrink-0">
+                    <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper Logo" class="w-16 h-16 animate-float drop-shadow-lg">
+                </a>
+                
+                <!-- Nav Links - Close to Logo -->
+                <nav class="desktop-nav flex space-x-6 flex-shrink-0">
+                    <a href="#"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">EchoSafe</a>
+                    <a href="#"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Voyager</a>
+                    <a href="#"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Learn</a>
+                </nav>
+                
+                <!-- Search Bar - Takes Most Space -->
+                <div class="desktop-search flex-1">
+                    <input type="search" placeholder="Search traits, collections, creators..."
+                        class="w-full px-4 py-2 rounded-lg border border-accent-light dark:border-accent-dark bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-800 shadow-md transition-all animate-slide-up">
+                </div>
+                
+                <!-- User/Login - Right Edge -->
+                <div class="wallet-container flex items-center space-x-3 flex-shrink-0">
+                    {% if user.is_authenticated %}
+                    <div class="relative">
+                        <button id="notification-toggle"
+                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover">
+                            <i class="fas fa-bell text-xl"></i>
+                            {% if unread_notifications_count > 0 %}
+                            <span
+                                class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">{{
+                                unread_notifications_count }}</span>
+                            {% endif %}
+                        </button>
+                        <div id="notification-dropdown"
+                            class="hidden absolute right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 z-50 animate-scale-in">
+                            <div
+                                class="flex justify-between items-center border-b border-accent-light dark:border-accent-dark pb-2 mb-2">
+                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Notifications</h3>
+                                <button id="notification-settings-toggle"
+                                    class="text-primary text-sm hover:underline faint-glow-hover">Settings</button>
+                            </div>
+                            <div id="notification-list" class="max-h-64 overflow-y-auto">
+                                {% for notification in notifications %}
+                                <div class="notification-item p-2 border-b border-accent-light dark:border-accent-dark {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
+                                    data-notification-id="{{ notification.id }}">
+                                    <p class="text-sm text-text-light dark:text-text-dark">{{ notification.message }}
+                                    </p>
+                                    <p
+                                        class="text-xs text-text-secondary-light dark:text-text-secondary-dark time-since">
+                                        {{ notification.created_at|timesince }} ago</p>
+                                </div>
+                                {% empty %}
+                                <p
+                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in">
+                                    No notifications</p>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-2">
+                                <button id="mark-all-read"
+                                    class="w-full text-center text-primary hover:underline text-sm faint-glow-hover">Mark
+                                    All as Read</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Updated User Profile Display -->
+                    <div class="user-profile relative flex items-center space-x-2 animate-slide-up">
+                        <div class="profile-link flex items-center space-x-2 cursor-pointer">
+                            <div id="wallet-profile-image"
+                                class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}{% static 'img/smileyy.jpg' %}{% endif %}"
+                                    alt="user_pfp" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="profile_username font-semibold text-text-light dark:text-text-dark">
+                                    {% if user.username %}
+                                    {{ user.username|truncatechars:10 }}
+                                    {% else %}
+                                    Anonymous
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+<div id="user-profile-menu-mobile"
+    class="user-dropdown hidden absolute top-12 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
+                            <ul class="space-y-2">
+                                <li><a href="{% url 'profiles:profile' user.username %}"
+                                        class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
+                                        <i class="fas fa-user mr-2"></i> View Profile</a></li>
+                                <li><a href="{% url 'profiles:settings_profile' %}"
+                                        class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
+                                        <i class="fas fa-cog mr-2"></i> Account Settings</a></li>
+                                <li id="disconnect-wallet"
+                                    class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded cursor-pointer animate-fade-in">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Disconnect</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                    <button id="wallet-dropdown-toggle"
+                        class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition faint-glow-hover">
+                        Login/Signup
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mobile Header -->
+            <div
+                class="mobile-header flex items-center justify-between py-2 xs:py-3 px-2 xs:px-3 md:hidden bg-background-light dark:bg-background-dark">
+                <div class="mobile-header-left">
+                    <a href="{% url 'index' %}">
+                        <img src="{% static 'img/Trait-Keeper-Logo-purple-1-unaimated-effect.png' %}" alt="TraitKeeper Logo"
+                            class="h-8 xs:h-9 w-auto animate-float">
+                    </a>
+                </div>
+                <div class="mobile-search flex-1 max-w-[120px] xs:max-w-[140px] mx-1 xs:mx-2">
+                    <input type="search" placeholder="Search traits..."
+                        class="w-full px-2 xs:px-3 py-1 xs:py-1.5 text-xs xs:text-sm rounded-lg border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary animate-slide-up">
+                </div>
+                <div class="mobile-header-right flex items-center space-x-1 xs:space-x-2">
+                    {% if user.is_authenticated %}
+                    <div class="relative">
+                        <button id="notification-toggle-mobile"
+                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover">
+                            <i class="fas fa-bell text-base xs:text-lg"></i>
+                            {% if unread_notifications_count > 0 %}
+                            <span
+                                class="absolute top-0 right-0 bg-red-500 text-white text-[10px] xs:text-xs rounded-full w-4 xs:w-5 h-4 xs:h-5 flex items-center justify-center animate-pulse">{{
+                                unread_notifications_count }}</span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    <!-- Updated User Profile Display for Mobile -->
+                    <div class="user-profile relative flex items-center space-x-2 animate-slide-up">
+                        <div class="profile-link flex items-center space-x-2 cursor-pointer">
+                            <div id="wallet-profile-image-mobile"
+                                class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}{% static 'img/smileyy.jpg' %}{% endif %}"
+                                    alt="user_pfp" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+<div id="user-profile-menu-mobile"
+    class="user-dropdown hidden absolute top-12 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
+                            <ul class="space-y-2">
+                                <li><a href="{% url 'profiles:profile' user.username %}"
+                                        class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
+                                        <i class="fas fa-user mr-2"></i> View Profile</a></li>
+                                <li><a href="{% url 'profiles:settings_profile' %}"
+                                        class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
+                                        <i class="fas fa-cog mr-2"></i> Account Settings</a></li>
+                                <li id="disconnect-wallet-mobile"
+                                    class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded cursor-pointer animate-fade-in">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Disconnect</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                    <button id="wallet-dropdown-toggle-mobile"
+                        class="bg-primary text-white px-2 xs:px-3 py-1 xs:py-1.5 text-xs xs:text-sm rounded-lg hover:bg-primary-dark transition faint-glow-hover">
+                        Login/Signup
+                    </button>
+                    {% endif %}
+                    <button class="mobile-menu-toggle text-text-light dark:text-text-dark faint-glow-hover"
+                        aria-label="Toggle mobile menu">
+                        <svg viewBox="0 0 24 24" width="20" xs:width="22" height="20" xs:height="22"
+                            fill="currentColor">
+                            <path d="M3 6h18v2H3zm0 4h18v2H3zm0 4h18v2H3z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Mobile Menu Buttons (Below Header) -->
+        <div id="mobile-menu-buttons"
+            class="md:hidden hidden flex-row items-center justify-center space-x-2 xs:space-x-3 pt-16 pb-2 xs:pb-3 bg-transparent bg-opacity-0 w-full z-40">
+            <a href="#"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
+                EchoSafe
+            </a>
+            <a href="#"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
+                Voyager
+            </a>
+            <a href="#}"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
+                Learn
+            </a>
+        </div>
+
+        <!-- Mobile Notification Dropdown -->
+        {% if user.is_authenticated %}
+        <div id="notification-dropdown-mobile"
+            class="hidden fixed top-16 left-0 w-full bg-background-light dark:bg-accent-dark shadow-lg p-4 z-40 md:hidden animate-scale-in">
+            <div
+                class="flex justify-between items-center border-b border-accent-light dark:border-accent-dark pb-2 mb-2">
+                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark animate-fade-in">Notifications</h3>
+                <button id="notification-settings-toggle-mobile"
+                    class="text-primary text-sm hover:underline faint-glow-hover">Settings</button>
+            </div>
+            <div id="notification-list-mobile" class="max-h-64 overflow-y-auto">
+                {% for notification in notifications %}
+                <div class="notification-item p-2 border-b border-accent-light dark:border-accent-dark {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
+                    data-notification-id="{{ notification.id }}">
+                    <p class="text-sm text-text-light dark:text-text-dark">{{ notification.message }}</p>
+                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark time-since">{{
+                        notification.created_at|timesince }} ago</p>
+                </div>
+                {% empty %}
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in">No
+                    notifications</p>
+                {% endfor %}
+            </div>
+            <div class="mt-2">
+                <button id="mark-all-read-mobile"
+                    class="w-full text-center text-primary hover:underline text-sm faint-glow-hover">Mark All as
+                    Read</button>
+            </div>
+        </div>
+        {% endif %}
+        </div>
+    </header>
+    <div id="mobile-menu-backdrop"
+        class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden transition-opacity duration-500 backdrop-blur-sm animate-fade-in">
+    </div>
+
+    <!-- Notification Settings Modal -->
+    {% if user.is_authenticated %}
+    <div id="notification-settings-modal"
+        class="fixed inset-0 bg-black bg-opacity-75 z-[1002] hidden flex items-center justify-center transition-opacity duration-300 animate-fade-in">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-md w-11/12 max-h-[90vh] overflow-y-auto relative animate-scale-in">
+            <button id="close-notification-settings"
+                class="absolute top-2 right-2 text-text-light dark:text-text-dark text-xl faint-glow-hover"
+                aria-label="Close modal">×</button>
+            <h3 class="text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-4 animate-slide-up">
+                Notification Settings</h3>
+            <form id="notification-settings-form" method="POST"
+                action="{% url 'notifications:save_notification_preferences' %}">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    {% for notification_type, label in notification_prefs.NOTIFICATION_TYPES %}
+                    <div class="border-b border-accent-light dark:border-accent-dark pb-2 animate-fade-in">
+                        <div class="flex items-center justify-between">
+                            <label class="text-text-light dark:text-text-dark animate-slide-up">{{ label }}</label>
+                            <input type="checkbox" name="{{ notification_type }}" 
+                            {% if notification_prefs|get_item:notification_type|lookup:'enabled' %}
+                                 checked {% endif %}
+                                class="toggle-checkbox">
+                        </div>
+                        <div
+                            class="ml-4 mt-2 notification-settings {% if not notification_prefs|get_item:notification_type|lookup:'enabled' %}hidden{% endif %} animate-scale-in">
+                            <!-- Email and Push Preferences -->
+                            <div class="flex items-center space-x-4">
+                                <label
+                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in">
+                                    <input type="checkbox" name="{{ notification_type }}_email" {% if notification_prefs|get_item:notification_type|lookup:'notify_via_email' %}
+                                        checked {% endif %}> Email
+                                </label>
+                                <label
+                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in">
+                                    <input type="checkbox" name="{{ notification_type }}_push" {% if notification_prefs|get_item:notification_type|lookup:'notify_via_push' %}
+                                        checked {% endif %}> Push
+                                </label>
+                            </div>
+                            <!-- Transaction Minimum Value -->
+                            {% if notification_type == "transaction" %}
+                            <div class="mt-2 animate-slide-up">
+                                <label class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Minimum
+                                    Transaction Value (SOL):</label>
+                                <input type="number" name="{{ notification_type }}_min_value"
+                                    value="{% with val=notification_prefs|get_item:notification_type|lookup:'transaction_min_value' %}{{ val|default:'0' }}{% endwith %}"
+                                    step="0.01"
+                                    class="w-full px-2 py-1 rounded border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            {% endif %}
+                            <!-- Specific Filters -->
+                            <div class="mt-2 animate-slide-up">
+                                <label
+                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Collections
+                                    (comma-separated IDs):</label>
+                                <input type="text" name="{{ notification_type }}_collections"
+                                    value="{% with coll=notification_prefs|get_item:notification_type|lookup:'specific_collections' %}{{ coll|join:',' }}{% endwith %}"
+                                    class="w-full px-2 py-1 rounded border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div class="mt-2 animate-slide-up">
+                                <label class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Trait
+                                    Types (comma-separated IDs):</label>
+                                <input type="text" name="{{ notification_type }}_traits"
+                                    value="{% with traits=notification_prefs|get_item:notification_type|lookup:'specific_traits' %}{{ traits|join:',' }}{% endwith %}"
+                                    class="w-full px-2 py-1 rounded border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div class="mt-2 animate-slide-up">
+                                <label class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Wallets
+                                    (comma-separated addresses):</label>
+                                <input type="text" name="{{ notification_type }}_wallets"
+                                    value="{% with wallets=notification_prefs|get_item:notification_type|lookup:'specific_wallets' %}{{ wallets|join:',' }}{% endwith %}"
+                                    class="w-full px-2 py-1 rounded border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p
+                        class="text-center text-text-secondary-light dark:text-text-secondary-dark text-sm animate-fade-in">
+                        No notification types available.</p>
+                    {% endfor %}
+                </div>
+                <div class="mt-4">
+                    <button type="submit"
+                        class="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition faint-glow-hover">Save
+                        Preferences</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 pt-16 bg-background-light dark:bg-background-dark animate-fade-in">
+
+            {% block content %}
+            {% endblock %}
+ 
+    </main>
+    <!-- Footer -->
+    <footer
+        class="bottom-bar mt-auto w-full bg-background-light dark:bg-background-dark border-t border-accent-light dark:border-accent-dark py-1 flex flex-col sm:flex-row justify-between items-center text-xs sm:text-sm animate-slide-up">
+        <div class="site-containermax-w-7xl mx-auto w-full px-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-1 sm:space-y-0">
+                <div class="legal-info flex items-center space-x-2 mb-1 sm:mb-0 hidden sm:flex">
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path d="M12 2L1 21h22L12 2zm0 3.8L19.5 19h-15L12 5.8zM11 10h2v5h-2v-5zm0 6h2v2h-2v-2z" />
+                    </svg>
+                    <span class="text-text-light dark:text-text-dark animate-fade-in">Legal</span>
+                </div>
+                <div class="scroll-stats flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                    <span class="solana-price flex items-center space-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" width="14" height="14"
+                            size="14">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M6.67546 16.6449C6.73454 16.5811 6.80593 16.5299 6.88535 16.4942C6.96477 16.4586 7.05058 16.4394 7.13766 16.4376H21.66C21.7215 16.4384 21.7813 16.457 21.8324 16.491C21.8836 16.5249 21.9238 16.5729 21.9482 16.6291C21.9727 16.6853 21.9803 16.7474 21.9701 16.8078C21.96 16.8682 21.9326 16.9244 21.8912 16.9696L18.8129 20.3762C18.7538 20.4399 18.6824 20.4912 18.603 20.5268C18.5236 20.5624 18.4378 20.5817 18.3507 20.5834H3.81905C3.75761 20.5826 3.69772 20.564 3.64659 20.5301C3.59547 20.4961 3.55528 20.4481 3.53087 20.3919C3.50646 20.3357 3.49886 20.2737 3.50898 20.2133C3.51911 20.1528 3.54653 20.0966 3.58795 20.0514L6.67546 16.6449ZM21.9051 13.8211C21.9465 13.8663 21.9739 13.9225 21.9839 13.9829C21.9942 14.0434 21.9865 14.1054 21.9621 14.1616C21.9377 14.2178 21.8974 14.2658 21.8463 14.2998C21.7952 14.3337 21.7354 14.3523 21.6739 14.3531L7.1469 14.3647C7.05984 14.3629 6.97401 14.3436 6.89459 14.308C6.81517 14.2724 6.74378 14.2211 6.68471 14.1574L3.58333 10.7624C3.54191 10.7171 3.51449 10.6609 3.50436 10.6005C3.49423 10.5401 3.50183 10.4781 3.52625 10.4219C3.55066 10.3656 3.59085 10.3177 3.64197 10.2837C3.6931 10.2497 3.75298 10.2312 3.81443 10.2303L18.3414 10.2188C18.4285 10.2206 18.5143 10.2398 18.5938 10.2755C18.6732 10.3111 18.7446 10.3623 18.8036 10.4261L21.9051 13.8211ZM6.67546 4.2073C6.73454 4.14353 6.80593 4.0923 6.88535 4.05668C6.96477 4.02106 7.05058 4.00178 7.13766 4.00001L21.6693 4.01152C21.7307 4.01239 21.7907 4.03092 21.8418 4.0649C21.8929 4.09889 21.9331 4.14686 21.9574 4.20307C21.9819 4.25927 21.9895 4.32131 21.9794 4.38172C21.9692 4.44213 21.9418 4.49833 21.9004 4.54358L18.8129 7.93857C18.7538 8.00235 18.6824 8.05359 18.603 8.08921C18.5236 8.12483 18.4378 8.14409 18.3507 8.14587H3.81905C3.75761 8.145 3.69772 8.12647 3.64659 8.09249C3.59547 8.05851 3.55528 8.01052 3.53087 7.95433C3.50646 7.89812 3.49886 7.83609 3.50898 7.77568C3.51911 7.71527 3.54653 7.65906 3.58795 7.61382L6.67546 4.2073Z"
+                                fill="url(#me-:r8:)"></path>
+                            <defs>
+                                <linearGradient id="me-:r8:" x1="4.06171" y1="20.9451" x2="21.3683" y2="3.58022"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#9945FF"></stop>
+                                    <stop offset="0.14" stop-color="#8A53F4"></stop>
+                                    <stop offset="0.42" stop-color="#6377D6"></stop>
+                                    <stop offset="0.79" stop-color="#24B0A7"></stop>
+                                    <stop offset="0.99" stop-color="#00D18C"></stop>
+                                    <stop offset="1" stop-color="#00D18C"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="price-value text-text-light dark:text-text-dark"
+                            style="display: inline;">Loading...</span>
+                    </span>
+                    <span class="solana-tps text-text-light dark:text-text-dark"
+                        style="display: inline;">Loading...</span>
+                    <span
+                        class="support text-text-light dark:text-text-dark hover:text-primary transition cursor-pointer hidden sm:inline faint-glow-hover">Support</span>
+                    <button id="theme-toggle" aria-label="Toggle dark mode"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition cursor-pointer faint-glow-hover">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path
+                                d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+    </footer>
+
+    <!-- Wallet Backdrop -->
+    <div id="wallet-backdrop"
+        class="wallet-backdrop fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-500 backdrop-blur-sm animate-fade-in">
+    </div>
+
+    <!-- Wallet Modal (Single, Responsive Modal with Adjusted Size) -->
+    <div id="wallet-modal"
+        class="wallet-options fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[320px] h-[380px] sm:w-[360px] sm:h-[420px] bg-gradient-to-br from-background-light/95 to-background-light/70 dark:from-background-dark/80 dark:to-background-dark/60 backdrop-blur-lg border border-primary/30 rounded-2xl shadow-[0_0_15px_rgba(128,0,128,0.3)] z-[1001] transition-all duration-700 opacity-0 scale-90 hidden">
+        <!-- Particle Animation with Neon Glow -->
+        <div class="particle animate-particle-move"></div>
+        <div class="particle animate-particle-move"></div>
+        <div class="particle animate-particle-move"></div>
+        <div class="particle animate-particle-move"></div>
+        <div class="modal-content relative flex flex-col h-full">
+            <div class="p-3 sm:p-4 flex-grow">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-base sm:text-lg font-space-mono font-bold text-primary animate-slide-up">TraitVerse
+                        Portal</h3>
+                    <button
+                        class="close-wallet-options text-primary hover:text-primary-dark transition-all duration-300 text-lg sm:text-xl hover:scale-110 faint-glow-hover"
+                        aria-label="Close wallet options">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- Tabs -->
+                <div class="flex justify-center space-x-3 mb-3">
+                    <button id="wallet-tab"
+                        class="tab-button px-2 py-1 text-xs sm:text-sm font-space-mono font-semibold text-text-light dark:text-text-dark hover:text-primary transition-all duration-300 relative active-tab animate-scale-in">
+                        <span class="relative z-10">Wallet</span>
+                        <div
+                            class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary to-primary-dark rounded-full">
+                        </div>
+                    </button>
+                    <button id="login-tab"
+                        class="tab-button px-2 py-1 text-xs sm:text-sm font-space-mono font-semibold text-text-light dark:text-text-dark hover:text-primary transition-all duration-300 relative animate-scale-in">
+                        <span class="relative z-10">Username</span>
+                        <div
+                            class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary to-primary-dark rounded-full hidden">
+                        </div>
+                    </button>
+                </div>
+                <!-- Tab Content Container -->
+                <div
+                    class="tab-content-container relative bg-background-light dark:bg-background-dark rounded-lg p-3 sm:p-4 flex-grow animate-scale-in">
+                    <!-- Wallet Error Display -->
+                    <p id="wallet-error-display" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in text-center"></p>
+
+                    <!-- Wallet Tab Content -->
+                    <div id="wallet-tab-content" class="tab-content transition-opacity duration-500 opacity-100">
+                        <div class="wallet-chains flex justify-center mb-3">
+                            <button
+                                class="bg-black text-text-light dark:text-text-dark px-3 py-1 rounded-lg cursor-not-allowed text-xs font-roboto font-medium flex items-center space-x-2 border border-primary/30 hover:border-primary transition-all duration-300 faint-glow-hover"
+                                disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" width="14"
+                                    height="14">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M6.67546 16.6449C6.73454 16.5811 6.80593 16.5299 6.88535 16.4942C6.96477 16.4586 7.05058 16.4394 7.13766 16.4376H21.66C21.7215 16.4384 21.7813 16.457 21.8324 16.491C21.8836 16.5249 21.9238 16.5729 21.9482 16.6291C21.9727 16.6853 21.9803 16.7474 21.9701 16.8078C21.96 16.8682 21.9326 16.9244 21.8912 16.9696L18.8129 20.3762C18.7538 20.4399 18.6824 20.4912 18.603 20.5268C18.5236 20.5624 18.4378 20.5817 18.3507 20.5834H3.81905C3.75761 20.5826 3.69772 20.564 3.64659 20.5301C3.59547 20.4961 3.55528 20.4481 3.53087 20.3919C3.50646 20.3357 3.49886 20.2737 3.50898 20.2133C3.51911 20.1528 3.54653 20.0966 3.58795 20.0514L6.67546 16.6449ZM21.9051 13.8211C21.9465 13.8663 21.9739 13.9225 21.9839 13.9829C21.9942 14.0434 21.9865 14.1054 21.9621 14.1616C21.9377 14.2178 21.8974 14.2658 21.8463 14.2998C21.7952 14.3337 21.7354 14.3523 21.6739 14.3531L7.1469 14.3647C7.05984 14.3629 6.97401 14.3436 6.89459 14.308C6.81517 14.2724 6.74378 14.2211 6.68471 14.1574L3.58333 10.7624C3.54191 10.7171 3.51449 10.6609 3.50436 10.6005C3.49423 10.5401 3.50183 10.4781 3.52625 10.4219C3.55066 10.3656 3.59085 10.3177 3.64197 10.2837C3.6931 10.2497 3.75298 10.2312 3.81443 10.2303L18.3414 10.2188C18.4285 10.2206 18.5143 10.2398 18.5938 10.2755C18.6732 10.3111 18.7446 10.3623 18.8036 10.4261L21.9051 13.8211ZM6.67546 4.2073C6.73454 4.14353 6.80593 4.0923 6.88535 4.05668C6.96477 4.02106 7.05058 4.00178 7.13766 4.00001L21.6693 4.01152C21.7307 4.01239 21.7907 4.03092 21.8418 4.0649C21.8929 4.09889 21.9331 4.14686 21.9574 4.20307C21.9819 4.25927 21.9895 4.32131 21.9794 4.38172C21.9692 4.44213 21.9418 4.49833 21.9004 4.54358L18.8129 7.93857C18.7538 8.00235 18.6824 8.05359 18.603 8.08921C18.5236 8.12483 18.4378 8.14409 18.3507 8.14587H3.81905C3.75761 8.145 3.69772 8.12647 3.64659 8.09249C3.59547 8.05851 3.55528 8.01052 3.53087 7.95433C3.50646 7.89812 3.49886 7.83609 3.50898 7.77568C3.51911 7.71527 3.54653 7.65906 3.58795 7.61382L6.67546 4.2073Z"
+                                        fill="url(#modal-solana-icon)"></path>
+                                    <defs>
+                                        <linearGradient id="modal-solana-icon" x1="4.06171" y1="20.9451" x2="21.3683"
+                                            y2="3.58022" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#9945FF"></stop>
+                                            <stop offset="0.14" stop-color="#8A53F4"></stop>
+                                            <stop offset="0.42" stop-color="#6377D6"></stop>
+                                            <stop offset="0.79" stop-color="#24B0A7"></stop>
+                                            <stop offset="0.99" stop-color="#00D18C"></stop>
+                                            <stop offset="1" stop-color="#00D18C"></stop>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <span>Solana</span>
+                            </button>
+                        </div>
+                        <div class="wallet-list max-h-36 overflow-y-auto p-2 space-y-2">
+                            <div id="detected-wallets"></div>
+                            <div id="loading-indicator" class="hidden flex flex-col items-center">
+                                <div
+                                    class="spinner w-5 h-5 border-3 border-t-transparent border-primary rounded-full animate-spin">
+                                </div>
+                                <span
+                                    class="mt-1 text-text-light dark:text-text-dark text-xs font-roboto">Connecting...</span>
+                            </div>
+                            <div id="no-wallets-message" class="hidden text-center p-2">
+                                <p
+                                    class="text-text-light dark:text-text-dark font-medium text-xs font-roboto animate-fade-in">
+                                    No Solana wallets found</p>
+                                <a href="https://solana.com/ecosystem/explore?categories=wallet" target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-block mt-1 px-3 py-1 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold text-xs font-roboto faint-glow-hover">Install
+                                    a Solana Wallet</a>
+                            </div>
+                        </div>
+                        <!-- Divider with "Or" -->
+                        <div class="relative my-2">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-primary/20"></div>
+                            </div>
+                            <div class="relative flex justify-center text-xs">
+                                <span
+                                    class="px-2 bg-background-light dark:bg-background-dark text-text-secondary-light dark:text-text-secondary-dark font-roboto font-medium animate-fade-in">Or</span>
+                            </div>
+                        </div>
+                        <!-- Google OAuth Login -->
+                        <div class="text-center">
+                            <a href="{% provider_login_url 'google' process='login' %}"
+                                class="w-full inline-block bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold flex items-center justify-center space-x-1 text-xs font-roboto faint-glow-hover">
+                                <i class="fab fa-google text-sm"></i>
+                                <span>Continue with Google</span>
+                            </a>
+                        </div>
+                    </div>
+<!-- Username Tab Content -->
+<div id="login-tab-content" class="tab-content transition-opacity duration-500 opacity-0 absolute inset-0 hidden">
+    <form id="email-login-form" method="POST" action="{% url 'wallet:email_login' %}">
+        {% csrf_token %}
+        <div class="mb-2">
+
+            <div class="relative">
+                <input type="text" id="username_or_email" name="username_or_email"
+                    class="w-full px-2 py-1 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50"
+                    required>
+                <i class="fas fa-user absolute right-2 top-1/2 transform -translate-y-1/2 text-primary text-sm"></i>
+            </div>
+            <p id="username-or-email-error" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in"></p>
+        </div>
+        <div class="mb-2">
+            <label for="password"
+                class="block text-xs font-roboto font-medium text-text-light dark:text-text-dark mb-1 transition-transform duration-300 transform translate-x-[-20px] opacity-0 animate-slide-in-delayed">Password</label>
+            <div class="relative">
+                <input type="password" id="password" name="password"
+                    class="w-full px-2 py-1 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50"
+                    required>
+                <i class="fas fa-lock absolute right-2 top-1/2 transform -translate-y-1/2 text-primary text-sm"></i>
+            </div>
+            <p id="password-error" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in"></p>
+        </div>
+        <button type="submit"
+            class="w-full bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold text-xs font-roboto faint-glow-hover">Login</button>
+        <p id="login-error-display" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in text-center">
+        </p>
+        <p class="text-center text-xs mt-1">
+            <a href="#" class="text-primary hover:underline" id="forgot-password-link">Forgot Password?</a>
+        </p>
+    </form>
+                        <!-- Divider with "Or" -->
+                        <div class="relative my-2">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-primary/20"></div>
+                            </div>
+                            <div class="relative flex justify-center text-xs">
+                                <span
+                                    class="px-2 bg-background-light dark:bg-background-dark text-text-secondary-light dark:text-text-secondary-dark font-roboto font-medium animate-fade-in">Or</span>
+                            </div>
+                        </div>
+                        <!-- Google OAuth Login -->
+                        <div class="text-center">
+                            <a href="{% provider_login_url 'google' process='login' %}"
+                                class="w-full inline-block bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold flex items-center justify-center space-x-1 text-xs font-roboto faint-glow-hover">
+                                <i class="fab fa-google text-sm"></i>
+                                <span>Continue with Google</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <div class="p-2 sm:p-3 text-center text-text-secondary-light dark:text-text-secondary-dark border-t border-primary/20 font-roboto animate-fade-in modal-footer"
+                    style="font-size: clamp(8px, 0.9vw + 0.5rem, 12px);">
+                    <p class="modal-footer-text mx-auto" style="font-size: inherit;">By proceeding, you agree to our <a href="#"
+                            class="text-primary hover:underline">Terms</a> & <a href="#"
+                            class="text-primary hover:underline">Privacy</a>.</p>
+                </div>
+        </div>
+    </div>
+<script>
+    window.traitkeeperConfig = {
+        csrfToken: "{{ csrf_token }}",
+        apiEndpoints: {
+            placeBid: "{% url 'marketplace:api_place_bid' %}",
+            buyDirect: "{% url 'marketplace:api_buy_direct_sell' %}",
+            acceptAsk: "{% url 'marketplace:api_accept_asking_price' %}"
+        },
+        isAuthenticated: {{ request.user.is_authenticated|yesno:"true,false" }} 
+    };
+</script>
+    <!-- Scripts -->
+    <script src="{% static 'js/src/solana-stats.js' %}" defer
+        onerror="console.error('Failed to load solana-stats.js')"></script>
+
+    <script src="{% static 'js/src/wallet/wallet-connection.js' %}" defer
+        onerror="console.error('Failed to load wallet-connection.js')"></script>
+
+    <script src="{% static 'js/src/actions/marketplace_actions.js' %}"></script>
+    <script src="{% static 'js/theme-toggle.js' %}" defer></script>
+
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+// Header Scroll Effects
+    const header = document.getElementById('main-header');
+if (header) {
+    const scrollThreshold = 10; // Pixels to scroll before changing header style
+    let ticking = false;
+
+    function updateHeaderStyle() {
+        const currentScrollY = window.scrollY;
+        // Add 'scrolled' class only to the desktop header container
+        if (currentScrollY > scrollThreshold) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(updateHeaderStyle);
+            ticking = true;
+        }
+    });
+
+    // Initial check in case page loads already scrolled
+    updateHeaderStyle();
+} else {
+    console.warn("Main header element (#main-header) not found for scroll effects.");
+}
+
+        console.log('Base.html script started loading'); // Debug log to confirm script execution
+
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(registration => console.log('Service Worker registered:', registration))
+                    .catch(error => console.error('Service Worker registration failed:', error));
+            });
+        }
+
+        
+        // Main script execution
+            console.log('DOMContentLoaded fired for base.html script'); // Debug log
+
+                // Mobile Menu Toggle (New Spherical Buttons)
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                const mobileMenuButtons = document.getElementById('mobile-menu-buttons');
+                const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+
+                console.log('Mobile menu elements:', {
+                    mobileMenuToggle: !!mobileMenuToggle,
+                    mobileMenuButtons: !!mobileMenuButtons,
+                    mobileMenuBackdrop: !!mobileMenuBackdrop
+                });
+
+                function openMobileMenu() {
+                    console.log('Opening mobile menu buttons');
+                    if (mobileMenuButtons) {
+                        mobileMenuButtons.classList.remove('hidden');
+                        mobileMenuButtons.classList.add('flex');
+                        console.log('Mobile menu visibility:', !mobileMenuButtons.classList.contains('hidden')); // Debug log
+                    } else {
+                        console.error('mobileMenuButtons element not found during openMobileMenu');
+                    }
+                    if (mobileMenuBackdrop) {
+                        mobileMenuBackdrop.classList.remove('hidden');
+                        mobileMenuBackdrop.classList.remove('opacity-0');
+                        mobileMenuBackdrop.classList.add('opacity-100');
+                        console.log('Backdrop visibility:', !mobileMenuBackdrop.classList.contains('hidden')); // Debug log
+                    } else {
+                        console.error('mobileMenuBackdrop element not found during openMobileMenu');
+                    }
+                }
+
+                function closeMobileMenu() {
+                    console.log('Closing mobile menu buttons');
+                    if (mobileMenuButtons) {
+                        mobileMenuButtons.classList.remove('flex');
+                        mobileMenuButtons.classList.add('hidden');
+                    } else {
+                        console.error('mobileMenuButtons element not found during closeMobileMenu');
+                    }
+                    if (mobileMenuBackdrop) {
+                        mobileMenuBackdrop.classList.remove('opacity-100');
+                        mobileMenuBackdrop.classList.add('opacity-0');
+                        setTimeout(() => mobileMenuBackdrop.classList.add('hidden'), 500); // Match duration-500
+                    } else {
+                        console.error('mobileMenuBackdrop element not found during closeMobileMenu');
+                    }
+                }
+
+                if (mobileMenuToggle) {
+                    console.log('Attaching click event listener to mobile menu toggle');
+                    mobileMenuToggle.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        console.log('Mobile menu toggle clicked');
+                        if (mobileMenuButtons.classList.contains('hidden')) {
+                            openMobileMenu();
+                        } else {
+                            closeMobileMenu();
+                        }
+                    });
+                } else {
+                    console.error('Mobile menu toggle not found in the DOM');
+                }
+
+                if (mobileMenuBackdrop) {
+                    mobileMenuBackdrop.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        console.log('Backdrop clicked, closing mobile menu');
+                        closeMobileMenu();
+                    });
+                }
+
+                document.addEventListener('click', function (e) {
+                    const walletModal = document.getElementById('wallet-modal');
+                    const walletBackdrop = document.getElementById('wallet-backdrop');
+                    const walletDropdownToggles = document.querySelectorAll('#wallet-dropdown-toggle, #wallet-dropdown-toggle-mobile');
+                    const clickedInsideWalletToggle = Array.from(walletDropdownToggles).some(toggle => toggle.contains(e.target));
+
+                    if (mobileMenuButtons && mobileMenuToggle && !mobileMenuButtons.contains(e.target) && !mobileMenuToggle.contains(e.target) && !clickedInsideWalletToggle && (!walletModal || !walletModal.contains(e.target)) && (!walletBackdrop || !walletBackdrop.contains(e.target))) {
+                        // Only proceed if the mobile menu is visible (not hidden)
+                        if (!mobileMenuButtons.classList.contains('hidden')) {
+                            console.log('Clicked outside mobile menu, closing');
+                            closeMobileMenu();
+                        }
+                    }
+                });
+
+                if (mobileMenuButtons) {
+                    mobileMenuButtons.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        console.log('Clicked inside mobile menu buttons, preventing close');
+                    });
+                }
+
+                // Wallet Modal Tab Switching
+                const walletTab = document.getElementById('wallet-tab');
+                const loginTab = document.getElementById('login-tab');
+                const walletTabContent = document.getElementById('wallet-tab-content');
+                const loginTabContent = document.getElementById('login-tab-content');
+
+                console.log('Wallet modal tab elements:', {
+                    walletTab: !!walletTab,
+                    loginTab: !!loginTab,
+                    walletTabContent: !!walletTabContent,
+                    loginTabContent: !!loginTabContent
+                });
+
+                function activateTab(tabButton, tabContent) {
+                    // Remove active state from all tabs
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active-tab');
+                        const underline = btn.querySelector('div');
+                        if (underline) {
+                            underline.classList.add('hidden');
+                        }
+                    });
+
+                    // Hide all tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden', 'opacity-0');
+                    });
+
+                    // Activate the clicked tab
+                    tabButton.classList.add('active-tab');
+                    const underline = tabButton.querySelector('div');
+                    if (underline) {
+                        underline.classList.remove('hidden');
+                    }
+
+                    // Show the corresponding tab content
+                    if (tabContent) {
+                        tabContent.classList.remove('hidden');
+                        setTimeout(() => tabContent.classList.remove('opacity-0'), 10); // Small delay for smooth transition
+                    }
+                }
+
+                if (walletTab && walletTabContent) {
+                    walletTab.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('Wallet tab clicked');
+                        activateTab(walletTab, walletTabContent);
+                    });
+                } else {
+                    console.error('Wallet tab or content not found');
+                }
+
+                if (loginTab && loginTabContent) {
+                    loginTab.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('Login tab clicked');
+                        activateTab(loginTab, loginTabContent);
+                    });
+                } else {
+                    console.error('Login tab or content not found');
+                }
+
+                // Notification Dropdown Toggle (Desktop and Mobile)
+                const notificationToggle = document.getElementById('notification-toggle');
+                const notificationDropdown = document.getElementById('notification-dropdown');
+                const notificationToggleMobile = document.getElementById('notification-toggle-mobile');
+                const notificationDropdownMobile = document.getElementById('notification-dropdown-mobile');
+                const notificationSettingsToggle = document.getElementById('notification-settings-toggle');
+                const notificationSettingsToggleMobile = document.getElementById('notification-settings-toggle-mobile');
+                const notificationSettingsModal = document.getElementById('notification-settings-modal');
+                const closeNotificationSettings = document.getElementById('close-notification-settings');
+                const markAllRead = document.getElementById('mark-all-read');
+                const markAllReadMobile = document.getElementById('mark-all-read-mobile');
+
+                console.log('Notification elements:', {
+                    notificationToggle: !!notificationToggle,
+                    notificationDropdown: !!notificationDropdown,
+                    notificationToggleMobile: !!notificationToggleMobile,
+                    notificationDropdownMobile: !!notificationDropdownMobile,
+                    notificationSettingsToggle: !!notificationSettingsToggle,
+                    notificationSettingsToggleMobile: !!notificationSettingsToggleMobile,
+                    notificationSettingsModal: !!notificationSettingsModal,
+                    closeNotificationSettings: !!closeNotificationSettings,
+                    markAllRead: !!markAllRead,
+                    markAllReadMobile: !!markAllReadMobile
+                });
+
+                if (notificationToggle && notificationDropdown) {
+                    notificationToggle.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        notificationDropdown.classList.toggle('hidden');
+                    });
+
+                    document.addEventListener('click', (event) => {
+                        const walletModal = document.getElementById('wallet-modal');
+                        const walletBackdrop = document.getElementById('wallet-backdrop');
+                        if (!notificationToggle.contains(event.target) && !notificationDropdown.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
+                            notificationDropdown.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (notificationToggleMobile && notificationDropdownMobile) {
+                    notificationToggleMobile.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        notificationDropdownMobile.classList.toggle('hidden');
+                    });
+
+                    document.addEventListener('click', (event) => {
+                        const walletModal = document.getElementById('wallet-modal');
+                        const walletBackdrop = document.getElementById('wallet-backdrop');
+                        if (!notificationToggleMobile.contains(event.target) && !notificationDropdownMobile.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
+                            notificationDropdownMobile.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (notificationSettingsToggle) {
+                    notificationSettingsToggle.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        notificationSettingsModal.classList.remove('hidden');
+                        notificationDropdown.classList.add('hidden');
+                    });
+                }
+
+                if (notificationSettingsToggleMobile) {
+                    notificationSettingsToggleMobile.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        notificationSettingsModal.classList.remove('hidden');
+                        notificationDropdownMobile.classList.add('hidden');
+                    });
+                }
+
+                if (closeNotificationSettings) {
+                    closeNotificationSettings.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        notificationSettingsModal.classList.add('hidden');
+                    });
+                }
+
+                if (notificationSettingsModal) {
+                    notificationSettingsModal.addEventListener('click', (event) => {
+                        if (event.target === notificationSettingsModal) {
+                            notificationSettingsModal.classList.add('hidden');
+                        }
+                    });
+                }
+
+                const transactionCheckbox = document.querySelector('input[name="transaction"]');
+                const transactionSettings = document.querySelector('.transaction-settings');
+                if (transactionCheckbox && transactionSettings) {
+                    transactionCheckbox.addEventListener('change', () => {
+                        transactionSettings.classList.toggle('hidden', !transactionCheckbox.checked);
+                    });
+                }
+
+                if (markAllRead) {
+                    markAllRead.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        fetch('{% url "notifications:mark_all_notifications_read" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                        }).then(response => response.json()).then(data => {
+                            if (data.success) {
+                                document.querySelectorAll('.notification-item').forEach(item => {
+                                    item.classList.remove('bg-accent-light', 'dark:bg-gray-700');
+                                });
+                                document.querySelectorAll('.bg-red-500').forEach(badge => {
+                                    badge.remove();
+                                });
+                            }
+                        });
+                    });
+                }
+
+                if (markAllReadMobile) {
+                    markAllReadMobile.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        fetch('{% url "notifications:mark_all_notifications_read" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                        }).then(response => response.json()).then(data => {
+                            if (data.success) {
+                                document.querySelectorAll('.notification-item').forEach(item => {
+                                    item.classList.remove('bg-accent-light', 'dark:bg-gray-700');
+                                });
+                                document.querySelectorAll('.bg-red-500').forEach(badge => {
+                                    badge.remove();
+                                });
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error in base.html script:', error);
+            }
+
+
+            // Push Notification Subscription
+            {% if user.is_authenticated %}
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                navigator.serviceWorker.ready.then(function (registration) {
+                    registration.pushManager.getSubscription().then(function (subscription) {
+                        if (!subscription) {
+                            Notification.requestPermission().then(function (permission) {
+                                if (permission === 'granted') {
+                                    registration.pushManager.subscribe({
+                                        userVisibleOnly: true,
+                                        applicationServerKey: "{{ vapid_public_key }}"
+                                    }).then(function (newSubscription) {
+                                        fetch('{% url "notifications:save_push_subscription" %}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': '{{ csrf_token }}',
+                                            },
+                                            body: JSON.stringify(newSubscription)
+                                        }).then(response => response.json()).then(data => {
+                                            if (!data.success) {
+                                                console.error("Failed to save push subscription:", data.error);
+                                            }
+                                        });
+                                    }).catch(function (error) {
+                                        console.error("Failed to subscribe to push notifications:", error);
+                                    });
+                                } else {
+                                    console.log("Push notification permission denied");
+                                }
+                            });
+                        }
+                    });
+                });
+            } else {
+                console.log("Push notifications not supported in this browser");
+            }
+            {% endif %}
+
+            // Mark individual notification as read
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', async function () {
+                    const notificationId = this.getAttribute('data-notification-id');
+                    try {
+                        const response = await fetch('{% url "notifications:mark_notification_read" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                            body: `notification_id=${notificationId}`
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.classList.remove('bg-accent-light', 'dark:bg-gray-700');
+                            const badges = document.querySelectorAll('.bg-red-500');
+                            let count = parseInt(badges[0]?.textContent || 0) - 1;
+                            if (count <= 0) {
+                                badges.forEach(badge => badge.remove());
+                            } else {
+                                badges.forEach(badge => badge.textContent = count);
+                            }
+                        } else {
+                            console.error('Failed to mark notification as read:', data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error marking notification as read:', error);
+                    }
+                });
+            });
+
+            // Update timestamps dynamically
+            function updateTimestamps() {
+                const timeSinceElements = document.querySelectorAll('.time-since');
+                if (timeSinceElements.length === 0) return;
+
+                {% if user.is_authenticated and notifications %}
+                const notifications = {{ notifications| safe
+            }
+        };
+        timeSinceElements.forEach(element => {
+            const notificationId = element.closest('.notification-item').getAttribute('data-notification-id');
+            const notification = notifications.find(n => n.id == notificationId);
+            if (notification) {
+                const createdAt = new Date(notification.created_at);
+                const now = new Date();
+                const diff = Math.floor((now - createdAt) / 1000);
+
+                let timeText;
+                if (diff < 60) {
+                    timeText = `${diff} seconds ago`;
+                } else if (diff < 3600) {
+                    timeText = `${Math.floor(diff / 60)} minutes ago`;
+                } else if (diff < 86400) {
+                    timeText = `${Math.floor(diff / 3600)} hours ago`;
+                } else {
+                    timeText = `${Math.floor(diff / 86400)} days ago`;
+                }
+                element.textContent = timeText;
+            }
+        });
+        {% endif %}
+        }
+
+        setInterval(updateTimestamps, 30000);
+        updateTimestamps();
+
+        console.log('Base.html script finished loading');
+
+        // Handle zoom for all site containers to stretch the entire site
+            function handleSiteZoom() {
+                const siteContainers = document.querySelectorAll('.site-container');
+                if (!siteContainers.length) return;
+
+                // Get the current viewport width in CSS pixels
+                const viewportWidth = window.innerWidth;
+
+                // Desktop view (md: breakpoint is 768px)
+                if (viewportWidth >= 768) {
+                    // Default max-width for desktop (equivalent to max-w-7xl)
+                    const defaultMaxWidth = 1792; // 1792px as per max-w-7xl
+
+                    // When zoomed in, the effective viewport width decreases
+                    // If the viewport width is less than the default max-width, stretch to fill
+                    if (viewportWidth < defaultMaxWidth) {
+                        siteContainers.forEach(container => {
+                            container.style.maxWidth = '100%'; // Stretch to full viewport width
+                            container.style.marginLeft = '0';
+                            container.style.marginRight = '0';
+                        });
+                    } else {
+                        siteContainers.forEach(container => {
+                            container.style.maxWidth = `${defaultMaxWidth}px`; // Restore default max-width
+                            container.style.marginLeft = 'auto';
+                            container.style.marginRight = 'auto';
+                        });
+                    }
+                } else {
+                    // Mobile view: always stretch to full width
+                    siteContainers.forEach(container => {
+                        container.style.maxWidth = '100%';
+                        container.style.marginLeft = '0';
+                        container.style.marginRight = '0';
+                    });
+                }
+            }
+
+            // Run on initial load
+            handleSiteZoom();
+
+            // Run on resize or zoom (debounced to avoid excessive calls)
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(handleSiteZoom, 100);
+            });
+
+            // Detect zoom changes via orientation change or scroll (some browsers trigger this on zoom)
+            window.addEventListener('orientationchange', handleSiteZoom);
+            window.addEventListener('scroll', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(handleSiteZoom, 100);
+            });
+    });
+
+    
+    </script>
+    {% block extra_js %}
+    {% endblock %}
+</body>
+
+</html>

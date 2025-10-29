@@ -1,0 +1,155 @@
+.top-traits {
+    margin: 2rem 0;
+}
+
+.top-traits-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.top-traits-header h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.view-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-control-btn {
+    background-color: var(--accent-color);
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.view-more-btn {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.traits-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-color);
+}
+
+.traits-table th,
+.traits-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.traits-table th {
+    font-weight: bold;
+}
+
+.trait-name {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.trend-positive {
+    color: green;
+}
+
+.view-control-btn.active {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+}
+
+.traits-card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    background-color: var(--background-color);
+    padding: 1rem;
+}
+
+.trait-card {
+    background-color: var(--accent-color);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.trait-image {
+    width: 100%;
+    height: 120px;
+    background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.trait-image img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.trait-info {
+    padding: 0.5rem;
+    color: var(--text-color);
+}
+
+.trait-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.collection-name {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--text-color);
+}
+
+.trait-Trend {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin: 0;
+}
+
+.trait-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.stat-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}

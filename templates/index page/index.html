@@ -1,0 +1,1738 @@
+
+{% extends 'index page/base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block extra_style %}
+<style>
+
+    main#main-content {
+        padding-top: 0 !important;
+    }
+    .live-x-feed-container {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .x-post-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .x-post {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .x-post p {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    @media (max-width: 767px) {
+        .x-post.tilt-card {
+            --tilt-max: 5;
+            --tilt-perspective: 500;
+        }
+    }
+
+    #social-proof {
+        overflow-x: hidden;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #social-proof>.max-w-7xl {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+#top-collections-table tr {
+    transition: all 0.2s ease;
+}
+
+#top-collections-table tr:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section id="hero"
+    class="relative h-[60vh] xs:h-[65vh] max-h-[500px] xs:max-h-[550px] flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark overflow-hidden">
+    <div id="particles-hero" class="absolute inset-0 z-0"></div>
+    <div class="wave-bg absolute bottom-0 left-0 w-full h-1/4">
+        <svg class="w-full h-full" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path fill="#ffffff" fill-opacity="0.3"
+                d="M0,192L48,186.7C96,181,192,171,288,186.7C384,203,480,245,576,245.3C672,245,768,203,864,192C960,181,1056,203,1152,202.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,0,320Z">
+            </path>
+        </svg>
+    </div>
+    <div class="relative z-10 text-center text-white max-w-4xl xs:max-w-5xl mx-auto px-2 xs:px-3">
+        <h1 class="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold mb-1 xs:mb-2 sm:mb-4 animate__animated animate__fadeInDown"
+            data-aos="fade-down"></h1>
+        <p class="text-xs xs:text-sm sm:text-base md:text-lg mb-2 xs:mb-4 sm:mb-8 animate__animated animate__fadeInUp"
+            data-aos="fade-up" data-aos-delay="200"></p>
+        <a href="#"
+            class="inline-block bg-white text-primary px-3 xs:px-4 py-1 xs:py-2 sm:px-6 sm:py-3 rounded-full font-semibold text-[10px] xs:text-xs sm:text-sm md:text-base hover:bg-accent-light dark:bg-accent-dark dark:text-text-dark transition-all transform hover:scale-105 hidden"
+            data-aos="zoom-in" data-aos-delay="400"></a>
+    </div>
+    <div class="absolute bottom-2 xs:bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <svg class="w-5 xs:w-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Solana NFT Market (Transaction Volume) -->
+<section id="market-highlights" class="bg-white dark:bg-gray-900 border-b border-border-light dark:border-border-dark py-4">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            <div class="text-center md:text-left">
+                <span class="text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">24h Volume</span>
+                <p id="stats-bar-volume" class="text-lg sm:text-xl font-bold text-text-light dark:text-text-dark">
+                    {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
+                </p>
+            </div>
+
+            <div class="text-center md:text-left">
+                <span class="text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">Market Cap</span>
+                <p id="stats-bar-marketcap" class="text-lg sm:text-xl font-bold text-text-light dark:text-text-dark">
+                    {{ collection_stats.market_cap|floatformat:2 }} SOL
+                </p>
+            </div>
+            
+            <div class="text-center md:text-left">
+                <span class="text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">24h Sales</span>
+                <p id="stats-bar-sales" class="text-lg sm:text-xl font-bold text-text-light dark:text-text-dark">
+                    {{ collection_stats.total_sales }}
+                </p>
+            </div>
+
+            <div class="text-center md:text-left">
+                <span class="text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">Solana TPS</span>
+                <p class="solana-tps text-lg sm:text-xl font-bold text-green-400">
+                    Loading...
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<section id="top-vitality-featured" class="py-8 xs:py-10 px-2 xs:px-4 bg-background-light dark:bg-background-dark">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Featured Collection Carousel Section -->
+            <div class="lg:col-span-2" data-aos="fade-up">
+                {% if featured_collections %}
+                    <div class="featured-carousel-container relative h-[400px]" tabindex="0">
+                        <!-- Carousel Slides -->
+                        <div class="featured-carousel-slides relative h-full">
+                            {% for collection in featured_collections %}
+                            <a href="{% url 'collection_detail' address=collection.address %}" 
+                               class="featured-carousel-slide featured-card group block bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark overflow-hidden h-full absolute inset-0 transition-opacity duration-700 ease-in-out {% if forloop.first %}opacity-100 z-10{% else %}opacity-0 z-0{% endif %}"
+                               data-slide-index="{{ forloop.counter0 }}">
+                                <div class="relative w-full h-[400px]">
+                                    <!-- Main Background Image -->
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
+                                         alt="{{ collection.name }}" 
+                                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                                    
+                                    <!-- Badge Image -->
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
+                                         alt="" 
+                                         class="w-16 h-16 rounded-full absolute top-6 right-6 border-4 border-white/50 shadow-lg">
+
+                                    <!-- Content Overlay -->
+                                    <div class="absolute bottom-6 left-6 right-6">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="bg-primary text-white text-xs font-bold px-2 py-1 rounded">FEATURED</span>
+                                            
+                                        </div>
+                                        
+                                        <h3 class="text-3xl font-bold text-white drop-shadow-lg shadow-black/80 leading-tight mb-3">
+                                            {{ collection.name }}
+                                        </h3>
+                                        
+                                        <!-- Stats Row -->
+                                        <div class="flex items-center gap-4 text-white drop-shadow-lg">
+                                            <div class="flex-1">
+                                                <span class="text-xs opacity-80 block">Vitality Score</span>
+                                                {% with v_score=collection.vitality_score|default:50.0 %}
+                                                <strong class="text-lg font-bold {% if v_score > 75 %}text-green-400{% elif v_score < 40 %}text-red-400{% else %}text-white{% endif %}">
+                                                    {{ v_score|floatformat:1 }}
+                                                </strong>
+                                                {% endwith %}
+                                            </div>
+                                            <div class="w-px h-8 bg-white/20"></div>
+                                            <div class="flex-1">
+                                                <span class="text-xs opacity-80 block">Floor</span>
+                                                <strong class="text-lg font-bold">{{ collection.floor_price|floatformat:2|default:"--" }} SOL</strong>
+                                            </div>
+                                            <div class="w-px h-8 bg-white/20"></div>
+                                            <div class="flex-1">
+                                                <span class="text-xs opacity-80 block">24h Vol</span>
+                                                <strong class="text-lg font-bold">{{ collection.volume_24h|floatformat:2|default:"--" }} SOL</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Navigation Dots -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+                            {% for collection in featured_collections %}
+                            <button class="carousel-dot w-2 h-2 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-6{% else %}bg-white/50 hover:bg-white/75{% endif %}"
+                                    data-slide="{{ forloop.counter0 }}"
+                                    aria-label="Go to slide {{ forloop.counter }}">
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Previous/Next Arrows (only show if more than 1 collection) -->
+                        {% if featured_collections|length > 1 %}
+                        <button class="carousel-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm group"
+                                aria-label="Previous slide">
+                            <svg class="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <button class="carousel-next absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm group"
+                                aria-label="Next slide">
+                            <svg class="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Carousel JavaScript -->
+                    <script>
+                    (function() {
+                        const carousel = {
+                            currentSlide: 0,
+                            totalSlides: {{ featured_collections|length }},
+                            autoPlayInterval: null,
+                            autoPlayDelay: 5000, // 5 seconds
+                            
+                            init() {
+                                if (this.totalSlides <= 1) return; // No carousel needed for single item
+                                
+                                this.bindEvents();
+                                this.startAutoPlay();
+                            },
+                            
+                            bindEvents() {
+                                // Dot navigation
+                                document.querySelectorAll('.carousel-dot').forEach(dot => {
+                                    dot.addEventListener('click', (e) => {
+                                        const slideIndex = parseInt(e.target.dataset.slide);
+                                        this.goToSlide(slideIndex);
+                                        this.resetAutoPlay();
+                                    });
+                                });
+                                
+                                // Arrow navigation
+                                const prevBtn = document.querySelector('.carousel-prev');
+                                const nextBtn = document.querySelector('.carousel-next');
+                                
+                                if (prevBtn) {
+                                    prevBtn.addEventListener('click', () => {
+                                        this.previousSlide();
+                                        this.resetAutoPlay();
+                                    });
+                                }
+                                
+                                if (nextBtn) {
+                                    nextBtn.addEventListener('click', () => {
+                                        this.nextSlide();
+                                        this.resetAutoPlay();
+                                    });
+                                }
+                                
+                                // Pause on hover
+                                const container = document.querySelector('.featured-carousel-container');
+                                if (container) {
+                                    container.addEventListener('mouseenter', () => this.pauseAutoPlay());
+                                    container.addEventListener('mouseleave', () => this.startAutoPlay());
+                                }
+                                
+                                // Keyboard navigation
+                                document.addEventListener('keydown', (e) => {
+                                    if (e.key === 'ArrowLeft') {
+                                        this.previousSlide();
+                                        this.resetAutoPlay();
+                                    } else if (e.key === 'ArrowRight') {
+                                        this.nextSlide();
+                                        this.resetAutoPlay();
+                                    }
+                                });
+                            },
+                            
+                            goToSlide(index) {
+                                // Hide all slides
+                                document.querySelectorAll('.featured-carousel-slide').forEach(slide => {
+                                    slide.classList.remove('opacity-100', 'z-10');
+                                    slide.classList.add('opacity-0', 'z-0');
+                                });
+                                
+                                // Update dots
+                                document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                                    if (i === index) {
+                                        dot.classList.add('bg-primary', 'w-6');
+                                        dot.classList.remove('bg-white/50');
+                                    } else {
+                                        dot.classList.remove('bg-primary', 'w-6');
+                                        dot.classList.add('bg-white/50');
+                                    }
+                                });
+                                
+                                // Show target slide
+                                const targetSlide = document.querySelector(`.featured-carousel-slide[data-slide-index="${index}"]`);
+                                if (targetSlide) {
+                                    targetSlide.classList.remove('opacity-0', 'z-0');
+                                    targetSlide.classList.add('opacity-100', 'z-10');
+                                }
+                                
+                                this.currentSlide = index;
+                            },
+                            
+                            nextSlide() {
+                                const nextIndex = (this.currentSlide + 1) % this.totalSlides;
+                                this.goToSlide(nextIndex);
+                            },
+                            
+                            previousSlide() {
+                                const prevIndex = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+                                this.goToSlide(prevIndex);
+                            },
+                            
+                            startAutoPlay() {
+                                this.pauseAutoPlay(); // Clear any existing interval
+                                this.autoPlayInterval = setInterval(() => {
+                                    this.nextSlide();
+                                }, this.autoPlayDelay);
+                            },
+                            
+                            pauseAutoPlay() {
+                                if (this.autoPlayInterval) {
+                                    clearInterval(this.autoPlayInterval);
+                                    this.autoPlayInterval = null;
+                                }
+                            },
+                            
+                            resetAutoPlay() {
+                                this.pauseAutoPlay();
+                                this.startAutoPlay();
+                            }
+                        };
+                        
+                        // Initialize when DOM is ready
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', () => carousel.init());
+                        } else {
+                            carousel.init();
+                        }
+                    })();
+                    </script>
+                    
+                {% else %}
+                    <!-- No Collections Fallback -->
+                    <div class="featured-card block bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark overflow-hidden h-full p-8 flex items-center justify-center">
+                        <div class="text-center">
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-lg mb-2">No Featured Collections Available</p>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">Check back soon for featured collections!</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Top Collections BY PERFORMANCE AND VOLUME -->
+            <div class="lg:col-span-1" data-aos="fade-up" data-aos-delay="200">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-lg border border-accent-light dark:border-accent-dark h-full">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-3 xs:mb-4">
+                        <h3 class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-1 xs:mb-2 sm:mb-0">
+                            Top Collections
+                        </h3>
+                        <div class="flex gap-1 xs:gap-2">
+                            <button class="sort-btn">Vitality</button>
+                            <button class="sort-btn">Volume</button>
+                            <button class="sort-btn">Sales</button>
+                        </div>
+                    </div>
+                    <div class="">
+                        <table class="w-full min-w-[300px] text-text-light dark:text-text-dark table-auto">
+                            <thead>
+                                <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px]">Collection</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Vitality</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-collections-table">
+                                {% for collection in top_collections %}
+                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
+                                    <td colspan="3" class="p-0">
+                                        <a href="{% url 'collection_detail' address=collection.address %}" 
+                                           class="flex items-center cursor-pointer hover:no-underline">
+                                            <div class="flex-1 p-1 xs:p-2">
+                                                <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
+                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter }}</span>
+                                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
+                                                         alt="{{ collection.name }}" 
+                                                         class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
+                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">{{ collection.name }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                                <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
+                                                    {{ collection.vitality_score|floatformat:1|default:"--" }}
+                                                </span>
+                                            </div>
+                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                                {{ collection.volume|floatformat:2 }} SOL
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
+                                        No collections.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section id="highest-vitality-collections" class="py-8 xs:py-10 px-2 xs:px-4 bg-background-light dark:bg-background-dark overflow-hidden">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 text-center"
+    data-aos="fade-up">Highest Vitality Collections</h2>
+
+        <div class="relative">
+            
+            <div id="collections-carousel" class="flex transition-transform duration-500 ease-in-out gap-4 xs:gap-6">
+                </div>
+            
+            <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- Collection Sweeps Section -->
+{% if collection_sweeps %}
+<section id="collection-sweeps"
+    class="py-8 xs:py-10 px-2 xs:px-4 bg-gradient-to-b from-accent-light to-background-light dark:from-accent-dark dark:to-background-dark">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 animate__animated animate__pulse animate__infinite"
+            data-aos="fade-up">Sweep Contest</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4">
+            {% for sweep in collection_sweeps %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer"
+                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
+                data-aos-delay="{{ sweep.delay }}" data-nft-modal data-nft-name="Sweep: {{ sweep.collection }}"
+                data-nft-image="{{ sweep.image_url }}"
+                data-nft-description="Items: {{ sweep.num_items }} | Total Volume: {{ sweep.total_volume|floatformat:2 }} SOL">
+                <div class="p-2 xs:p-3 sm:p-4">
+                    <h3 class="text-sm xs:text-base sm:text-lg font-semibold text-text-light dark:text-text-dark mb-1">
+                        {{ sweep.collection }}</h3>
+                    <p
+                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
+                        Buyer: @{{ sweep.buyer_address|slice:":8" }}</p>
+                    <p
+                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
+                        Items: {{ sweep.num_items }} | Volume: {{ sweep.total_volume|floatformat:2 }} SOL</p>
+                    <p
+                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
+                        Price Movement: {{ sweep.price_movement|floatformat:2 }}%</p>
+                    {% if sweep.target_traits %}
+                    <p
+                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
+                        Targeted Traits:
+                        {% for trait in sweep.target_traits %}
+                        {{ trait.trait_type }}: {{ trait.trait_value }} ({{ trait.frequency|floatformat:2 }}%)
+                        {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+                    <span
+                        class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Score:
+                        {{ sweep.significance_score|floatformat:1 }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Trending Traits -->
+<section id="trending-traits"
+    class="py-8 xs:py-10 px-2 xs:px-4 bg-gradient-to-b from-accent-light to-background-light dark:from-accent-dark dark:to-background-dark">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 text-center"
+            data-aos="fade-up">Trending Solana Traits</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4">
+            {% if trending_traits %}
+            {% for trait in trending_traits %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
+                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
+                data-aos-delay="{{ trait.delay }}" data-nft-modal
+                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
+                data-nft-description="Occurrences: {{ trait.count }}" data-nft-rarity="Trending">
+                <div
+                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
+                    Trending</div>
+                <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
+                    class="w-full h-28 xs:h-32 sm:h-36 object-cover">
+                <div class="p-2 xs:p-3 sm:p-4">
+                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">{{ trait.trait_name }}: {{ trait.trait_value }}</h3>
+                    <p
+                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                        Occurrences: {{ trait.count }}</p>
+                    <span
+                        class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Trending</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-span-full text-center">
+                <p
+                    class="text-text-secondary-light dark:text-text-secondary-dark text-xs xs:text-sm sm:text-base mb-3 xs:mb-4">
+                    No trending traits available.</p>
+                <p class="text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">
+                    Discover trending Solana traits soon!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Social Proof -->
+<section id="social-proof" class="py-8 xs:py-10 px-2 xs:px-4 bg-background-light dark:bg-background-dark">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 text-center"
+            data-aos="fade-up">Community Activity</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-lg border border-accent-light dark:border-accent-dark"
+                data-aos="fade-right">
+                <h3
+                    class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-3 xs:mb-4">
+                    Recent High-Profile Transfers</h3>
+                <ul class="space-y-3">
+                    {% if recent_transfers %}
+                    {% for transfer in recent_transfers %}
+                    <li class="bg-accent-light dark:bg-accent-dark rounded-lg p-2 xs:p-3 flex items-start tilt-card"
+                        data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                        data-aos="fade-up" data-aos-delay="{{ transfer.delay }}">
+                        <img src="{% if transfer.image_url %}{{ transfer.image_url }}{% else %}{% static 'img/nft-default.png' %}{% endif %}"
+                            alt="NFT Image" class="w-6 xs:w-8 h-6 xs:h-8 rounded-full mr-2 xs:mr-3">
+                        <div class="flex-1">
+                            <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@{{ transfer.buyer|slice:":8"|default:"Unknown" }}</span> bought <strong
+                                class="text-[10px] xs:text-xs sm:text-sm">{{ transfer.mint_address|slice:":8"|default:"Unknown" }}</strong> from <span
+                                class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@{{ transfer.seller|slice:":8"|default:"Unknown" }}</span> for <strong
+                                class="text-[10px] xs:text-xs sm:text-sm">{{ transfer.price|floatformat:2 }} SOL</strong>
+                            <span
+                                class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Collection: {{ transfer.collection|default:"Unknown" }}</span>
+                            <span
+                                class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">Traits: {{ transfer.traits|default:"None" }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li
+                        class="bg-accent-light dark:bg-accent-dark rounded-lg p-2 xs:p-3 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">
+                        No recent high-profile transfers available.</li>
+                    {% endif %}
+                </ul>
+                <button
+                    class="view-more mt-3 xs:mt-4 block mx-auto bg-primary text-white px-3 xs:px-4 py-1 xs:py-2 rounded-full hover:bg-primary-dark transition text-[10px] xs:text-xs sm:text-sm"
+                    data-target="recent-transfers">View More</button>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-2 xs:p-3 sm:p-6 border border-accent-light dark:border-accent-dark live-x-feed-container"
+                data-aos="fade-left">
+                <h3
+                    class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-2 xs:mb-3 sm:mb-4">
+                    Live X Feed</h3>
+                <div class="space-y-2 xs:space-y-3">
+                    <div class="x-post-wrapper">
+                        <div class="x-post bg-accent-light dark:bg-accent-dark rounded-lg p-1 xs:p-2 sm:p-3 flex items-start tilt-card"
+                            data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                            data-aos="fade-up" data-aos-delay="0">
+                            <img src="{% static 'img/user-avatar-4.jpg' %}" alt="User Avatar"
+                                class="w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3">
+                            <div class="flex-1">
+                                <span
+                                    class="font-bold text-primary text-[9px] xs:text-[10px] sm:text-sm">@TraitKeeper</span>
+                                <p class="text-[9px] xs:text-[10px] sm:text-sm">Exciting news! Our latest trait analysis
+                                    tool is now live. Check it out at traitkeeper.io #NFTTraits #TraitAnalysis</p>
+                                <span
+                                    class="block text-[8px] xs:text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5 xs:mt-1">10
+                                    minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="x-post-wrapper">
+                        <div class="x-post bg-accent-light dark:bg-accent-dark rounded-lg p-1 xs:p-2 sm:p-3 flex items-start tilt-card"
+                            data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                            data-aos="fade-up" data-aos-delay="100">
+                            <img src="{% static 'img/user-avatar-5.jpg' %}" alt="User Avatar"
+                                class="w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3">
+                            <div class="flex-1">
+                                <span
+                                    class="font-bold text-primary text-[9px] xs:text-[10px] sm:text-sm">@NFTCreator</span>
+                                <p class="text-[9px] xs:text-[10px] sm:text-sm">Just used @TraitKeeper to optimize my new
+                                    collection's trait distribution. Game-changer! #TraitKeeper #NFTCreation</p>
+                                <span
+                                    class="block text-[8px] xs:text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5 xs:mt-1">45
+                                    minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="x-post-wrapper">
+                        <div class="x-post bg-accent-light dark:bg-accent-dark rounded-lg p-1 xs:p-2 sm:p-3 flex items-start tilt-card"
+                            data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                            data-aos="fade-up" data-aos-delay="200">
+                            <img src="{% static 'img/user-avatar-6.jpg' %}" alt="User Avatar"
+                                class="w-5 xs:w-6 sm:w-8 h-5 xs:h-6 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3">
+                            <div class="flex-1">
+                                <span
+                                    class="font-bold text-primary text-[9px] xs:text-[10px] sm:text-sm">@CryptoInfluencer</span>
+                                <p class="text-[9px] xs:text-[10px] sm:text-sm">The "Golden Fur" trait is trending on
+                                    @TraitKeeper! Time to check your collections 👀 #NFTTraits #TraitValue</p>
+                                <span
+                                    class="block text-[8px] xs:text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5 xs:mt-1">2
+                                    hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="view-more mt-2 xs:mt-3 sm:mt-4 block mx-auto bg-primary text-white px-2 xs:px-3 sm:px-4 py-1 xs:py-2 rounded-full hover:bg-primary-dark transition text-[9px] xs:text-[10px] sm:text-sm"
+                    data-target="x-feed">View More</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top 100 Traits -->
+<section id="top-traits"
+    class="py-8 xs:py-10 px-2 xs:px-4 bg-gradient-to-b from-accent-light to-background-light dark:from-accent-dark dark:to-background-dark">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 xs:mb-6">
+            <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-2 xs:mb-4 sm:mb-0"
+                data-aos="fade-up">Top 100 Traits</h2>
+            <div class="flex gap-1 xs:gap-2" data-aos="fade-up" data-aos-delay="100">
+                <form method="GET" action="{% url 'index' %}" class="flex gap-1 xs:gap-2">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search traits..."
+                        class="p-1 xs:p-2 border border-accent-light dark:border-accent-dark rounded-full bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary text-[10px] xs:text-xs sm:text-sm">
+                    <select name="timeframe"
+                        class="p-1 xs:p-2 border border-accent-light dark:border-accent-dark rounded-full bg-white dark:bg-gray-800 text-text-light dark:text-text-dark text-[10px] xs:text-xs sm:text-sm">
+                        <option value="1h" {% if timeframe == '1h' %}selected{% endif %}>1h</option>
+                        <option value="24h" {% if timeframe == '24h' %}selected{% endif %}>24h</option>
+                        <option value="7d" {% if timeframe == '7d' %}selected{% endif %}>7d</option>
+                        <option value="30d" {% if timeframe == '30d' %}selected{% endif %}>30d</option>
+                        <option value="all" {% if timeframe == 'all' %}selected{% endif %}>All</option>
+                    </select>
+                    <select name="sort_by"
+                        class="p-1 xs:p-2 border border-accent-light dark:border-accent-dark rounded-full bg-white dark:bg-gray-800 text-text-light dark:text-text-dark text-[10px] xs:text-xs sm:text-sm">
+                        <option value="performance_score" {% if sort_by == 'performance_score' %}selected{% endif %}>
+                            Performance</option>
+                        <option value="volume" {% if sort_by == 'volume' %}selected{% endif %}>Volume</option>
+                        <option value="floor_price" {% if sort_by == 'floor_price' %}selected{% endif %}>Floor Price
+                        </option>
+                        <option value="sales" {% if sort_by == 'sales' %}selected{% endif %}>Sales</option>
+                        <option value="market_cap" {% if sort_by == 'market_cap' %}selected{% endif %}>Market Cap</option>
+                    </select>
+                    <button type="submit"
+                        class="bg-primary text-white px-3 xs:px-4 py-1 xs:py-2 rounded-full hover:bg-primary-dark transition text-[10px] xs:text-xs sm:text-sm">Filter</button>
+                </form>
+                <button
+                    class="view-control-btn active p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition"
+                    id="table-view-btn" aria-label="Table view">
+                    <svg width="16" xs:width="20" height="16" xs:height="20">
+                        <use xlink:href="#table-view-icon"></use>
+                    </svg>
+                </button>
+                <button
+                    class="view-control-btn p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition"
+                    id="card-view-btn" aria-label="Card view">
+                    <svg width="16" xs:width="20" height="16" xs:height="20">
+                        <use xlink:href="#card-view-icon"></use>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="traits-table-container hidden md:block" data-aos="fade-up" data-aos-delay="200">
+            <table class="traits-table w-full border-collapse text-text-light dark:text-text-dark table-auto">
+                <thead>
+                    <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Rank</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Trait</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Collection</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Floor Price
+                        </th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Sales</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Market Cap
+                        </th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Trend</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if top_traits %}
+                    {% for trait in top_traits %}
+                    <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter|add:top_traits.start_index|add:-1 }}</td>
+                        <td
+                            class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[9px] xs:text-[10px] sm:text-xs truncate">
+                            {{ trait.trait_name }}: {{ trait.trait_value }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">{{ trait.collection }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.volume|floatformat:2 }} SOL</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.floor_price|floatformat:2 }} SOL</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.sales }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.market_cap|floatformat:2 }} SOL</td>
+                        <td
+                            class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                            ↑ {{ trait.trend_percentage }}%</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.count }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="9"
+                            class="p-1 xs:p-2 sm:p-3 text-center text-text-secondary-light dark:text-text-secondary-dark text-[9px] xs:text-[10px] sm:text-xs">
+                            {% if search_query %}
+                            No traits found for "{{ search_query }}".
+                            {% else %}
+                            No top traits available.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <div class="traits-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4 md:hidden"
+            data-aos="fade-up" data-aos-delay="200">
+            {% if top_traits %}
+            {% for trait in top_traits %}
+            <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
+                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-nft-modal
+                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
+                data-nft-description="Collection: {{ trait.collection }} | Count: {{ trait.count }}"
+                data-nft-trend="{{ trait.trend_percentage }}%">
+                <div
+                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
+                    Top</div>
+                <div
+                    class="trait-image h-28 xs:h-32 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
+                    <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
+                        class="max-w-[80%] max-h-[80%] object-contain">
+                </div>
+                <div class="p-2 xs:p-3 sm:p-4 flex-1">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3
+                            class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">
+                            {{ trait.trait_name }}: {{ trait.trait_value }}</h3>
+                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark">TREND:
+                            <span class="text-green-400">↑ {{ trait.trend_percentage }}%</span>
+                        </p>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between">
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    RANK</div>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.volume|floatformat:2 }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    VOLUME</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.floor_price|floatformat:2 }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    FLOOR</div>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.sales }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    SALES</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.market_cap|floatformat:2 }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    MARKET CAP</div>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.count }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    SCORE</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.collection }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    COLLECTION</div>
+                            </div>
+                            <div class="text-center">
+                                <div
+                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.trait_name }}</div>
+                                <div
+                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    TRAIT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p
+                class="text-center text-text-secondary-light dark:text-text-secondary-dark col-span-full text-xs xs:text-sm sm:text-base">
+                {% if search_query %}
+                No traits found for "{{ search_query }}".
+                {% else %}
+                No top traits available.
+                {% endif %}
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if top_traits.paginator.num_pages > 1 %}
+        <div class="pagination flex justify-center items-center gap-1 xs:gap-2 mt-4 xs:mt-6" data-aos="fade-up"
+            data-aos-delay="300">
+            {% if top_traits.has_previous %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page=1"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">« First</a>
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page={{ top_traits.previous_page_number }}"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">< Prev</a>
+            {% endif %}
+            {% for num in top_traits.paginator.page_range %}
+            {% if num == top_traits.number %}
+            <span class="p-1 xs:p-2 bg-primary text-white rounded-full text-[10px] xs:text-xs sm:text-sm">{{ num }}</span>
+            {% elif num > top_traits.number|add:-3 and num < top_traits.number|add:3 %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page={{ num }}"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">{{ num }}</a>
+            {% elif num == 1 or num == top_traits.paginator.num_pages %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page={{ num }}"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">{{ num }}</a>
+            {% elif num == top_traits.number|add:-3 or num == top_traits.number|add:3 %}
+            <span
+                class="p-1 xs:p-2 text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">...</span>
+            {% endif %}
+            {% endfor %}
+            {% if top_traits.has_next %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page={{ top_traits.next_page_number }}"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">Next ></a>
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if timeframe %}timeframe={{ timeframe }}&{% endif %}{% if sort_by %}sort_by={{ sort_by }}&{% endif %}page={{ top_traits.paginator.num_pages }}"
+                class="p-1 xs:p-2 bg-accent-light dark:bg-accent-dark rounded-full hover:bg-primary hover:text-white transition text-[10px] xs:text-xs sm:text-sm">Last »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- NFT Preview Modal (Reused for Collections) -->
+<div id="nft-modal"
+    class="fixed inset-0 bg-black bg-opacity-75 z-[1002] hidden flex items-center justify-center transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 max-w-[300px] xs:max-w-md w-11/12 max-h-[90vh] overflow-y-auto relative">
+        <button id="close-nft-modal"
+            class="absolute top-1 xs:top-2 right-1 xs:right-2 text-text-light dark:text-text-dark text-lg xs:text-xl"
+            aria-label="Close modal">×</button>
+        <div class="flex items-start mb-3 xs:mb-4">
+            <img id="nft-modal-image" src="" alt="Collection Image"
+                class="w-16 xs:w-20 h-16 xs:h-20 object-cover rounded-lg mr-3 xs:mr-4">
+            <div class="flex-1">
+                <a id="nft-modal-link" href=""
+                    class="text-base xs:text-lg sm:text-xl font-semibold text-primary hover:underline">
+                    <h3 id="nft-modal-name" class="inline"></h3>
+                </a>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 xs:gap-3">
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">Holders:</span>
+                <span id="nft-modal-holders"></span>
+            </div>
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">Supply/Listed:</span>
+                <span id="nft-modal-supply-listed"></span>
+            </div>
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">Volume:</span>
+                <span id="nft-modal-volume"></span> SOL
+            </div>
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">Market Cap:</span>
+                <span id="nft-modal-market-cap"></span> SOL
+            </div>
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">24h Change:</span>
+                <span id="nft-modal-price-change"></span>%
+            </div>
+            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <span class="block font-semibold text-text-light dark:text-text-dark">Performance:</span>
+                <span id="nft-modal-performance"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 600, once: true });
+        VanillaTilt.init(document.querySelectorAll('[data-tilt]'), {
+            max: 15, speed: 400, glare: false, scale: 1.05
+        });
+
+        // Particles.js initialization
+        particlesJS('particles-hero', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: '#ffffff' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: false },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
+            },
+            interactivity: { 
+                detect_on: 'canvas', 
+                events: { 
+                    onhover: { enable: true, mode: 'grab' }, 
+                    onclick: { enable: true, mode: 'push' }, 
+                    resize: true 
+                } 
+            },
+            retina_detect: true
+        });
+
+        // NFT Modal Elements
+        const nftModal = document.getElementById('nft-modal');
+        const closeNftModal = document.getElementById('close-nft-modal');
+        const nftModalImage = document.getElementById('nft-modal-image');
+        const nftModalName = document.getElementById('nft-modal-name');
+        const nftModalLink = document.getElementById('nft-modal-link');
+        const nftModalHolders = document.getElementById('nft-modal-holders');
+        const nftModalSupplyListed = document.getElementById('nft-modal-supply-listed');
+        const nftModalVolume = document.getElementById('nft-modal-volume');
+        const nftModalMarketCap = document.getElementById('nft-modal-market-cap');
+        const nftModalPriceChange = document.getElementById('nft-modal-price-change');
+        const nftModalPerformance = document.getElementById('nft-modal-performance');
+
+        // Hero Carousel
+        const heroSection = document.getElementById('hero');
+        let heroSlides = [];
+        let heroSlideIndex = 0;
+
+        function updateHeroCarousel() {
+            if (!heroSlides.length || !heroSection) return;
+            const slide = heroSlides[heroSlideIndex % heroSlides.length];
+            const titleEl = heroSection.querySelector('h1');
+            const descriptionEl = heroSection.querySelector('p');
+            const buttonEl = heroSection.querySelector('a');
+
+            if (titleEl) titleEl.textContent = slide.title || '';
+            if (descriptionEl) descriptionEl.textContent = slide.description || '';
+            if (buttonEl) {
+                if (slide.button_text && slide.button_url) {
+                    buttonEl.textContent = slide.button_text;
+                    buttonEl.href = slide.button_url;
+                    buttonEl.classList.remove('hidden');
+                } else {
+                    buttonEl.classList.add('hidden');
+                }
+            }
+
+            AOS.refresh();
+            heroSlideIndex++;
+        }
+
+        // Auto-rotate hero slides every 5 seconds
+        setInterval(updateHeroCarousel, 5000);
+
+        // Collection Modal with Event Delegation
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('[data-collection-modal]');
+            if (card) {
+                nftModalImage.src = card.getAttribute('data-collection-image');
+                nftModalName.textContent = card.getAttribute('data-collection-name');
+                nftModalLink.href = `/collection/${card.getAttribute('data-collection-address')}/`;
+                nftModalHolders.textContent = card.getAttribute('data-collection-holders');
+                nftModalSupplyListed.textContent = card.getAttribute('data-collection-supply-listed');
+                nftModalVolume.textContent = card.getAttribute('data-collection-volume');
+                nftModalMarketCap.textContent = card.getAttribute('data-collection-market-cap');
+                nftModalPriceChange.textContent = card.getAttribute('data-collection-price-change');
+                nftModalPerformance.textContent = card.getAttribute('data-collection-performance');
+
+                nftModal.classList.remove('hidden');
+                setTimeout(() => {
+                    nftModal.classList.add('opacity-100');
+                }, 10);
+            }
+        });
+
+        // NFT Modal with Event Delegation
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('[data-nft-modal]');
+            if (card) {
+                nftModalImage.src = card.getAttribute('data-nft-image');
+                nftModalName.textContent = card.getAttribute('data-nft-name');
+                nftModalLink.href = '#';
+                nftModalHolders.textContent = '';
+                nftModalSupplyListed.textContent = '';
+                nftModalVolume.textContent = '';
+                nftModalMarketCap.textContent = '';
+                nftModalPriceChange.textContent = '';
+                nftModalPerformance.textContent = '';
+                nftModal.classList.remove('hidden');
+                setTimeout(() => {
+                    nftModal.classList.add('opacity-100');
+                }, 10);
+            }
+        });
+
+        closeNftModal.addEventListener('click', () => {
+            nftModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                nftModal.classList.add('hidden');
+            }, 300);
+        });
+
+        nftModal.addEventListener('click', (e) => {
+            if (e.target === nftModal) {
+                nftModal.classList.remove('opacity-100');
+                setTimeout(() => {
+                    nftModal.classList.add('hidden');
+                }, 300);
+            }
+        });
+
+        // Simulate live activity updates
+        setInterval(() => {
+            const activityBar = document.getElementById('activity-bar');
+            if (activityBar) {
+                const currentWidth = parseInt(activityBar.style.width) || 80;
+                const newWidth = Math.min(100, currentWidth + Math.random() * 5);
+                activityBar.style.width = `${newWidth}%`;
+                const span = activityBar.querySelector('span');
+                if (span) span.textContent = `${Math.round(newWidth)}%`;
+            }
+        }, 5000);
+
+
+        // SSE Connections for Index Page Updates
+        const siteUpdatesSource = new EventSource('/stream-site-updates/?page=index');
+        const heroSlidesSource = new EventSource('/stream-hero-slides/');
+        const highestVitalitySource = new EventSource('/stream-highest-vitality-collections/');
+
+        // Handle site updates
+        siteUpdatesSource.onopen = function() {
+            console.log("SSE connection established for site updates");
+        };
+
+        siteUpdatesSource.onmessage = function(event) {
+            console.log("Received SSE message for site updates:", event.data);
+            const data = JSON.parse(event.data);
+
+            if (data.error) {
+                console.error("SSE Error for site updates:", data.error);
+                return;
+            }
+
+            // Update Collection Sweeps
+            if (data.collection_sweeps) {
+                const sweepsContainer = document.getElementById('collection-sweeps');
+                if (sweepsContainer) {
+                    const grid = sweepsContainer.querySelector('.grid');
+                    if (grid) {
+                        grid.innerHTML = '';
+                        data.collection_sweeps.forEach((sweep, index) => {
+                            const sweepHTML = `
+                                <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer"
+                                    data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                                    data-aos="fade-up" data-aos-delay="${index * 100}"
+                                    data-nft-modal data-nft-name="Sweep: ${sweep.collection}"
+                                    data-nft-image="${sweep.image_url}"
+                                    data-nft-description="Items: ${sweep.num_items} | Total Volume: ${sweep.total_volume.toFixed(2)} SOL">
+                                    <div class="p-2 xs:p-3 sm:p-4">
+                                        <h3 class="text-sm xs:text-base sm:text-lg font-semibold text-text-light dark:text-text-dark mb-1">${sweep.collection}</h3>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Buyer: @${sweep.buyer_address.slice(0, 8)}</p>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Items: ${sweep.num_items} | Volume: ${sweep.total_volume.toFixed(2)} SOL</p>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Price Movement: ${sweep.price_movement.toFixed(2)}%</p>
+                                        ${sweep.target_traits ? `
+                                            <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Targeted Traits: ${sweep.target_traits.map(t => `${t.trait_type}: ${t.trait_value} (${t.frequency.toFixed(2)}%)`).join(', ')}</p>
+                                        ` : ''}
+                                        <span class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Score: ${sweep.significance_score.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            `;
+                            grid.insertAdjacentHTML('beforeend', sweepHTML);
+                        });
+                        VanillaTilt.init(grid.querySelectorAll('[data-tilt]'));
+                    }
+                }
+            }
+
+            // Update Trending Traits
+            if (data.trending_traits) {
+                const trendingList = document.querySelector('#trending-traits .grid');
+                if (trendingList) {
+                    trendingList.innerHTML = '';
+                    if (data.trending_traits.length === 0) {
+                        trendingList.innerHTML = `
+                            <div class="col-span-full text-center">
+                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs xs:text-sm sm:text-base mb-3 xs:mb-4">No trending traits available.</p>
+                                <p class="text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">Discover trending Solana traits soon!</p>
+                            </div>`;
+                    } else {
+                        data.trending_traits.forEach((trait, index) => {
+                            const traitHTML = `
+                                <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
+                                    data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                                    data-aos="fade-up" data-aos-delay="${index * 100}"
+                                    data-nft-modal
+                                    data-nft-name="${trait.trait_name}: ${trait.trait_value}"
+                                    data-nft-image="${trait.image_url}"
+                                    data-nft-description="Occurrences: ${trait.count}"
+                                    data-nft-rarity="Trending">
+                                    <div class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">Trending</div>
+                                    <img src="${encodeURI(trait.image_url)}" alt="${encodeURIComponent(trait.trait_name)}"
+                                        class="w-full h-28 xs:h-32 sm:h-36 object-cover">
+                                    <div class="p-2 xs:p-3 sm:p-4">
+                                        <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">${trait.trait_name}: ${trait.trait_value}</h3>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">Occurrences: ${trait.count}</p>
+                                        <span class="block text-right text-green-600 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Trending</span>
+                                    </div>
+                                </div>
+                            `;
+                            trendingList.insertAdjacentHTML('beforeend', traitHTML);
+                        });
+                        VanillaTilt.init(trendingList.querySelectorAll('[data-tilt]'));
+                    }
+                }
+            }
+
+            // Update Recent Transfers
+            if (data.recent_transfers) {
+                const transfersList = document.querySelector("#social-proof ul");
+                if (transfersList) {
+                    transfersList.innerHTML = '';
+                    if (data.recent_transfers.length === 0) {
+                        transfersList.innerHTML = `
+                            <li class="bg-accent-light dark:bg-gray-900 rounded-lg p-2 xs:p-3 text-center text-text-secondary-light dark:text-gray-400 text-[10px] xs:text-xs sm:text-sm">
+                                No recent high-profile transfers available.
+                            </li>`;
+                    } else {
+                        data.recent_transfers.forEach((transfer, index) => {
+                            const traits = transfer.traits ? Object.entries(transfer.traits).map(([key, value]) => `${key}: ${value}`).join(', ') : 'None';
+                            const transferHTML = `
+                                <li class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md transition-shadow hover:shadow-lg p-2 xs:p-3 flex items-start tilt-card"
+                                    data-tilt data-tilt-id="transfer-${index}"
+                                    data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                                    data-aos="fade-up" data-aos-delay="${index * 100}">
+                                    <img src="${encodeURI(transfer.image_url || '/static/img/nft-default.png')}" alt="NFT Image"
+                                        class="w-6 xs:h-6 sm:h-8 rounded-full mr-2 xs:mr-3">
+                                    <div class="flex-1">
+                                        <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@${transfer.buyer ? transfer.buyer.slice(0, 8) : 'Unknown'}</span>
+                                        bought <strong class="text-[10px] xs:text-xs sm:text-sm">${transfer.mint_address ? transfer.mint_address.slice(0, 8) : 'Unknown'}</strong>
+                                        from <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@${transfer.seller ? transfer.seller.slice(0, 8) : 'Unknown'}</span>
+                                        for <strong class="text-[10px] xs:text-xs sm:text-sm">${transfer.price ? transfer.price.toFixed(2) : '0.00'} SOL</strong>
+                                        <span class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-gray-400 mt-1">Collection: ${transfer.collection || 'Unknown'}</span>
+                                        <span class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-gray-400">Traits: ${traits}</span>
+                                    </div>
+                                </li>
+                            `;
+                            transfersList.insertAdjacentHTML('beforeend', transferHTML);
+                        });
+                        VanillaTilt.init(transfersList.querySelectorAll('[data-tilt]'));
+                    }
+                }
+            }
+
+// Update Top Collections
+        if (data.top_collections) {
+            const collectionsTable = document.getElementById('top-collections-table');
+            if (collectionsTable) {
+                collectionsTable.innerHTML = ''; // Clear existing rows
+
+                if (data.top_collections.length === 0) {
+                    // This now matches your template's empty state
+                    collectionsTable.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
+                                No collections.
+                            </td>
+                        </tr>`;
+                } else {
+                    data.top_collections.forEach((collection, index) => {
+                        // Determine vitality color
+                        const vitalityScore = Math.round(collection.vitality_score || 0);
+                        let vitalityClass = 'text-gray-400';
+                        if (vitalityScore >= 70) vitalityClass = 'text-green-500';
+                        else if (vitalityScore >= 40) vitalityClass = 'text-yellow-500';
+                        else if (vitalityScore > 0) vitalityClass = 'text-red-500';
+                        
+                        // FIX: This HTML now matches your new Django template structure
+                        const collectionHTML = `
+                            <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
+                                <td colspan="3" class="p-0">
+                                    <a href="/collection/${collection.address}/" 
+                                       class="flex items-center cursor-pointer hover:no-underline">
+                                        
+                                        <div class="flex-1 p-1 xs:p-2">
+                                            <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
+                                                <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${index + 1}</span>
+                                                <img src="${collection.image_url || '/static/img/collection-default.png'}" 
+                                                     alt="${collection.name}" 
+                                                     class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
+                                                <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">${collection.name}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                            <span class="vitality-value font-bold ${vitalityClass}" data-score="${vitalityScore}">
+                                                ${vitalityScore > 0 ? vitalityScore : '--'}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                            ${collection.volume.toFixed(2)} SOL
+                                        </div>
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                        collectionsTable.innerHTML += collectionHTML;
+                    });
+                }
+            }
+        }
+            // Update Top Traits
+            if (data.top_traits) {
+                const traitsTable = document.querySelector('.traits-table tbody');
+                const traitsCardContainer = document.querySelector('.traits-card-container');
+                if (traitsTable && traitsCardContainer) {
+                    traitsTable.innerHTML = '';
+                    traitsCardContainer.innerHTML = '';
+                    if (data.top_traits.length === 0) {
+                        traitsTable.innerHTML = `
+                            <tr>
+                                <td colspan="9" class="p-2 xs:p-3 sm:p-4 text-center text-text-secondary-light dark:text-gray-400 text-[10px] xs:text-xs sm:text-sm">
+                                    No top traits available.
+                                </td>
+                            </tr>`;
+                        traitsCardContainer.innerHTML = `
+                            <p class="text-center text-text-secondary-light dark:text-gray-400 col-span-full text-xs xs:text-sm sm:text-base">
+                                No top traits available.
+                            </p>`;
+                    } else {
+                        data.top_traits.forEach((trait, index) => {
+                            const tableRowHTML = `
+                                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-lg">
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${index + 1}</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[10px] xs:text-xs sm:text-sm truncate">${trait.trait_name}: ${trait.trait_value}</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm truncate">${trait.collection}</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.volume.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.floor_price.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.sales}</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.market_cap.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-green-600 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">↑ ${trait.trend_percentage}%</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.count}</td>
+                                </tr>
+                            `;
+                            traitsTable.innerHTML += tableRowHTML;
+
+                            const cardHTML = `
+                                <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md tilt-card cursor-pointer relative"
+                                    data-tilt data-tilt-max="2" data-tilt-speed="10" data-tilt-perspective="0"
+                                    data-nft-modal
+                                    data-nft-name="${encodeURIComponent(trait.trait_name)}: ${encodeURIComponent(trait.trait_value)}"
+                                    data-nft-image="${encodeURI(trait.image_url)}"
+                                    data-nft-description="Collection: ${trait.collection} | Count: ${trait.count}"
+                                    data-nft-trend="${trait.trend_percentage}%">
+                                    <div class="absolute top-2 right-2 bg-blue-600 text-white text-[10px] xs:text-xs px-2 py-0.5 rounded-full rarity-badge">Top</div>
+                                    <div class="trait-image h-28 xs:h-32 sm:h-36 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                        <img src="${encodeURI(trait.image_url)}" alt="${encodeURIComponent(trait.trait_name)}" class="max-w-[80%] max-h-[80%] object-contain">
+                                    </div>
+                                    <div class="p-2 xs:p-3 sm:p-4 flex-1">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h3 class="text-[13px] xs:text-sm sm:text-base font-medium text-text-light dark:text-black">${trait.trait_name}: ${trait.trait_value}</h3>
+                                            <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-gray-400">TREND: <span class="text-green-600">↑ ${trait.trend_percentage}%</span></p>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex justify-between">
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${index + 1}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">RANK</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.volume.toFixed(2)}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">VOLUME</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.floor_price.toFixed(2)}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">FLOOR</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.sales}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">SALES</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.market_cap.toFixed(2)}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">MARKET CAP</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.count}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">SCORE</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-dark dark:text-white">${trait.collection}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">COLLECTION</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-dark dark:text-white">${trait.trait_name}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">TRAIT</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            traitsCardContainer.innerHTML += cardHTML;
+                        });
+                        VanillaTilt.init(document.querySelectorAll('[data-tilt]'));
+                    }
+                }
+            }
+
+            // Update Live X Feed
+            if (data.x_feed) {
+                const feedContainer = document.querySelector("#social-proof .space-y-2.xs\\:space-y-3");
+                if (feedContainer) {
+                    feedContainer.innerHTML = '';
+                    data.x_feed.forEach((post, index) => {
+                        const postHTML = `
+                            <div class="x-post-wrapper">
+                                <div class="x-post bg-accent-light dark:bg-gray-900 rounded-lg p-1 xs:p-2 sm:p-3 flex items-start tilt-card"
+                                    data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                                    data-aos="fade-up" data-aos-delay="${index * 100}">
+                                    <img src="${post.avatar_url || '/static/img/user-avatar-default.jpg'}" alt="User Avatar"
+                                        class="w-5 xs:h-6 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3">
+                                    <div class="flex-1">
+                                        <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@${post.username}</span>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm">${post.content}</p>
+                                        <span class="block text-[8px] xs:text-[9px] sm:text-xs text-text-secondary-light dark:text-gray-400 mt-0.5 xs:mt-1">${post.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        feedContainer.innerHTML += postHTML;
+                    });
+                    VanillaTilt.init(feedContainer.querySelectorAll('[data-tilt]'));
+                }
+            }
+        };
+
+        siteUpdatesSource.onerror = function(error) {
+            console.error("SSE error for site updates:", error);
+        };
+
+        // Handle Hero Slides Updates
+        heroSlidesSource.onopen = function() {
+            console.log("SSE connection established for hero slides");
+        };
+
+        heroSlidesSource.onmessage = function(event) {
+            console.log("Received SSE message for hero slides:", event.data);
+            const data = JSON.parse(event.data);
+
+            if (data.error) {
+                console.error("SSE Error for hero slides:", data.error);
+                return;
+            }
+
+            if (data.hero_slides) {
+                heroSlides = data.hero_slides;
+                heroSlideIndex = 0;
+                updateHeroCarousel();
+            }
+        };
+
+        heroSlidesSource.onerror = function(error) {
+            console.error("SSE error for hero slides:", error);
+        };
+
+       // Handle Highest Vitality Collections Updates
+        highestVitalitySource.onopen = function() {
+            console.log("SSE connection established for highest vitality collections");
+        };
+
+        highestVitalitySource.onmessage = function(event) {
+            console.log("Received SSE message for highest vitality collections:", event.data);
+            const data = JSON.parse(event.data);
+
+            if (data.error) {
+                console.error("SSE Error for highest vitality collections:", data.error);
+                return;
+            }
+
+            if (data.highest_vitality_collections) {
+                window.updateHighestVitalityCarousel(data.highest_vitality_collections);
+                AOS.refresh();
+            }
+        };
+
+        highestVitalitySource.onerror = function(error) {
+            console.error("SSE error for highest vitality collections:", error);
+        };
+
+        // Cleanup SSE connections on page unload
+        window.addEventListener('beforeunload', () => {
+            siteUpdatesSource.close();
+            heroSlidesSource.close();
+            highestVitalitySource.close();
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const carousel = document.getElementById('collections-carousel');
+        const prevBtn = document.getElementById('carousel-prev');
+        const nextBtn = document.getElementById('carousel-next');
+
+        if (!carousel) return;
+
+        // --- Carousel State Variables ---
+        let cards = carousel.children;
+        let totalCards = 0;
+        let originalCardCount = 0;
+        let cardWidth = 0;
+        let currentIndex = 0;
+        let isAnimating = false;
+        let autoScrollInterval = null;
+
+        // --- Carousel Core Logic ---
+        function startCarousel() {
+            stopCarousel(); // Stop any previous interval
+
+            if (originalCardCount === 0) {
+                // No cards, hide buttons.
+                if (prevBtn) prevBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
+                return;
+            }
+            
+            // Show buttons
+            if (prevBtn) prevBtn.style.display = 'block';
+            if (nextBtn) nextBtn.style.display = 'block';
+
+            // Calculate new card width
+            cards = carousel.children;
+            totalCards = cards.length;
+            if (totalCards === 0 || !cards[0]) return; // Safety check
+            
+            // Card width + 24px gap (from 'gap-6' which is 1.5rem = 24px)
+            cardWidth = cards[0].offsetWidth + 24; 
+            currentIndex = 0;
+            carousel.style.transform = 'translateX(0px)';
+            
+            // Start the new interval
+            autoScrollInterval = setInterval(autoScroll, 3000);
+        }
+
+        function stopCarousel() {
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval);
+            }
+        }
+
+        function autoScroll() {
+            if (isAnimating) return;
+            isAnimating = true;
+            currentIndex++;
+            
+            carousel.style.transition = 'transform 0.5s ease-in-out';
+            carousel.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+            if (currentIndex >= originalCardCount) {
+                setTimeout(() => {
+                    carousel.style.transition = 'none';
+                    currentIndex = 0;
+                    carousel.style.transform = `translateX(0px)`;
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 50);
+                }, 500); // Must match transition duration
+            } else {
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 500);
+            }
+        }
+
+        function goToNext() {
+            if (isAnimating) return;
+            stopCarousel();
+            autoScroll();
+            startCarousel(); // Restart auto-scroll
+        }
+
+        function goToPrev() {
+            if (isAnimating) return;
+            stopCarousel();
+            
+            isAnimating = true;
+            if (currentIndex === 0) {
+                carousel.style.transition = 'none';
+                currentIndex = originalCardCount;
+                carousel.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+                setTimeout(() => {
+                    carousel.style.transition = 'transform 0.5s ease-in-out';
+                    currentIndex--;
+                    carousel.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+                    setTimeout(() => {
+                        isAnimating = false;
+                        startCarousel(); // Restart auto-scroll
+                    }, 500);
+                }, 50);
+            } else {
+                currentIndex--;
+                carousel.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+                setTimeout(() => {
+                    isAnimating = false;
+                    startCarousel(); // Restart auto-scroll
+                }, 500);
+            }
+        }
+
+        // --- Event Listeners ---
+        if (nextBtn) nextBtn.addEventListener('click', goToNext);
+        if (prevBtn) prevBtn.addEventListener('click', goToPrev);
+        carousel.addEventListener('mouseenter', stopCarousel);
+        carousel.addEventListener('mouseleave', startCarousel);
+        
+        // --- THIS IS THE SSE UPDATE FUNCTION ---
+        window.updateHighestVitalityCarousel = function(newCollections) {
+            console.log("Updating carousel with new data...");
+            
+            // 1. Destroy old tilt effects
+            const existingTilts = carousel.querySelectorAll('[data-tilt]');
+            existingTilts.forEach(tiltEl => {
+                if (tiltEl.vanillaTilt) {
+                    tiltEl.vanillaTilt.destroy();
+                }
+            });
+
+            // 2. Clear carousel
+            carousel.innerHTML = '';
+            
+            // 3. Check for empty state
+            if (!newCollections || newCollections.length === 0) {
+                carousel.innerHTML = `
+                    <div class="text-center w-full">
+                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                            No high-vitality collections available right now.
+                        </p>
+                    </div>
+                `;
+                originalCardCount = 0; // Set count to 0
+                startCarousel(); // This will hide buttons
+                return;
+            }
+
+            // 4. Build new cards (doubled for loop)
+            originalCardCount = newCollections.length; // Set new count
+            for (let i = 0; i < 2; i++) {
+                newCollections.forEach(collection => {
+                    const cardHTML = `
+                        <div class="flex-shrink-0 w-64 xs:w-72 sm:w-80 bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative h-48 xs:h-56 sm:h-64"
+                             data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                             data-collection-modal
+                             data-collection-name="${encodeURIComponent(collection.name)}"
+                             data-collection-image="${encodeURI(collection.image_url || '/static/img/collection-default.png')}"
+                             data-collection-holders="${collection.number_of_holders || 0}"
+                             data-collection-supply-listed="${collection.total_supply || 0}/${collection.listed_count || 0}"
+                             data-collection-volume="${(collection.total_volume || 0).toFixed(2)}"
+                             data-collection-market-cap="${(collection.market_cap || 0).toFixed(2)}"
+                             data-collection-price-change="${(collection.price_change_24h || 0).toFixed(1)}"
+                             data-collection-performance="${(collection.performance_score || 0).toFixed(1)}"
+                             data-collection-address="${collection.address}">
+                            <img src="${encodeURI(collection.image_url || '/static/img/collection-default.png')}"
+                                 alt="${encodeURIComponent(collection.name)}" class="w-full h-full object-cover absolute inset-0">
+                            <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/80"></div>
+                            <div class="absolute bottom-0 left-0 p-3 xs:p-4 sm:p-5 z-10">
+                                <h3 class="text-sm xs:text-base sm:text-lg font-bold text-white drop-shadow-lg shadow-black/80 leading-tight">
+                                    ${collection.name}
+                                </h3>
+                            </div>
+                        </div>
+                    `;
+                    carousel.innerHTML += cardHTML;
+                });
+            }
+            
+            // 5. Re-initialize tilt
+            VanillaTilt.init(carousel.querySelectorAll('[data-tilt]'));
+            
+            // 6. Refresh AOS
+            if (typeof AOS !== 'undefined') {
+                AOS.refresh();
+            }
+
+            // 7. CRITICAL: Restart the carousel logic with new cards
+            startCarousel();
+        }
+        
+        // --- Initial Load ---
+        // This reads the data your Django view passes into the template.
+        // Make sure your view passes 'highest_vitality_collections' to the template.
+        const initialData = [
+            {% for collection in highest_vitality_collections %}
+            {
+                name: "{{ collection.name|escapejs }}",
+                image_url: "{% if collection.image_url %}{{ collection.image_url|escapejs }}{% else %}{% static 'img/collection-default.png' %}{% endif %}",
+                number_of_holders: {{ collection.number_of_holders|default:0 }},
+                total_supply: {{ collection.total_supply|default:0 }},
+                listed_count: {{ collection.listed_count|default:0 }},
+                total_volume: {{ collection.total_volume|default:0.0 }},
+                market_cap: {{ collection.market_cap|default:0.0 }},
+                price_change_24h: {{ collection.price_change_24h|default:0.0 }},
+                performance_score: {{ collection.performance_score|default:50.0 }},
+                address: "{{ collection.address|escapejs }}"
+            },
+            {% endfor %}
+        ];
+        
+        // Call the update function on page load with the initial data
+        window.updateHighestVitalityCarousel(initialData);
+
+    });
+</script>
+<style>
+    /* Custom Animations */
+    .animate-bounce {
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-20px);
+        }
+        60% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    #collections-carousel {
+        will-change: transform;
+    }
+
+    /* Optional: Hide navigation arrows on small screens */
+    @media (max-width: 640px) {
+        #carousel-prev,
+        #carousel-next {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+
+
+
