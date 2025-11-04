@@ -284,39 +284,45 @@ def store_signed_message(request):
         return JsonResponse({'error': 'Failed to store signed message', 'details': str(e)}, status=500)
 
 
+
 @require_POST
 def create_session(request):
     try:
         data = json.loads(request.body)
         public_key = data.get('public_key')
+        # FIX: Read signed message directly from the request body
+        signed_message_base64 = data.get('signed_message') 
 
-        if not public_key:
-            return JsonResponse({'error': 'Public key is required'}, status=400)
-
-        signed_message_base64 = request.session.get('signed_message')
-        if not signed_message_base64:
-            return JsonResponse({'error': 'Signed message not found in session'}, status=400)
+        if not public_key or not signed_message_base64:
+            return JsonResponse({'error': 'Public key and signed message are required'}, status=400)
 
         signed_message = base64.b64decode(signed_message_base64)
 
+        # The message the user was prompted to sign on their wallet
         original_message = f"Sign this message to log in or create an account. Wallet: {public_key}".encode('utf-8')
-        print(f"Verifying signature for public_key: {public_key}")
-        print(f"Original message: {original_message}")
-
+        
         if not verify_signed_message(public_key, signed_message, original_message):
             return JsonResponse({'error': 'Signature verification failed'}, status=400)
 
         with transaction.atomic():
+            # 1. Get or Create User and WalletProfile
             profile, user, created = WalletProfile.get_or_create_profile_and_user(public_key=public_key)
 
-            print(f"Before authenticate, signed_message in session: {request.session.get('signed_message')}")
-            user = authenticate(request, public_key=public_key)
-            print(f"After authenticate, signed_message in session: {request.session.get('signed_message')}")
+            # 2. Authenticate using the signature data
+            # The CustomAuthBackend must be updated to accept raw_signature
+            user = authenticate(
+                request, 
+                public_key=public_key, 
+                raw_signature=signed_message_base64 # Passed for backend verification
+            ) 
+            
             if user is None:
-                return JsonResponse({'error': 'Authentication failed: Invalid signature or user not found'}, status=400)
-
-            request.session.pop('signed_message', None)
-
+                return JsonResponse({'error': 'Authentication failed: User not found/active'}, status=400)
+            
+            # 3. Finalize Session
+            # We clear any stale message stored by the old two-step flow
+            request.session.pop('signed_message', None) 
+            
             login(request, user, backend='wallet.auth_backends.CustomAuthBackend')
             request.session['wallet_connected'] = True
             request.session['wallet_public_key'] = public_key
@@ -392,37 +398,32 @@ def link_wallet(request):
     try:
         data = json.loads(request.body)
         public_key = data.get('public_key')
+        # FIX: Read signed message directly from the request body
+        signed_message_base64 = data.get('signed_message') 
 
-        signed_message_base64 = request.session.get('signed_message')
-        if not signed_message_base64:
-            return JsonResponse({'error': 'Signed message not found in session'}, status=400)
-
-        if not public_key:
-            return JsonResponse({
-                'error': 'Public key is required',
-                'received': {'public_key': bool(public_key)}
-            }, status=400)
+        if not public_key or not signed_message_base64:
+             return JsonResponse({'error': 'Public key and signed message are required'}, status=400)
 
         signed_message = base64.b64decode(signed_message_base64)
 
+        # NOTE: The client-side JS used: "Sign this message to link. Wallet: {public_key}"
         original_message = f"Sign this message to link. Wallet: {public_key}".encode('utf-8')
 
         if not verify_signed_message(public_key, signed_message, original_message):
             return JsonResponse({'error': 'Signature verification failed'}, status=400)
 
-        request.session.pop('signed_message', None)
-
+        # NOTE: No session pop needed here either
+        
         user = request.user
-        # Check if this wallet is already linked to THIS user
+        # Check if this wallet is already linked to THIS user (existing check is good)
         if WalletProfile.objects.filter(user=user, public_key=public_key).exists():
             return JsonResponse({'error': 'This wallet is already linked to your account'}, status=400)
 
-        # Check if wallet is linked to ANOTHER user
+        # Check if wallet is linked to ANOTHER user (existing check is good)
         if WalletProfile.objects.filter(public_key=public_key).exists():
             return JsonResponse({'error': 'This wallet is already linked to another account'}, status=400)
 
         with transaction.atomic():
-            # Create new wallet - will auto-set as primary if it's the first wallet
             WalletProfile.objects.create(user=user, public_key=public_key)
 
         request.session['wallet_connected'] = True

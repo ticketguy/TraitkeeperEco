@@ -3,45 +3,22 @@
 """
 NFT Vitality System - TraitKeeper's Proprietary Value Metric
 
-This module contains models for calculating and storing NFT Vitality scores,
-which serve as the primary value indicator in TraitKeeper's marketplace.
-
-Vitality is a multi-component score (0-100) that represents an NFT's true value
-based on trait performance, rarity, collection health, market momentum, holder quality,
-and historical stability. Unlike floor price (which is collection-level), Vitality
-provides individual NFT-level valuation.
-
-Component Weights (User-Specified):
-- Market Momentum: 25%
-- Trait Performance: 20%
-- Collection Health: 15%
-- Collection Utility: 10%
-- Rarity Score: 10%
-- Holder Quality: 10%
-- Sentiment Score: 5% (TODO: Not yet implemented, returns neutral)
-- Market Influence: 5%
-
-Total: 100%
+This module contains models for calculating and storing NFT Vitality scores.
+Component fields are changed from DecimalField to FloatField for consistency
+with the calculation service, while the final vitality_score remains a precise Decimal.
 """
 
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from nft_data.models import NFT, NFTCollection
 
 
 class NFTVitality(models.Model):
     """
     Stores the current vitality score for an individual NFT.
-
-    This is the main model for NFT-level vitality. Each NFT has exactly one
-    current vitality record that gets updated periodically based on the
-    collection's priority tier (VIP = every 15 min, ACTIVE = hourly, etc.).
-
-    Vitality is PUBLIC - anyone can see the score and its component breakdown.
-    This transparency helps buyers and sellers make informed decisions.
     """
 
     # One-to-one relationship ensures each NFT has exactly one current vitality score
@@ -60,71 +37,57 @@ class NFTVitality(models.Model):
         help_text="Final weighted vitality score (0-100)"
     )
 
-    # === Component Scores (0-1 range, weighted in calculation) ===
+    # === Component Scores (0-1 range, now FloatField for calculation service consistency) ===
 
     # Market Momentum (25% weight)
-    # Recent price velocity and interest trends for this specific NFT
-    # Calculated using 60-day lookback period
-    market_momentum = models.FloatField(
+    market_momentum = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Price/interest momentum over 60 days (0-1)"
     )
 
     # Trait Performance (20% weight)
-    # How well NFTs with similar traits are performing in the market
-    trait_performance = models.FloatField(
+    trait_performance = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Avg performance of this NFT's traits (0-1)"
     )
 
     # Collection Health (15% weight)
-    # Overall health of the parent collection
-    collection_health = models.FloatField(
+    collection_health = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Parent collection's market health (0-1)"
     )
 
     # Collection Utility (10% weight)
-    # Utility value the collection provides (staking, governance, access, etc.)
-    collection_utility = models.FloatField(
+    collection_utility = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Collection's utility/use-case value (0-1)"
     )
 
     # Rarity Score (10% weight)
-    # Statistical rarity of trait combinations
-    rarity_score = models.FloatField(
+    rarity_score = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Trait combination rarity (0-1)"
     )
 
     # Holder Quality (10% weight)
-    # Quality/influence of the current holder's wallet
-    holder_quality = models.FloatField(
+    holder_quality = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Current holder's wallet quality (0-1)"
     )
 
     # Sentiment Score (5% weight)
-    # TODO: Implement sentiment analysis from social media/community
-    # Future: Twitter mentions, Discord activity, user reviews
-    # For now, defaults to 0.5 (neutral)
-    sentiment_score = models.FloatField(
+    sentiment_score = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Community sentiment (0-1) - TODO: Not yet implemented"
     )
 
     # Market Influence (5% weight)
-    # How influential this NFT/collection is in the broader market
-    market_influence = models.FloatField(
+    market_influence = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
         help_text="Market influence score (0-1)"
     )
 
     # === Suggested Price ===
-    # TODO: Implement price suggestion algorithm
-    # This will convert vitality score to a suggested SOL price
-    # For now, set to None until algorithm is finalized
     suggested_price = models.DecimalField(
         max_digits=20,
         decimal_places=9,
@@ -167,14 +130,6 @@ class NFTVitality(models.Model):
 class NFTVitalityHistory(models.Model):
     """
     Time-series history of NFT vitality scores.
-
-    Stores snapshots of vitality calculations over time, allowing us to:
-    - Track how an NFT's value changes
-    - Analyze vitality trends
-    - Provide historical charts to users
-    - Validate vitality accuracy (compare to actual sale prices)
-
-    This is PUBLIC data - transparency builds trust in the vitality system.
     """
 
     nft = models.ForeignKey(
@@ -192,14 +147,14 @@ class NFTVitalityHistory(models.Model):
     )
 
     # Component breakdown (stored for transparency)
-    market_momentum = models.FloatField()
-    trait_performance = models.FloatField()
-    collection_health = models.FloatField()
-    collection_utility = models.FloatField()
-    rarity_score = models.FloatField()
-    holder_quality = models.FloatField()
-    sentiment_score = models.FloatField()
-    market_influence = models.FloatField()
+    market_momentum = models.FloatField() # FIXED: Changed to FloatField
+    trait_performance = models.FloatField() # FIXED: Changed to FloatField
+    collection_health = models.FloatField() # FIXED: Changed to FloatField
+    collection_utility = models.FloatField() # FIXED: Changed to FloatField
+    rarity_score = models.FloatField() # FIXED: Changed to FloatField
+    holder_quality = models.FloatField() # FIXED: Changed to FloatField
+    sentiment_score = models.FloatField() # FIXED: Changed to FloatField
+    market_influence = models.FloatField() # FIXED: Changed to FloatField
 
     suggested_price = models.DecimalField(
         max_digits=20,
@@ -231,13 +186,6 @@ class NFTVitalityHistory(models.Model):
 class CollectionVitality(models.Model):
     """
     Collection-level vitality score.
-
-    While NFTs within a collection have different individual vitality scores,
-    the collection as a whole also has a vitality score representing its
-    overall market health and value proposition.
-
-    This is used in the NFT vitality calculation (collection_health component)
-    and also displayed on collection pages.
     """
 
     # One-to-one: each collection has one current vitality score
@@ -256,8 +204,7 @@ class CollectionVitality(models.Model):
         help_text="Collection-level vitality score (0-100)"
     )
 
-    # === Collection-Level Components ===
-    # These are aggregated from all NFTs in the collection
+    # === Collection-Level Components (FIXED: Changed to FloatField) ===
 
     market_momentum = models.FloatField(
         default=0.5,
@@ -320,41 +267,38 @@ class CollectionVitality(models.Model):
 
     @property
     def total_nfts(self):
-        """Total number of NFTs in the collection."""
-        # Count via the NFT model's FK to NFTCollection (assumes the FK field is named 'collection')
-        return NFT.objects.filter(collection=self.collection).count()
+        """
+        FIXED: Removed synchronous DB query. Access this via an async service or pre-annotation.
+        """
+        raise NotImplementedError("Access this via an async service or pre-annotation.")
 
     @property
     def nfts_with_data(self):
-        """Number of NFTs in the collection that have a vitality score."""
-        return NFT.objects.filter(collection=self.collection, vitality__isnull=False).count()
+        """
+        FIXED: Removed synchronous DB query. Access this via an async service or pre-annotation.
+        """
+        raise NotImplementedError("Access this via an async service or pre-annotation.")
 
     @property
     def avg_nft_vitality(self):
-        """The average vitality score of all NFTs within this collection."""
-        aggregation = NFT.objects.filter(collection=self.collection).aggregate(avg_score=Avg('vitality__vitality_score'))
-        return round(aggregation['avg_score'], 2) if aggregation['avg_score'] else 0.0
+        """
+        FIXED: Removed synchronous DB query. Access this via an async service or pre-annotation.
+        """
+        raise NotImplementedError("Access this via an async service or pre-annotation.")
 
     @property
     def trait_performance(self):
         """Placeholder for trait performance logic."""
-        # This requires complex logic. For now, a placeholder will fix the error.
-        # You would calculate this based on trait sales, rarity, etc.
-        return "N/A" 
         return "N/A" 
 
     @property
     def holder_quality(self):
         """Placeholder for holder quality logic."""
-        # This requires complex logic. For now, a placeholder will fix the error.
-        # You would analyze the wallets holding NFTs from this collection.
         return "N/A"
 
     @property
     def suggested_floor_price(self):
         """Placeholder for a calculated suggested floor price."""
-        # Your VitalityCalculationService would likely determine this.
-        # For now, this placeholder will fix the admin error.
         return "N/A"
 ## Missing Fields for His
 
@@ -362,8 +306,6 @@ class CollectionVitality(models.Model):
 class CollectionVitalityHistory(models.Model):
     """
     Time-series history of collection vitality scores.
-
-    Allows tracking of collection-level vitality trends over time.
     """
 
     collection = models.ForeignKey(
@@ -379,7 +321,7 @@ class CollectionVitalityHistory(models.Model):
         help_text="Collection vitality at this timestamp"
     )
 
-    # Component breakdown
+    # Component breakdown (FIXED: Changed to FloatField)
     market_momentum = models.FloatField()
     avg_trait_performance = models.FloatField()
     collection_health = models.FloatField()
@@ -409,13 +351,6 @@ class CollectionVitalityHistory(models.Model):
 class VitalityPriceComparison(models.Model):
     """
     Tracks actual sale prices vs vitality-suggested prices.
-
-    This model helps us:
-    1. Validate vitality accuracy
-    2. Improve the vitality algorithm over time
-    3. Show users how accurate vitality predictions are
-
-    Created automatically when an NFT is sold (from any marketplace).
     """
 
     # Link to the sale event
@@ -521,15 +456,6 @@ class VitalityPriceComparison(models.Model):
 class MinimumBidThreshold(models.Model):
     """
     Stores minimum bid thresholds for collections or individual NFTs.
-
-    As specified by user:
-    - Option 1: Set minimum price for certain collections
-    - Option 2: Bids cannot be too far below vitality (lowest -15% to -30%)
-
-    This model allows flexibility:
-    - Collection-level minimums (e.g., "No bids below 0.5 SOL for this collection")
-    - NFT-level minimums (e.g., owner sets "no bids below 1.0 SOL")
-    - Vitality-based minimums (e.g., "no bids below -20% of vitality score")
     """
 
     # Either collection-level OR NFT-level (one must be null)

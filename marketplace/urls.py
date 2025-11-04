@@ -21,14 +21,17 @@ urlpatterns = [
     path('api/bid/accept/', views.api_accept_bid, name='api_accept_bid'),
     path('api/bid/reject/', views.api_reject_bid, name='api_reject_reject'),
     path('api/bid/cancel/', views.api_cancel_bid, name='api_cancel_bid'),
+    path('api/get-nft-offers/<str:nft_mint>/', views.api_get_nft_offers, name='api_get_nft_offers'),
+    path('api/bid/confirm/', views.api_confirm_bid, name='api_confirm_bid'),
 
     # --- Counter Offers ---
-    path('api/bid/counter/', views.api_owner_counter_bid, name='owner_counter_bid'),
-    path('api/sell-intent/counter/', views.api_bidder_counter_sell_intent, name='bidder_counter_sell_intent'),
+    path('api/bid/counter/', views.api_owner_counter_bid, name='api_owner_counter_bid'), 
+    path('api/sell-intent/counter/', views.api_bidder_counter_sell_intent, name='api_bidder_counter_sell_intent'),
 
     # --- Auction Actions ---
     path('api/auction/create/', views.api_create_auction, name='api_create_auction'),
-    path('api/auction/bid/', views.api_place_auction_bid, name='api_place_auction_bid'),  # FIXED: Added missing =
+    path('api/auction/bid/', views.api_place_auction_bid, name='api_place_auction_bid'), 
     path('api/auction/cancel/', views.api_cancel_auction, name='api_cancel_auction'),
+    path('api/auction/finalize/', views.api_finalize_auction, name='api_finalize_auction'),
 
 ]

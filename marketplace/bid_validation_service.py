@@ -1,14 +1,9 @@
+# marketplace/bid_validation_service.py
 """
 Bid Validation Service
 
 This service validates bids against NFT vitality scores and collection-specific
 minimum bid thresholds.
-
-User Requirements:
-- Bids cannot be too far below vitality score
-- Minimum threshold range: -15% to -30% below vitality
-- Collection-level and NFT-level minimum bids supported
-- Helpful error messages for invalid bids
 """
 
 from decimal import Decimal
@@ -17,6 +12,7 @@ from django.db import models
 from asgiref.sync import sync_to_async
 import logging
 
+# Ensure these models exist in your project structure
 from nft_data.models import NFT, NFTCollection
 from .vitality_models import NFTVitality, MinimumBidThreshold
 
@@ -26,13 +22,6 @@ logger = logging.getLogger(__name__)
 class BidValidationService:
     """
     Service for validating bids against vitality scores and minimum thresholds.
-
-    Validation Rules:
-    1. Check NFT-level minimum threshold (if exists)
-    2. Check collection-level minimum threshold (if exists)
-    3. Check global minimum threshold (if exists)
-    4. Vitality-based thresholds: -15% to -30% below vitality score
-    5. Absolute SOL minimums (if configured)
     """
 
     # Default thresholds if no configured thresholds exist
@@ -50,31 +39,24 @@ class BidValidationService:
         Args:
             nft: The NFT being bid on
             bid_amount: The bid amount in SOL
-
+        
         Returns:
             Tuple of (is_valid, error_message)
-            - is_valid: True if bid is valid, False otherwise
-            - error_message: None if valid, detailed error message if invalid
-
-        Examples:
-            >>> service = BidValidationService()
-            >>> is_valid, error = await service.validate_bid(nft, Decimal('5.0'))
-            >>> if not is_valid:
-            ...     print(error)
         """
         # Step 1: Basic validation
         if bid_amount <= 0:
             return False, "Bid amount must be greater than 0 SOL"
 
-        # Step 2: Check absolute minimum
+        # Step 2: Check absolute minimum (Global floor)
         if bid_amount < self.DEFAULT_ABSOLUTE_MINIMUM_SOL:
             return False, f"Bid must be at least {self.DEFAULT_ABSOLUTE_MINIMUM_SOL} SOL"
 
-        # Step 3: Get NFT vitality
+        # Step 3: Get NFT vitality (EAGER LOAD NFT and Collection for efficiency)
         try:
             vitality = await sync_to_async(
-                NFTVitality.objects.select_related('nft').get,
-                thread_sensitive=False # <--- ADD THIS LINE
+                # FIX: Added 'nft__collection' to ensure floor price access is efficient
+                NFTVitality.objects.select_related('nft__collection').get,
+                thread_sensitive=False
             )(nft=nft)
         except NFTVitality.DoesNotExist:
             logger.warning(f"No vitality score found for NFT {nft.mint_address}")
@@ -119,20 +101,10 @@ class BidValidationService:
         """
         Get the most specific applicable threshold.
 
-        Priority:
-        1. NFT-level threshold (most specific)
-        2. Collection-level threshold
-        3. Global threshold (least specific)
-
-        Args:
-            nft: The NFT being bid on
-
-        Returns:
-            Most specific applicable MinimumBidThreshold, or None
+        Priority: NFT-level > Collection-level > Global
         """
-        # Get the collection_id safely *before* entering sync_to_async
         collection_id = nft.collection_id
-        nft_pk = nft.pk # Get primary key
+        nft_pk = nft.pk
 
         # --- NFT-level Threshold ---
         # Pass nft_pk directly
@@ -140,8 +112,8 @@ class BidValidationService:
             MinimumBidThreshold.objects.filter(nft_id=nft_pk, is_active=True).first,
             thread_sensitive=False
         )()
-        if nft_threshold: # Check if found before proceeding
-            return nft_threshold # Return early if NFT-specific threshold exists
+        if nft_threshold:
+            return nft_threshold
 
         # --- Collection-level Threshold ---
         # Pass collection_id directly
@@ -149,8 +121,8 @@ class BidValidationService:
             MinimumBidThreshold.objects.filter(collection_id=collection_id, nft__isnull=True, is_active=True).first,
             thread_sensitive=False
         )()
-        if collection_threshold: # Check if found
-             return collection_threshold # Return early
+        if collection_threshold:
+             return collection_threshold
 
         # --- Global Threshold ---
         global_threshold = await sync_to_async(
@@ -158,7 +130,6 @@ class BidValidationService:
             thread_sensitive=False
         )()
 
-        # Return global_threshold which might be None if none are found
         return global_threshold
 
     async def _validate_against_threshold(
@@ -169,34 +140,28 @@ class BidValidationService:
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate bid against a specific threshold configuration.
-
-        Args:
-            bid_amount: Bid amount in SOL
-            vitality: NFT vitality object
-            threshold: Applicable threshold configuration
-
-        Returns:
-            Tuple of (is_valid, error_message)
         """
         if threshold.threshold_type == 'VITALITY_BASED':
             return await self._validate_vitality_based(bid_amount, vitality, threshold)
+        
         elif threshold.threshold_type == 'ABSOLUTE':
             return await self._validate_absolute_sol(bid_amount, threshold)
+        
         elif threshold.threshold_type == 'BOTH':
-            # For 'BOTH', calculate both minimums and enforce the stricter (higher) one
+            # For 'BOTH', enforce the stricter (higher) minimum
             vitality_min, _ = await self._calculate_vitality_minimum(vitality, threshold)
             absolute_min = threshold.absolute_minimum_sol
             
-            # Use the higher of the two minimums
             effective_minimum = max(vitality_min, absolute_min)
 
             if bid_amount < effective_minimum:
                 return False, f"Bid too low. The minimum bid for this item is {effective_minimum} SOL."
             
             return True, None
+            
         else:
             logger.error(f"Unknown threshold type: {threshold.threshold_type}")
-            return True, None  # Default to allowing if unknown type
+            return True, None
 
     async def _calculate_vitality_minimum(
         self,
@@ -205,15 +170,6 @@ class BidValidationService:
     ) -> Tuple[Decimal, Decimal]:
         """
         Calculate the minimum bid based on vitality threshold.
-        
-        Helper method to avoid code duplication when checking vitality-based minimums.
-
-        Args:
-            vitality: NFT vitality object
-            threshold: Threshold configuration
-
-        Returns:
-            Tuple of (minimum_bid, suggested_price)
         """
         suggested_price = vitality.suggested_price or await self._estimate_price_from_vitality(vitality)
         threshold_percentage = threshold.vitality_percentage_threshold / Decimal('100')
@@ -227,23 +183,12 @@ class BidValidationService:
         threshold: MinimumBidThreshold
     ) -> Tuple[bool, Optional[str]]:
         """
-        Validate bid against vitality-based threshold.
-
-        Threshold is a percentage (e.g., -20.00 means -20% below vitality).
-        Valid range: -15% to -30%
-
-        Args:
-            bid_amount: Bid amount in SOL
-            vitality: NFT vitality object
-            threshold: Threshold configuration
-
-        Returns:
-            Tuple of (is_valid, error_message)
+        Validate bid against vitality-based threshold (e.g., no more than 20% below suggested price).
         """
-        # Use helper method to calculate minimum bid and suggested price
         minimum_bid, suggested_price = await self._calculate_vitality_minimum(vitality, threshold)
 
         if bid_amount < minimum_bid:
+            # Calculation to show the user how far off they are
             percentage_below = ((bid_amount - suggested_price) / suggested_price) * Decimal('100')
             return False, (
                 f"Bid too low. Your bid of {bid_amount} SOL is {abs(percentage_below):.1f}% "
@@ -261,13 +206,6 @@ class BidValidationService:
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate bid against absolute SOL minimum.
-
-        Args:
-            bid_amount: Bid amount in SOL
-            threshold: Threshold configuration
-
-        Returns:
-            Tuple of (is_valid, error_message)
         """
         minimum = threshold.absolute_minimum_sol
 
@@ -286,15 +224,7 @@ class BidValidationService:
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate against default threshold when no configured threshold exists.
-
-        Default: -20% below vitality-based price
-
-        Args:
-            bid_amount: Bid amount in SOL
-            vitality: NFT vitality object
-
-        Returns:
-            Tuple of (is_valid, error_message)
+        Default: -20% below vitality-based price.
         """
         suggested_price = vitality.suggested_price or await self._estimate_price_from_vitality(vitality)
 
@@ -315,18 +245,13 @@ class BidValidationService:
     async def _estimate_price_from_vitality(self, vitality: NFTVitality) -> Decimal:
         """
         Estimate price from vitality score when suggested_price is not available.
-
-        TODO: Replace with proper price suggestion algorithm.
-        This is a simple implementation using collection floor as baseline.
-
-        Args:
-            vitality: NFT vitality object
-
-        Returns:
-            Estimated price in SOL
+        Uses collection floor as baseline.
         """
-        collection = vitality.nft.collection
-        floor_price = collection.floor_price or Decimal('1.0')
+        # Accessing vitality.nft.collection is efficient because of select_related in validate_bid
+        collection = vitality.nft.collection 
+        
+        # NOTE: Assumes NFTCollection has a 'floor_price' field (not shown, using placeholder logic)
+        floor_price = getattr(collection, 'floor_price', Decimal('1.0')) or Decimal('1.0')
 
         # Simple multiplier based on vitality score (0-100)
         # Score 50 = 1x floor, Score 100 = 2x floor, Score 0 = 0.5x floor
@@ -343,28 +268,12 @@ class BidValidationService:
 
     async def get_minimum_bid_info(self, nft: NFT) -> dict:
         """
-        Get information about minimum bid requirements for an NFT.
-
-        Useful for displaying to users before they place a bid.
-
-        Args:
-            nft: The NFT to get minimum bid info for
-
-        Returns:
-            Dictionary with minimum bid information:
-            {
-                'has_vitality': bool,
-                'vitality_score': Decimal or None,
-                'suggested_price': Decimal or None,
-                'minimum_bid': Decimal or None,
-                'threshold_type': str or None,
-                'threshold_percentage': Decimal or None,
-                'error': str or None
-            }
+        Get information about minimum bid requirements for an NFT (for UI display).
         """
         try:
+            # FIX: Added nft__collection to select_related for efficiency
             vitality = await sync_to_async(
-                NFTVitality.objects.select_related('nft').get,
+                NFTVitality.objects.select_related('nft__collection').get,
                 thread_sensitive=False 
             )(nft=nft)
         except NFTVitality.DoesNotExist:
@@ -389,12 +298,10 @@ class BidValidationService:
                 'error': 'Insufficient data for vitality calculation'
             }
 
-        # Get suggested price
         suggested_price = vitality.suggested_price or await self._estimate_price_from_vitality(vitality)
-
-        # Get applicable threshold
         threshold = await self._get_applicable_threshold(nft)
 
+        # Logic to determine the final minimum bid based on threshold priority
         if threshold:
             if threshold.threshold_type == 'VITALITY_BASED':
                 minimum_bid, suggested_price = await self._calculate_vitality_minimum(vitality, threshold)
@@ -409,7 +316,7 @@ class BidValidationService:
                 absolute_min = threshold.absolute_minimum_sol
                 minimum_bid = max(vitality_min, absolute_min)
                 threshold_type = 'Hybrid (Vitality & Absolute)'
-                threshold_percentage = None  # Not applicable for hybrid
+                threshold_percentage = None
         else:
             # Use default
             threshold_multiplier = Decimal('1') + (self.DEFAULT_VITALITY_THRESHOLD / Decimal('100'))

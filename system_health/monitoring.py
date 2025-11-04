@@ -227,7 +227,7 @@ class SystemMonitor:
             cpu_percent = psutil.cpu_percent(interval=1)
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-            
+
             return {
                 'cpu_percent': cpu_percent,
                 'memory_percent': memory.percent,
@@ -238,6 +238,46 @@ class SystemMonitor:
         except Exception as e:
             logger.error(f"Error getting performance metrics: {str(e)}")
             return {}
+
+    def check_transaction_health(self) -> Dict:
+        """Check Solana transaction confirmation health"""
+        try:
+            from marketplace.models import TransactionMonitoring
+
+            stuck_txs = TransactionMonitoring.get_stuck_transactions(minutes=5)
+            failure_rate = TransactionMonitoring.get_failure_rate_24h()
+            avg_time = TransactionMonitoring.get_avg_confirmation_time(hours=1)
+
+            status = 'healthy'
+            alerts = []
+
+            if stuck_txs.count() > 0:
+                alerts.append(f"{stuck_txs.count()} transactions stuck for >5min")
+                status = 'warning'
+
+            if failure_rate > 10:
+                alerts.append(f"High failure rate: {failure_rate:.1f}%")
+                status = 'critical' if failure_rate > 25 else 'warning'
+
+            if avg_time > 30000:  # 30 seconds
+                alerts.append(f"Slow confirmations: {avg_time/1000:.1f}s avg")
+                status = 'warning'
+
+            return {
+                'status': status,
+                'stuck_transactions': stuck_txs.count(),
+                'failure_rate_24h': failure_rate,
+                'avg_confirmation_time_ms': avg_time,
+                'alerts': alerts,
+                'health': 'healthy' if len(alerts) == 0 else status
+            }
+        except Exception as e:
+            logger.error(f"Error checking transaction health: {str(e)}")
+            return {
+                'status': 'error',
+                'error': str(e),
+                'health': 'unknown'
+            }
 
 # Global monitor instance
 system_monitor = SystemMonitor()

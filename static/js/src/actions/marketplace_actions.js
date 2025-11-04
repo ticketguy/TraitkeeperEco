@@ -113,8 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // --- "Make Offer" Logic ---
-  // FIXED: Attached to window to be globally accessible
-  window.handleMakeOfferClick = function (event) {
+  //  Attached to window to be globally accessible
+  window.handleMakeOfferClick = async function (event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -152,30 +152,73 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Call the backend API using the configured endpoint
-    callApi(apiEndpoints.placeBid, "POST", {
-      nft_mint: nftId,
-      amount: bidAmount.toString(), // Send as string
-      // expiry_hours: 72 // Optional
-    }).then((result) => {
-      if (result) {
-        alert(
-          `Offer placed successfully! Bid ID: ${result.bid_id.slice(0, 12)}...`
+    try {
+      // Check if Solana transaction utilities are available
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log("Using Solana on-chain transaction signing...");
+
+        // Use the new transaction flow
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          apiEndpoints.placeBid,
+          {
+            mint: nftId,
+            amount: bidAmount.toString(),
+            expiry_hours: 72,
+          },
+          csrfToken
         );
-        // If modal is open for this NFT, refresh its offers tab
-        if (
-          nftDetailModal &&
-          !nftDetailModal.classList.contains("hidden") &&
-          nftDetailModal.dataset.currentNftId === nftId
-        ) {
-          fetchAndPopulateOffers(nftId); // Refresh offers tab
+
+        if (result && result.success) {
+          alert(
+            `Offer placed successfully! Transaction: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          // If modal is open for this NFT, refresh its offers tab
+          if (
+            nftDetailModal &&
+            !nftDetailModal.classList.contains("hidden") &&
+            nftDetailModal.dataset.currentNftId === nftId
+          ) {
+            fetchAndPopulateOffers(nftId); // Refresh offers tab
+          }
+        }
+      } else {
+        // Fallback to old API call (for testing without Solana Web3)
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi(apiEndpoints.placeBid, "POST", {
+          mint: nftId,
+          amount: bidAmount.toString(),
+          expiry_hours: 72,
+        });
+
+        if (result) {
+          alert(
+            `Offer placed successfully! Bid ID: ${result.bid_id.slice(
+              0,
+              12
+            )}...`
+          );
+          if (
+            nftDetailModal &&
+            !nftDetailModal.classList.contains("hidden") &&
+            nftDetailModal.dataset.currentNftId === nftId
+          ) {
+            fetchAndPopulateOffers(nftId);
+          }
         }
       }
-    });
+    } catch (error) {
+      console.error("Error placing offer:", error);
+      alert(`Failed to place offer: ${error.message}`);
+    }
   };
 
   // --- "Buy Now" Logic ---
-  function handleBuyNowClick(event) {
+  async function handleBuyNowClick(event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -220,29 +263,76 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    callApi(endpoint, "POST", {
-      nft_mint: nftId,
-    }).then((result) => {
-      if (result) {
-        alert(`Purchase successful! TX: ${result.transaction_signature}`);
-        closeNftModal();
-
-        // Update the card on the grid page to show it's sold
-        const purchasedCard = document.querySelector(
-          `.nft-card[data-nft-id="${nftId}"]`
+    try {
+      // Check if Solana transaction utilities are available
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing for purchase..."
         );
-        if (purchasedCard) {
-          purchasedCard.style.opacity = "0.5";
-          purchasedCard.style.pointerEvents = "none"; // Disable further clicks
-          const priceElement =
-            purchasedCard.querySelector(".relative.mt-2 > p"); // Find price element
-          if (priceElement) priceElement.textContent = "Sold";
-          const offerButton = purchasedCard.querySelector(".make-offer-link");
-          if (offerButton) offerButton.style.display = "none"; // Hide offer button
+
+        // Use the new transaction flow
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          endpoint,
+          {
+            mint: nftId,
+          },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Purchase successful! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          closeNftModal();
+
+          // Update the card on the grid page to show it's sold
+          const purchasedCard = document.querySelector(
+            `.nft-card[data-nft-id="${nftId}"]`
+          );
+          if (purchasedCard) {
+            purchasedCard.style.opacity = "0.5";
+            purchasedCard.style.pointerEvents = "none";
+            const priceElement =
+              purchasedCard.querySelector(".relative.mt-2 > p");
+            if (priceElement) priceElement.textContent = "Sold";
+            const offerButton = purchasedCard.querySelector(".make-offer-link");
+            if (offerButton) offerButton.style.display = "none";
+          }
         }
-        // Consider adding a slight delay then maybe refreshing the grid via SSE/fetch
+      } else {
+        // Fallback to old API call (for testing without Solana Web3)
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi(endpoint, "POST", {
+          mint: nftId,
+        });
+
+        if (result) {
+          alert(`Purchase successful! TX: ${result.transaction_signature}`);
+          closeNftModal();
+
+          const purchasedCard = document.querySelector(
+            `.nft-card[data-nft-id="${nftId}"]`
+          );
+          if (purchasedCard) {
+            purchasedCard.style.opacity = "0.5";
+            purchasedCard.style.pointerEvents = "none";
+            const priceElement =
+              purchasedCard.querySelector(".relative.mt-2 > p");
+            if (priceElement) priceElement.textContent = "Sold";
+            const offerButton = purchasedCard.querySelector(".make-offer-link");
+            if (offerButton) offerButton.style.display = "none";
+          }
+        }
       }
-    });
+    } catch (error) {
+      console.error("Error completing purchase:", error);
+      alert(`Failed to complete purchase: ${error.message}`);
+    }
   }
 
   // --- NFT Detail Modal - Populating (Called after fetching data) ---
@@ -255,12 +345,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const nftId = data.mint_address;
 
+    // Store NFT mint globally for auction modal
+    window.currentNFTMint = nftId;
+
     // Store essential info on the modal element
     nftDetailModal.dataset.currentNftId = nftId;
     nftDetailModal.dataset.isDirectSell = data.has_buy_price ? "true" : "false";
     nftDetailModal.dataset.isSellIntent = data.has_sell_intent
       ? "true"
       : "false";
+    nftDetailModal.dataset.isOwner = data.is_owner ? "true" : "false";
 
     // Populate basic info
     nftDetailModal.querySelector("#modal-nft-name").textContent =
@@ -301,25 +395,65 @@ document.addEventListener("DOMContentLoaded", function () {
       ? `https://solscan.io/account/${data.owner}`
       : "#";
 
-    // Price display and button states
+    // Price display and dynamic button states
     const priceDisplay = nftDetailModal.querySelector("#modal-nft-price");
-    const buyNowBtn = nftDetailModal.querySelector(".bg-primary"); // Adjust selector
-    const makeOfferBtn = nftDetailModal.querySelector(".btn-outline"); // Adjust selector
 
+    // Get dynamic action containers
+    const buyerActions = nftDetailModal.querySelector("#buyer-actions");
+    const ownerActions = nftDetailModal.querySelector("#owner-actions");
+    const buyNowBtn = nftDetailModal.querySelector("#buy-now-btn");
+    const listForSaleForm = nftDetailModal.querySelector("#list-for-sale-form");
+    const alreadyListedMsg = nftDetailModal.querySelector(
+      "#already-listed-msg"
+    );
+    const manageOffersBtn = nftDetailModal.querySelector("#manage-offers-btn");
+    const createAuctionBtn = nftDetailModal.querySelector("#create-auction-btn");
+
+    const isOwner = data.is_owner || false;
+    const isListed = data.has_sell_intent || data.has_buy_price;
+    const hasActiveAuction = data.has_active_auction || false;
+
+    if (isOwner) {
+      // Show owner actions
+      if (buyerActions) buyerActions.style.display = "none";
+      if (ownerActions) ownerActions.style.display = "block";
+
+      // Show list form or "already listed" message
+      if (isListed) {
+        if (listForSaleForm) listForSaleForm.style.display = "none";
+        if (alreadyListedMsg) alreadyListedMsg.style.display = "block";
+      } else {
+        if (listForSaleForm) listForSaleForm.style.display = "flex";
+        if (alreadyListedMsg) alreadyListedMsg.style.display = "none";
+      }
+
+      // Show manage offers button
+      if (manageOffersBtn) manageOffersBtn.style.display = "inline-flex";
+
+      // Show create auction button only if NFT is not listed and not in active auction
+      if (createAuctionBtn) {
+        createAuctionBtn.style.display = (!isListed && !hasActiveAuction) ? "inline-flex" : "none";
+      }
+    } else {
+      // Show buyer actions
+      if (buyerActions) buyerActions.style.display = "block";
+      if (ownerActions) ownerActions.style.display = "none";
+
+      // Show buy now button only if listed
+      if (buyNowBtn) {
+        buyNowBtn.style.display = isListed ? "inline-flex" : "none";
+      }
+    }
+
+    // Update price display
     if (data.has_buy_price && data.buy_price) {
       priceDisplay.textContent = `${parseFloat(data.buy_price).toFixed(2)} SOL`;
-      if (buyNowBtn) buyNowBtn.style.display = "inline-flex";
-      if (makeOfferBtn) makeOfferBtn.style.display = "inline-flex"; // Or 'none'?
     } else if (data.has_sell_intent && data.asking_price) {
       priceDisplay.textContent = `Ask: ${parseFloat(data.asking_price).toFixed(
         2
       )} SOL`;
-      if (buyNowBtn) buyNowBtn.style.display = "inline-flex"; // Button accepts ask
-      if (makeOfferBtn) makeOfferBtn.style.display = "inline-flex";
     } else {
       priceDisplay.textContent = "Not Listed";
-      if (buyNowBtn) buyNowBtn.style.display = "none";
-      if (makeOfferBtn) makeOfferBtn.style.display = "inline-flex";
     }
 
     // Traits Tab
@@ -460,26 +594,136 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // --- Fetch Offers (Placeholder) ---
+  // --- Fetch Offers ---
   async function fetchAndPopulateOffers(nftId) {
-    const offersContainer = nftDetailModal
-      ? nftDetailModal.querySelector("#modal-tab-offers")
+    const offersEmptyDiv = nftDetailModal
+      ? nftDetailModal.querySelector("#modal-offers-empty")
       : null;
-    if (!offersContainer) return;
-    offersContainer.innerHTML =
-      '<p class="text-sm text-text-secondary-light">Loading offers...</p>';
+    const offersListDiv = nftDetailModal
+      ? nftDetailModal.querySelector("#modal-offers-list")
+      : null;
+
+    if (!offersEmptyDiv || !offersListDiv) return;
+
+    // Show loading state
+    offersEmptyDiv.style.display = "block";
+    offersEmptyDiv.textContent = "Loading offers...";
+    offersListDiv.style.display = "none";
+
     try {
-      // Example: const offers = await callApi(`/api/get-nft-offers/${nftId}/`, 'GET');
-      // if (offers && offers.length > 0) {
-      //     offersContainer.innerHTML = offers.map(offer => `... HTML for offer ...`).join('');
-      // } else {
-      offersContainer.innerHTML =
-        '<p class="text-sm text-text-secondary-light">No active offers found.</p>';
-      // }
+      // Fetch offers from backend
+      const offers = await callApi(
+        `/marketplace/api/get-nft-offers/${nftId}/`,
+        "GET"
+      );
+
+      if (offers && offers.length > 0) {
+        // Hide empty message, show list
+        offersEmptyDiv.style.display = "none";
+        offersListDiv.style.display = "block";
+
+        // Check if current user is the NFT owner
+        const currentNftData = nftDetailModal.dataset;
+        const isOwner = currentNftData.isOwner === "true";
+
+        // Populate offers list with Accept/Reject buttons for owner
+        offersListDiv.innerHTML = offers
+          .map((offer) => {
+            const bidderShort = `${offer.bidder.slice(
+              0,
+              4
+            )}...${offer.bidder.slice(-4)}`;
+            const createdAt = offer.created_at
+              ? new Date(offer.created_at).toLocaleString()
+              : "Unknown date";
+            const expiresAt = offer.expires_at
+              ? new Date(offer.expires_at).toLocaleString()
+              : "No expiry";
+
+            let actionButtons = "";
+            if (isOwner && offer.status === "PENDING") {
+              actionButtons = `
+              <div class="flex gap-2 mt-2">
+                <button
+                  onclick="window.handleAcceptBidClick('${offer.bid_id}')"
+                  class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
+                >
+                  Accept
+                </button>
+                <button
+                  onclick="window.handleCounterOffer('${offer.bid_id}')"
+                  class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
+                >
+                  Counter
+                </button>
+                <button
+                  onclick="window.handleRejectBidClick('${offer.bid_id}')"
+                  class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
+                >
+                  Reject
+                </button>
+              </div>
+            `;
+            } else if (!isOwner && offer.status === "PENDING") {
+              // Show cancel button for bidder's own bids
+              actionButtons = `
+              <div class="flex gap-2 mt-2">
+                <button
+                  onclick="window.handleCancelBidClick('${offer.bid_id}')"
+                  class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            `;
+            }
+
+            return `
+            <div class="bg-accent-light dark:bg-gray-700/50 p-3 rounded-lg">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-semibold text-text-light dark:text-text-dark">
+                    ${parseFloat(offer.amount).toFixed(2)} SOL
+                  </p>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                    From: ${bidderShort}
+                  </p>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                    Created: ${createdAt}
+                  </p>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                    Expires: ${expiresAt}
+                  </p>
+                </div>
+                <span class="px-2 py-1 text-xs rounded ${
+                  offer.status === "PENDING"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : offer.status === "ACCEPTED"
+                    ? "bg-green-100 text-green-800"
+                    : offer.status === "REJECTED"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-800"
+                }">
+                  ${offer.status}
+                </span>
+              </div>
+              ${actionButtons}
+            </div>
+          `;
+          })
+          .join("");
+      } else {
+        // No offers found
+        offersEmptyDiv.style.display = "block";
+        offersEmptyDiv.textContent = "No active offers found.";
+        offersListDiv.style.display = "none";
+      }
     } catch (error) {
       console.error("Error fetching offers:", error);
-      offersContainer.innerHTML =
-        '<p class="text-sm text-red-500">Could not load offers.</p>';
+      offersEmptyDiv.style.display = "block";
+      offersEmptyDiv.textContent = "Could not load offers.";
+      offersEmptyDiv.classList.add("text-red-500");
+      offersListDiv.style.display = "none";
     }
   }
   // Note: Memories/Journey is populated from get_nft_details_api
@@ -524,7 +768,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // --- Make Offer Buttons on Grid (Delegation) ---
-  // FIXED: This is now un-commented and will work
   if (nftsGridContainer) {
     nftsGridContainer.addEventListener("click", function (event) {
       const makeOfferLink = event.target.closest(".make-note-link");
@@ -544,6 +787,463 @@ document.addEventListener("DOMContentLoaded", function () {
   // is now the SINGLE source of truth for grid clicks,
   // and it calls the functions (handleMakeOfferClick, openNftModal)
   // that are defined in this file. This is perfect.
+
+  // --- Accept Bid Logic ---
+  window.handleAcceptBidClick = async function (bidId) {
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to accept bids.");
+      return;
+    }
+
+    if (
+      !confirm(`Accept this bid? The NFT will be transferred to the buyer.`)
+    ) {
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing to accept bid..."
+        );
+
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          apiEndpoints.acceptBid,
+          { bid_id: bidId },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Bid accepted! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          // Refresh page or update UI
+          window.location.reload();
+        }
+      } else {
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi(apiEndpoints.acceptBid, "POST", {
+          bid_id: bidId,
+        });
+        if (result) {
+          alert(`Bid accepted! TX: ${result.transaction_signature}`);
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error accepting bid:", error);
+      alert(`Failed to accept bid: ${error.message}`);
+    }
+  };
+
+  // --- Reject Bid Logic ---
+  window.handleRejectBidClick = async function (bidId) {
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to reject bids.");
+      return;
+    }
+
+    if (!confirm(`Reject this bid? Bidder will be notified.`)) {
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing to reject bid..."
+        );
+
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          apiEndpoints.rejectBid,
+          { bid_id: bidId },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Bid rejected! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          window.location.reload();
+        }
+      } else {
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi(apiEndpoints.rejectBid, "POST", {
+          bid_id: bidId,
+        });
+        if (result) {
+          alert(`Bid rejected! TX: ${result.transaction_signature}`);
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error rejecting bid:", error);
+      alert(`Failed to reject bid: ${error.message}`);
+    }
+  };
+
+  // --- Cancel Bid Logic ---
+  window.handleCancelBidClick = async function (bidId) {
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to cancel bids.");
+      return;
+    }
+
+    if (!confirm(`Cancel your bid? Your funds will be returned.`)) {
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing to cancel bid..."
+        );
+
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          apiEndpoints.cancelBid,
+          { bid_id: bidId },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Bid cancelled! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          window.location.reload();
+        }
+      } else {
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi(apiEndpoints.cancelBid, "POST", {
+          bid_id: bidId,
+        });
+        if (result) {
+          alert(`Bid cancelled! TX: ${result.transaction_signature}`);
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error cancelling bid:", error);
+      alert(`Failed to cancel bid: ${error.message}`);
+    }
+  };
+
+  // --- Set Sell Intent Logic (Modified to handle form input) ---
+  window.handleSetSellIntentClick = async function (nftMint, askingPrice) {
+    const config = window.traitkeeperConfig || {};
+    const apiEndpoints = config.apiEndpoints || {};
+    const csrfToken = config.csrfToken;
+    const isAuthenticated = config.isAuthenticated || false;
+
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to list NFTs.");
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing to set sell intent..."
+        );
+
+        // NOTE: The backend service handles both direct-sell and sell-intent logic
+        // based on the context. We assume this button is for Sell Intent (negotiable).
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          apiEndpoints.setSellIntent, // Calls '/api/sell-intent/set/'
+          {
+            mint: nftMint,
+            asking_price: askingPrice.toString(),
+          },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `NFT listed! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          window.location.reload();
+        }
+      } else {
+        // Fallback implementation removed for brevity, assume Solana is required
+        alert("Solana transaction utilities not available. Cannot list NFT.");
+      }
+    } catch (error) {
+      console.error("Error setting sell intent:", error);
+      alert(`Failed to list NFT: ${error.message}`);
+    }
+  };
+
+  // --- Helper: Handle List for Sale Form Submission ---
+  window.handleListForSale = async function () {
+    const nftModal = document.getElementById("nft-detail-modal");
+    const priceInput = document.getElementById("modal-asking-price-input");
+    // Assume a checkbox for direct sell vs. sell intent exists if needed later
+
+    if (!nftModal || !priceInput) {
+      alert("Cannot find list for sale form elements.");
+      return;
+    }
+
+    const nftMint = nftModal.dataset.currentNftId;
+    const askingPrice = parseFloat(priceInput.value);
+
+    if (!nftMint) {
+      alert("Cannot determine NFT to list.");
+      return;
+    }
+
+    if (isNaN(askingPrice) || askingPrice <= 0) {
+      alert("Please enter a valid price in SOL.");
+      return;
+    }
+
+    // --- Call the correct set_sell_intent handler ---
+    await window.handleSetSellIntentClick(nftMint, askingPrice);
+  };
+
+  // --- Helper: Show Offers Tab ---
+  window.showOffersTab = function () {
+    const nftModal = document.getElementById("nft-detail-modal");
+    if (!nftModal) return;
+
+    // Find the offers tab button and click it
+    const offersTabBtn = Array.from(
+      nftModal.querySelectorAll(".modal-tab")
+    ).find((tab) => tab.dataset.tab === "offers");
+
+    if (offersTabBtn) {
+      offersTabBtn.click();
+    }
+  };
+
+
+  window.handleCreateAuction = async function (
+    nftMint,
+    startingPrice,
+    duration,
+    reservePrice
+  ) {
+    const config = window.traitkeeperConfig || {};
+    const csrfToken = config.csrfToken;
+
+    const result = await window.solanaTransaction.executeMarketplaceAction(
+      "/marketplace/api/auction/create/", // Direct endpoint from your urls.py
+      {
+        nft_mint: nftMint,
+        starting_price: startingPrice,
+        duration_hours: duration,
+        reserve_price: reservePrice,
+      },
+      csrfToken
+    );
+    if (result && result.success) {
+      alert(
+        `Auction created! TX: ${result.data.transaction_signature.slice(
+          0,
+          12
+        )}...`
+      );
+      window.location.reload();
+    }
+  };
+
+  // Place Auction Bid
+  window.handlePlaceAuctionBid = async function (auctionId, amount) {
+    const config = window.traitkeeperConfig || {};
+    const csrfToken = config.csrfToken;
+
+    const result = await window.solanaTransaction.executeMarketplaceAction(
+      "/marketplace/api/auction/bid/",
+      {
+        auction_id: auctionId,
+        amount: amount,
+      },
+      csrfToken
+    );
+    if (result && result.success) {
+      alert(
+        `Auction bid placed! TX: ${result.data.transaction_signature.slice(
+          0,
+          12
+        )}...`
+      );
+      window.location.reload();
+    }
+  };
+
+  // Cancel Auction
+  window.handleCancelAuction = async function (auctionId) {
+    const config = window.traitkeeperConfig || {};
+    const csrfToken = config.csrfToken;
+    const isAuthenticated = config.isAuthenticated || false;
+
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to cancel auctions.");
+      return;
+    }
+
+    if (
+      !confirm(
+        "Cancel this auction? This can only be done if no bids have been placed."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing to cancel auction..."
+        );
+
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          "/marketplace/api/auction/cancel/",
+          { auction_id: auctionId },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Auction cancelled! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          window.location.reload();
+        }
+      } else {
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi("/marketplace/api/auction/cancel/", "POST", {
+          auction_id: auctionId,
+        });
+        if (result) {
+          alert(`Auction cancelled! TX: ${result.transaction_signature}`);
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error cancelling auction:", error);
+      alert(`Failed to cancel auction: ${error.message}`);
+    }
+  };
+
+  // Finalize Auction
+  window.handleFinalizeAuction = async function (auctionId) {
+    const config = window.traitkeeperConfig || {};
+    const csrfToken = config.csrfToken;
+
+    if (
+      !confirm(
+        "Confirm auction finalization? Funds and NFT will be transferred."
+      )
+    )
+      return;
+
+    const result = await window.solanaTransaction.executeMarketplaceAction(
+      "/marketplace/api/auction/finalize/",
+      { auction_id: auctionId },
+      csrfToken
+    );
+    if (result && result.success) {
+      alert(
+        `Auction finalized! Winner: ${result.data.winner.slice(
+          0,
+          8
+        )}... Price: ${result.data.final_price} SOL.`
+      );
+      window.location.reload();
+    }
+  };
+
+  // --- Counter Offer Logic ---
+  window.handleCounterOffer = async function (bidId) {
+    const config = window.traitkeeperConfig || {};
+    const csrfToken = config.csrfToken;
+    const isAuthenticated = config.isAuthenticated || false;
+
+    if (!isAuthenticated) {
+      alert("Please log in or connect your wallet to counter offers.");
+      return;
+    }
+
+    // Prompt for counter amount
+    const counterAmountStr = prompt("Enter your counter-offer amount in SOL:");
+    if (counterAmountStr === null) return; // User cancelled
+
+    const counterAmount = parseFloat(counterAmountStr);
+    if (isNaN(counterAmount) || counterAmount <= 0) {
+      alert("Invalid counter amount. Please enter a positive number.");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Counter this bid with ${counterAmount} SOL? This will reject the original bid and set a new asking price.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      if (typeof window.solanaTransaction !== "undefined") {
+        console.log(
+          "Using Solana on-chain transaction signing for counter-offer..."
+        );
+
+        const result = await window.solanaTransaction.executeMarketplaceAction(
+          "/marketplace/api/bid/counter/",
+          {
+            bid_id: bidId,
+            counter_amount: counterAmount.toString(),
+          },
+          csrfToken
+        );
+
+        if (result && result.success) {
+          alert(
+            `Counter-offer sent! TX: ${result.data.transaction_signature.slice(
+              0,
+              12
+            )}...`
+          );
+          window.location.reload();
+        }
+      } else {
+        console.warn(
+          "Solana transaction utilities not loaded. Using fallback API call."
+        );
+        const result = await callApi("/marketplace/api/bid/counter/", "POST", {
+          bid_id: bidId,
+          counter_amount: counterAmount.toString(),
+        });
+        if (result) {
+          alert(`Counter-offer sent! TX: ${result.transaction_signature}`);
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error sending counter-offer:", error);
+      alert(`Failed to send counter-offer: ${error.message}`);
+    }
+  };
 
   console.log("Marketplace Actions Script Initialized");
 }); // End DOMContentLoaded

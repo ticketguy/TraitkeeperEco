@@ -39,4 +39,7 @@ urlpatterns = [
 
     # Error Logs API endpoint
     path('api/error-logs/', views.system_error_logs, name='api_error_logs'),
+
+    # Transaction Health API endpoint (NEW)
+    path('api/transaction-health/', views.transaction_health, name='api_transaction_health'),
 ]

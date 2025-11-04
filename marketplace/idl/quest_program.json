@@ -1,0 +1,943 @@
+{
+  "address": "QuestwwsVeGELdnSHJGcWpFD6Z4T8TonhX45EmoJciX",
+  "metadata": {
+    "name": "quest_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "claim_quest_reward",
+      "discriminator": [
+        73,
+        123,
+        191,
+        206,
+        63,
+        127,
+        247,
+        12
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "quest_user_account"
+          ]
+        },
+        {
+          "name": "quest_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quest_config.quest_id",
+                "account": "QuestConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "quest_user_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "quest_wallet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_quest",
+      "discriminator": [
+        112,
+        49,
+        32,
+        224,
+        255,
+        173,
+        5,
+        7
+      ],
+      "accounts": [
+        {
+          "name": "quest_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "quest_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "global_config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "quest_id",
+          "type": "u64"
+        },
+        {
+          "name": "action_type",
+          "type": {
+            "defined": {
+              "name": "QuestActionType"
+            }
+          }
+        },
+        {
+          "name": "target_count",
+          "type": "u32"
+        },
+        {
+          "name": "reward_lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_quest_config",
+      "discriminator": [
+        253,
+        251,
+        82,
+        79,
+        123,
+        141,
+        158,
+        100
+      ],
+      "accounts": [
+        {
+          "name": "quest_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quest_wallet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "marketplace_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "pay_auction_loser_rebate",
+      "discriminator": [
+        116,
+        181,
+        163,
+        48,
+        126,
+        19,
+        16,
+        12
+      ],
+      "accounts": [
+        {
+          "name": "quest_wallet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "loser_bidder",
+          "writable": true
+        },
+        {
+          "name": "program_authority",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "pay_negotiation_rebate",
+      "discriminator": [
+        219,
+        50,
+        133,
+        214,
+        93,
+        95,
+        109,
+        14
+      ],
+      "accounts": [
+        {
+          "name": "quest_wallet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder",
+          "writable": true
+        },
+        {
+          "name": "program_authority",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "pay_royalty_subsidy",
+      "discriminator": [
+        223,
+        130,
+        17,
+        165,
+        15,
+        30,
+        229,
+        137
+      ],
+      "accounts": [
+        {
+          "name": "quest_wallet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  119,
+                  97,
+                  108,
+                  108,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true
+        },
+        {
+          "name": "program_authority",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "toggle_quest_active",
+      "discriminator": [
+        71,
+        177,
+        9,
+        186,
+        106,
+        182,
+        101,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "quest_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quest_config.quest_id",
+                "account": "QuestConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "quest_config",
+            "global_config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "is_active",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_progress",
+      "discriminator": [
+        135,
+        47,
+        78,
+        113,
+        27,
+        158,
+        21,
+        111
+      ],
+      "accounts": [
+        {
+          "name": "quest_user_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "program_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "action_type",
+          "type": {
+            "defined": {
+              "name": "QuestActionType"
+            }
+          }
+        },
+        {
+          "name": "is_quest_eligible",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_quest_admin",
+      "discriminator": [
+        81,
+        125,
+        55,
+        66,
+        0,
+        85,
+        211,
+        114
+      ],
+      "accounts": [
+        {
+          "name": "quest_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "quest_config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "QuestConfig",
+      "discriminator": [
+        181,
+        88,
+        213,
+        44,
+        1,
+        15,
+        244,
+        70
+      ]
+    },
+    {
+      "name": "QuestGlobalConfig",
+      "discriminator": [
+        89,
+        22,
+        156,
+        113,
+        59,
+        233,
+        115,
+        207
+      ]
+    },
+    {
+      "name": "QuestUserAccount",
+      "discriminator": [
+        44,
+        176,
+        224,
+        71,
+        105,
+        195,
+        183,
+        83
+      ]
+    },
+    {
+      "name": "QuestWallet",
+      "discriminator": [
+        37,
+        25,
+        99,
+        71,
+        113,
+        221,
+        110,
+        213
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "QuestClaimed",
+      "discriminator": [
+        49,
+        134,
+        11,
+        29,
+        35,
+        182,
+        38,
+        197
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "QuestNotActive",
+      "msg": "This quest is not active."
+    },
+    {
+      "code": 6001,
+      "name": "QuestNotCompleted",
+      "msg": "You have not completed the requirements for this quest."
+    },
+    {
+      "code": 6002,
+      "name": "QuestAlreadyClaimed",
+      "msg": "You have already claimed the reward for this quest."
+    }
+  ],
+  "types": [
+    {
+      "name": "QuestActionType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Buy"
+          },
+          {
+            "name": "Bid"
+          },
+          {
+            "name": "List"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuestClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "quest_id",
+            "type": "u64"
+          },
+          {
+            "name": "reward",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuestConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "quest_id",
+            "type": "u64"
+          },
+          {
+            "name": "action_type",
+            "type": {
+              "defined": {
+                "name": "QuestActionType"
+              }
+            }
+          },
+          {
+            "name": "target_count",
+            "type": "u32"
+          },
+          {
+            "name": "reward_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuestGlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuestUserAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "nfts_bought",
+            "type": "u32"
+          },
+          {
+            "name": "bids_placed",
+            "type": "u32"
+          },
+          {
+            "name": "nfts_listed",
+            "type": "u32"
+          },
+          {
+            "name": "claimed_quests",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuestWallet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

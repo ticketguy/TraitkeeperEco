@@ -338,64 +338,46 @@ async function checkInitialWalletState() {
 
 async function createSessionOnServer(publicKey, signedMessage, url) {
     console.log("Creating session on server, publicKey:", publicKey);
+    
+    // 1. Convert signature to Base64 (needed for Django/REST transport)
+    const signatureArray = new Uint8Array(signedMessage);
+    const signatureBase64 = btoa(String.fromCharCode.apply(null, signatureArray));
+
+    const csrftoken = getCookie('csrftoken');
+    
+    // 2. Combine all data into one body for a single server request
+    const requestBody = JSON.stringify({
+        public_key: publicKey,
+        // Send the signature directly with the public key
+        signed_message: signatureBase64 
+    });
+    console.log("Request body for session creation:", requestBody);
+
     try {
-        const signatureArray = new Uint8Array(signedMessage);
-        const signatureBase64 = btoa(String.fromCharCode.apply(null, signatureArray));
-        console.log("signatureArray:", signatureArray);
-        console.log("signatureBase64:", signatureBase64);
-
-        const csrftoken = getCookie('csrftoken');
-        console.log("CSRF Token for store-signed-message request:", csrftoken);
-
-        const requestBody = JSON.stringify({
-            signed_message: signatureBase64
-        });
-        console.log("Request body for store-signed-message:", requestBody);
-
-        const sessionResponse = await fetch('/wallet/store-signed-message/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken || ''
-            },
-            body: requestBody
-        });
-
-        if (!sessionResponse.ok) {
-            const errorData = await sessionResponse.json();
-            console.error("Error response from store-signed-message:", errorData);
-            throw new Error(errorData.error || 'Failed to store signed message in session');
-        }
-
-        const sessionData = await sessionResponse.json();
-        console.log("Store signed message response:", sessionData);
-
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken || ''
             },
-            body: JSON.stringify({
-                public_key: publicKey
-            })
+            body: requestBody // Send everything at once
         });
 
-        console.log("Session creation response:", response);
+        console.log("Session/Link response status:", response.status);
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("Error response from session creation:", errorData);
+            console.error("Error response from server:", errorData);
             throw new Error(errorData.error || `Server error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Session creation data:", data);
+        console.log("Session/Link data:", data);
         if (data.status !== 'success') {
-            throw new Error(data.error || 'Failed to create session');
+            throw new Error(data.error || 'Failed to complete session/link action');
         }
         return data;
     } catch (error) {
-        console.error('Session creation error:', error);
+        console.error('Session/Link process error:', error);
         throw error;
     }
 }

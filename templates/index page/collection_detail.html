@@ -555,9 +555,44 @@
                                 <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Current Price</p>
                                 <p id="modal-nft-price" class="text-2xl font-bold text-text-light dark:text-text-dark">-- SOL</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button class="btn-outline px-4 py-2 rounded-full text-sm">Make Offer</button>
-                                <button class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors">Buy Now</button>
+
+                            <!-- Dynamic Action Buttons Container -->
+                            <div id="modal-action-buttons" class="flex flex-col gap-2">
+                                <!-- Buyer Actions (shown if user doesn't own NFT) -->
+                                <div id="buyer-actions" class="flex items-center gap-2" style="display: none;">
+                                    <button class="btn-outline px-4 py-2 rounded-full text-sm" onclick="window.handleMakeOfferClick(event)">Make Offer</button>
+                                    <button id="buy-now-btn" class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors" style="display: none;">Buy Now</button>
+                                </div>
+
+                                <!-- Owner Actions (shown if user owns NFT) -->
+                                <div id="owner-actions" class="flex flex-col gap-2" style="display: none;">
+                                    <!-- List for Sale Form (shown if not listed) -->
+                                    <div id="list-for-sale-form" style="display: none;">
+                                        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">List Your NFT</p>
+                                        <div class="flex gap-2">
+                                            <input type="number" id="modal-asking-price-input" placeholder="Price in SOL" step="0.01" min="0.01"
+                                                   class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm">
+                                            <button onclick="handleListForSale()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">
+                                                List
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Already Listed Message -->
+                                    <div id="already-listed-msg" class="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-lg" style="display: none;">
+                                        <p class="text-sm text-green-700 dark:text-green-300">✓ Listed for Sale</p>
+                                    </div>
+
+                                    <!-- Manage Offers Button -->
+                                    <button id="manage-offers-btn" onclick="showOffersTab()" class="btn-outline px-4 py-2 rounded-lg text-sm" style="display: none;">
+                                        Manage Offers
+                                    </button>
+
+                                    <!-- Create Auction Button -->
+                                    <button id="create-auction-btn" onclick="openAuctionModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg" style="display: none;">
+                                        🔨 Create Auction
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -581,8 +616,15 @@
                             <a href="#" class="text-primary hover:underline text-sm font-medium">View NFT Memories</a>
                         </div>
                         <div id="modal-tab-offers" class="modal-tab-content hidden">
-                            <p class="text-sm text-text-secondary-light">No offers yet.</p>
+                            <div id="modal-offers-container">
+                                <div id="modal-offers-empty" class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                    No offers yet.
+                                </div>
+                                <div id="modal-offers-list" class="space-y-3" style="display: none;">
+                                    <!-- Dynamic bid items will be inserted here -->
+                                </div>
                             </div>
+                        </div>
                                                     <div id="modal-tab-memories" class="modal-tab-content hidden">
                              <div id="modal-nft-journey" class="text-sm space-y-3 max-h-60 overflow-y-auto">
                                 </div>
@@ -593,6 +635,89 @@
         </div>
     </div>
 </div>
+
+<!-- Auction Creation Modal -->
+<div id="auction-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">Create Auction</h3>
+                <button onclick="closeAuctionModal()" class="text-white/80 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-5">
+            <!-- NFT Preview -->
+            <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                <img id="auction-modal-nft-image" src="" alt="NFT" class="w-16 h-16 rounded-lg object-cover">
+                <div>
+                    <p id="auction-modal-nft-name" class="font-semibold text-text-light dark:text-text-dark"></p>
+                    <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Creating auction...</p>
+                </div>
+            </div>
+
+            <!-- Starting Price -->
+            <div>
+                <label for="auction-starting-price" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+                    Starting Price
+                </label>
+                <div class="relative">
+                    <input type="number" id="auction-starting-price" placeholder="0.00" step="0.01" min="0.01"
+                           class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark font-medium">SOL</span>
+                </div>
+            </div>
+
+            <!-- Duration -->
+            <div>
+                <label class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+                    Auction Duration
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setAuctionDuration(24)" class="auction-duration-btn px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-text-light dark:text-text-dark hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all" data-hours="24">
+                        24 Hours
+                    </button>
+                    <button onclick="setAuctionDuration(48)" class="auction-duration-btn px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-text-light dark:text-text-dark hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all" data-hours="48">
+                        48 Hours
+                    </button>
+                    <button onclick="setAuctionDuration(72)" class="auction-duration-btn px-4 py-2 border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-sm font-medium text-purple-700 dark:text-purple-300 transition-all" data-hours="72">
+                        72 Hours
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reserve Price (Optional) -->
+            <div>
+                <label for="auction-reserve-price" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+                    Reserve Price <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">(Optional)</span>
+                </label>
+                <div class="relative">
+                    <input type="number" id="auction-reserve-price" placeholder="Minimum acceptable price" step="0.01" min="0"
+                           class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark font-medium">SOL</span>
+                </div>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">If no bids meet this price, auction will be cancelled</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeAuctionModal()" class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="submitAuction()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-sm font-semibold text-white hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
+                    Create Auction
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 
@@ -1018,6 +1143,116 @@ document.addEventListener("DOMContentLoaded", function () {
     initializePageData();
 
 }); // End DOMContentLoaded
+
+// --- Auction Modal Functions ---
+let selectedAuctionDuration = 72; // Default to 72 hours
+let currentAuctionNFTMint = null;
+
+function openAuctionModal() {
+    const modal = document.getElementById('auction-modal');
+    const nftImage = document.getElementById('modal-nft-image').src;
+    const nftName = document.querySelector('#modal-nft-collection-link').textContent;
+    const nftMint = window.currentNFTMint; // Assuming this is set when NFT modal opens
+
+    // Set NFT preview
+    document.getElementById('auction-modal-nft-image').src = nftImage;
+    document.getElementById('auction-modal-nft-name').textContent = nftName;
+
+    // Store current NFT mint
+    currentAuctionNFTMint = nftMint;
+
+    // Reset form
+    document.getElementById('auction-starting-price').value = '';
+    document.getElementById('auction-reserve-price').value = '';
+    selectedAuctionDuration = 72;
+
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAuctionModal() {
+    const modal = document.getElementById('auction-modal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function setAuctionDuration(hours) {
+    selectedAuctionDuration = hours;
+
+    // Update button styles
+    const buttons = document.querySelectorAll('.auction-duration-btn');
+    buttons.forEach(btn => {
+        const btnHours = parseInt(btn.getAttribute('data-hours'));
+        if (btnHours === hours) {
+            btn.classList.remove('border-gray-300', 'dark:border-gray-600', 'text-text-light', 'dark:text-text-dark');
+            btn.classList.add('border-purple-500', 'bg-purple-50', 'dark:bg-purple-900/20', 'text-purple-700', 'dark:text-purple-300');
+        } else {
+            btn.classList.add('border-gray-300', 'dark:border-gray-600', 'text-text-light', 'dark:text-text-dark');
+            btn.classList.remove('border-purple-500', 'bg-purple-50', 'dark:bg-purple-900/20', 'text-purple-700', 'dark:text-purple-300');
+        }
+    });
+}
+
+async function submitAuction() {
+    const startingPrice = parseFloat(document.getElementById('auction-starting-price').value);
+    const reservePrice = document.getElementById('auction-reserve-price').value
+        ? parseFloat(document.getElementById('auction-reserve-price').value)
+        : null;
+
+    // Validation
+    if (!startingPrice || startingPrice <= 0) {
+        alert('Please enter a valid starting price');
+        return;
+    }
+
+    if (reservePrice && reservePrice < startingPrice) {
+        alert('Reserve price must be greater than or equal to starting price');
+        return;
+    }
+
+    if (!currentAuctionNFTMint) {
+        alert('NFT information not found');
+        return;
+    }
+
+    // Prepare auction data
+    const auctionData = {
+        nft_mint: currentAuctionNFTMint,
+        starting_bid: startingPrice.toString(),
+        duration_hours: selectedAuctionDuration,
+    };
+
+    if (reservePrice) {
+        auctionData.reserve_price = reservePrice.toString();
+    }
+
+    try {
+        // Call the existing handleCreateAuction function
+        if (typeof window.handleCreateAuction === 'function') {
+            closeAuctionModal();
+            await window.handleCreateAuction(
+                currentAuctionNFTMint,
+                startingPrice,
+                selectedAuctionDuration,
+                reservePrice
+            );
+        } else {
+            alert('Auction creation function not available. Please ensure marketplace_actions.js is loaded.');
+        }
+    } catch (error) {
+        console.error('Error creating auction:', error);
+        alert('Failed to create auction: ' + error.message);
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('auction-modal');
+    if (event.target === modal) {
+        closeAuctionModal();
+    }
+});
 </script>
 
 <script id="initial-page-data" type="application/json">

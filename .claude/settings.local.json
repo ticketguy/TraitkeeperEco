@@ -10,7 +10,10 @@
       "Bash(docker exec:*)",
       "Bash(docker compose build:*)",
       "Bash(docker compose:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(python manage.py startapp:*)",
+      "Bash(python manage.py check:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

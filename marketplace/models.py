@@ -26,6 +26,9 @@ from .vitality_models import (
     MinimumBidThreshold
 )
 
+from datetime import timedelta
+from django.db.models import Avg
+
 
 class AuctionEvent(models.Model):
     """
@@ -151,6 +154,12 @@ class PrivateBid(models.Model):
         on_delete=models.CASCADE,
         related_name='private_bids',
         help_text="The collection this NFT belongs to"
+    )
+
+    amount = models.DecimalField(
+        max_digits=20, 
+        decimal_places=9, 
+        help_text="Bid amount in SOL"
     )
 
     # Participants
@@ -510,3 +519,293 @@ class Bid(models.Model):
     def is_offer(self):
         """Check if this is a private offer (not auction)"""
         return self.auction is None
+
+
+class TransactionMonitoring(models.Model):
+    """
+    Track Solana transaction lifecycle for health monitoring.
+
+    This model monitors all marketplace transactions from submission to finalization,
+    enabling real-time alerts on stuck transactions and performance metrics.
+    """
+
+    class TransactionStatus(models.TextChoices):
+        SUBMITTED = 'SUBMITTED', 'Submitted to RPC'
+        PENDING = 'PENDING', 'Pending confirmation'
+        CONFIRMED = 'CONFIRMED', 'Confirmed'
+        FINALIZED = 'FINALIZED', 'Finalized'
+        FAILED = 'FAILED', 'Failed'
+        TIMEOUT = 'TIMEOUT', 'Confirmation timeout'
+
+    class ActionType(models.TextChoices):
+        PLACE_BID = 'place_bid', 'Place Bid'
+        ACCEPT_BID = 'accept_bid', 'Accept Bid'
+        REJECT_BID = 'reject_bid', 'Reject Bid'
+        CANCEL_BID = 'cancel_bid', 'Cancel Bid'
+        CREATE_AUCTION = 'create_auction', 'Create Auction'
+        PLACE_AUCTION_BID = 'place_auction_bid', 'Place Auction Bid'
+        CANCEL_AUCTION = 'cancel_auction', 'Cancel Auction'
+        FINALIZE_AUCTION = 'finalize_auction', 'Finalize Auction'
+        SET_SELL_INTENT = 'set_sell_intent', 'Set Sell Intent'
+        REMOVE_SELL_INTENT = 'remove_sell_intent', 'Remove Sell Intent'
+        COUNTER_OFFER = 'counter_offer', 'Counter Offer'
+
+    # Transaction identification
+    transaction_signature = models.CharField(
+        max_length=88,
+        unique=True,
+        db_index=True,
+        help_text="Solana transaction signature"
+    )
+    action_type = models.CharField(
+        max_length=50,
+        choices=ActionType.choices,
+        db_index=True,
+        help_text="Type of marketplace action"
+    )
+
+    # Timing
+    submitted_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        help_text="When transaction was submitted to RPC"
+    )
+    confirmed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When transaction was confirmed on-chain"
+    )
+    finalized_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When transaction reached finality"
+    )
+
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=TransactionStatus.choices,
+        default=TransactionStatus.SUBMITTED,
+        db_index=True
+    )
+
+    # Performance metrics
+    confirmation_time_ms = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Time to confirm in milliseconds"
+    )
+    finalization_time_ms = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Time to finalize in milliseconds"
+    )
+
+    # Infrastructure
+    rpc_provider = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="RPC provider used (helius, quicknode, etc.)"
+    )
+
+    # Context
+    nft_mint = models.CharField(
+        max_length=44,
+        blank=True,
+        db_index=True,
+        help_text="NFT involved in transaction"
+    )
+    user_wallet = models.CharField(
+        max_length=44,
+        blank=True,
+        db_index=True,
+        help_text="User wallet that initiated transaction"
+    )
+
+    # Error tracking
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if transaction failed"
+    )
+    retry_count = models.IntegerField(
+        default=0,
+        help_text="Number of confirmation retry attempts"
+    )
+
+    # Additional metadata
+    metadata = models.JSONField(
+        default=dict,
+        help_text="Additional transaction context"
+    )
+
+    class Meta:
+        verbose_name = "Transaction Monitoring"
+        verbose_name_plural = "Transaction Monitoring"
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['status', '-submitted_at']),
+            models.Index(fields=['action_type', '-submitted_at']),
+            models.Index(fields=['rpc_provider', '-submitted_at']),
+            models.Index(fields=['nft_mint', '-submitted_at']),
+            models.Index(fields=['user_wallet', '-submitted_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_action_type_display()}: {self.transaction_signature[:12]}... ({self.get_status_display()})"
+
+    @classmethod
+    def create_from_transaction(
+        cls,
+        signature: str,
+        action_type: str,
+        nft_mint: str = '',
+        user_wallet: str = '',
+        rpc_provider: str = '',
+        **kwargs
+    ):
+        """
+        Create transaction monitoring record.
+
+        Args:
+            signature: Solana transaction signature
+            action_type: Type of marketplace action
+            nft_mint: NFT mint address
+            user_wallet: User wallet address
+            rpc_provider: RPC provider name
+            **kwargs: Additional metadata
+
+        Returns:
+            TransactionMonitoring instance
+        """
+        return cls.objects.create(
+            transaction_signature=signature,
+            action_type=action_type,
+            nft_mint=nft_mint,
+            user_wallet=user_wallet,
+            rpc_provider=rpc_provider,
+            metadata=kwargs
+        )
+
+    def mark_confirmed(self):
+        """Mark transaction as confirmed and calculate confirmation time"""
+        now = timezone.now()
+        self.confirmed_at = now
+        self.status = self.TransactionStatus.CONFIRMED
+        self.confirmation_time_ms = int((now - self.submitted_at).total_seconds() * 1000)
+        self.save(update_fields=['confirmed_at', 'status', 'confirmation_time_ms'])
+
+    def mark_finalized(self):
+        """Mark transaction as finalized and calculate finalization time"""
+        now = timezone.now()
+        self.finalized_at = now
+        self.status = self.TransactionStatus.FINALIZED
+        self.finalization_time_ms = int((now - self.submitted_at).total_seconds() * 1000)
+        self.save(update_fields=['finalized_at', 'status', 'finalization_time_ms'])
+
+    def mark_failed(self, error: str):
+        """Mark transaction as failed with error message"""
+        self.status = self.TransactionStatus.FAILED
+        self.error_message = error
+        self.save(update_fields=['status', 'error_message'])
+
+    def mark_timeout(self):
+        """Mark transaction as timed out"""
+        self.status = self.TransactionStatus.TIMEOUT
+        self.error_message = f"Transaction confirmation timeout after {self.retry_count} attempts"
+        self.save(update_fields=['status', 'error_message'])
+
+    def increment_retry(self):
+        """Increment retry counter"""
+        self.retry_count += 1
+        self.save(update_fields=['retry_count'])
+
+    @classmethod
+    def get_stuck_transactions(cls, minutes: int = 5):
+        """
+        Get transactions stuck in PENDING/SUBMITTED for > N minutes.
+
+        Args:
+            minutes: Number of minutes to consider a transaction stuck
+
+        Returns:
+            QuerySet of stuck transactions
+        """
+        cutoff = timezone.now() - timedelta(minutes=minutes)
+        return cls.objects.filter(
+            status__in=[cls.TransactionStatus.PENDING, cls.TransactionStatus.SUBMITTED],
+            submitted_at__lt=cutoff
+        )
+
+    @classmethod
+    def get_failure_rate_24h(cls) -> float:
+        """
+        Calculate failure rate in last 24 hours.
+
+        Returns:
+            Failure rate as percentage (0-100)
+        """
+        cutoff = timezone.now() - timedelta(hours=24)
+        total = cls.objects.filter(submitted_at__gte=cutoff).count()
+        if total == 0:
+            return 0.0
+        failed = cls.objects.filter(
+            submitted_at__gte=cutoff,
+            status__in=[cls.TransactionStatus.FAILED, cls.TransactionStatus.TIMEOUT]
+        ).count()
+        return (failed / total) * 100
+
+    @classmethod
+    def get_avg_confirmation_time(cls, hours: int = 1) -> float:
+        """
+        Get average confirmation time in last N hours.
+
+        Args:
+            hours: Number of hours to analyze
+
+        Returns:
+            Average confirmation time in milliseconds
+        """
+        cutoff = timezone.now() - timedelta(hours=hours)
+        avg_time = cls.objects.filter(
+            status=cls.TransactionStatus.CONFIRMED,
+            confirmed_at__gte=cutoff,
+            confirmation_time_ms__isnull=False
+        ).aggregate(avg=Avg('confirmation_time_ms'))['avg']
+
+        return avg_time or 0.0
+
+    @classmethod
+    def get_rpc_performance(cls, hours: int = 24):
+        """
+        Get RPC provider performance statistics.
+
+        Args:
+            hours: Number of hours to analyze
+
+        Returns:
+            Dict of RPC providers with their performance metrics
+        """
+        from django.db.models import Count, Avg
+
+        cutoff = timezone.now() - timedelta(hours=hours)
+
+        stats = cls.objects.filter(
+            submitted_at__gte=cutoff
+        ).values('rpc_provider').annotate(
+            total_transactions=Count('id'),
+            avg_confirmation_time=Avg('confirmation_time_ms'),
+            failed_count=Count('id', filter=models.Q(
+                status__in=[cls.TransactionStatus.FAILED, cls.TransactionStatus.TIMEOUT]
+            ))
+        )
+
+        return {
+            stat['rpc_provider']: {
+                'total_transactions': stat['total_transactions'],
+                'avg_confirmation_time_ms': stat['avg_confirmation_time'] or 0,
+                'failed_count': stat['failed_count'],
+                'failure_rate': (stat['failed_count'] / stat['total_transactions'] * 100)
+                    if stat['total_transactions'] > 0 else 0
+            }
+            for stat in stats
+        }

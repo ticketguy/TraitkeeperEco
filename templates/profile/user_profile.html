@@ -178,8 +178,9 @@
       <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-watchlist">Watchlist</button>
       {% endif %}
 
-       {% if is_owner %} 
+       {% if is_owner %}
       <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-listings">Listings</button>
+      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-auctions">Auctions</button>
       <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-bids">Bids</button>
       <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-activity">Activity</button>
       <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-pnl">PnL</button>
@@ -514,6 +515,57 @@
         {% endfor %}
       </div>
       {% endif %}
+    </div>
+
+    {/* Auctions Tab */}
+    <div id="tab-auctions" class="tab-content">
+      {/* Active Auctions Section */}
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
+          My Active Auctions
+          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ active_auctions|length|default:0 }})</span>
+        </h3>
+
+        <div id="active-auctions-content" class="space-y-4">
+          {/* Active auction items will be loaded here via JavaScript or Django template */}
+          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+            <i class="fas fa-gavel text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+            <p class="text-text-secondary-light dark:text-text-secondary-dark">You don't have any active auctions.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Auction Bids Received Section */}
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
+          Bids on My Auctions
+          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ auction_bids_received|length|default:0 }})</span>
+        </h3>
+
+        <div id="auction-bids-content" class="space-y-3">
+          {/* Auction bid items will be loaded here */}
+          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+            <i class="fas fa-inbox text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+            <p class="text-text-secondary-light dark:text-text-secondary-dark">No bids on your auctions yet.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Completed Auctions Section */}
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
+          Completed Auctions
+          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ completed_auctions|length|default:0 }})</span>
+        </h3>
+
+        <div id="completed-auctions-content" class="space-y-3">
+          {/* Completed auction items will be loaded here */}
+          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+            <i class="fas fa-history text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+            <p class="text-text-secondary-light dark:text-text-secondary-dark">No completed auctions yet.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     {/* Bids Tab */}

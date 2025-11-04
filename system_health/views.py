@@ -98,6 +98,23 @@ def restart_health_monitoring(request):
         logger.error(f"Health monitoring restart API error: {e}", exc_info=True)
         return Response({'error': 'Failed to restart the service.'}, status=500)
 
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def transaction_health(request):
+    """Get Solana transaction confirmation health metrics"""
+    try:
+        health_data = system_monitor.check_transaction_health()
+        return Response(health_data)
+    except Exception as e:
+        logger.error(f"Transaction health API error: {e}", exc_info=True)
+        return Response({
+            'error': 'Failed to fetch transaction health',
+            'status': 'error',
+            'stuck_transactions': 0,
+            'failure_rate_24h': 0,
+            'avg_confirmation_time_ms': 0
+        }, status=500)
+
 
 # ============================================================================
 # ECOSYSTEM HEALTH API ENDPOINTS

@@ -13,8 +13,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView # For the class-based view
 
 from .services import MarketplaceService
-from nft_data.models import NFT # Ensure NFT is imported if used directly (though service handles it)
-# from wallet.models import CustomUser # Not strictly needed if only using request.user
+from nft_data.models import NFT 
 from django.utils import timezone
 from datetime import timedelta
 
@@ -131,7 +130,8 @@ def api_set_sell_intent(request): # Synchronous function
         marketplace_service.set_sell_intent,
         lambda data: {
             'nft_mint': data.get('mint'),
-            'asking_price': Decimal(data.get('asking_price'))
+            'asking_price': Decimal(data.get('asking_price')),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -153,7 +153,8 @@ def api_accept_asking_price(request): # Synchronous function
         request,
         marketplace_service.accept_asking_price,
         lambda data: {
-            'nft_mint': data.get('mint')
+            'nft_mint': data.get('mint'),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -165,9 +166,24 @@ def api_place_bid(request): # Synchronous function
         request,
         marketplace_service.place_private_bid,
         lambda data: {
-            'nft_mint': data.get('nft_mint'),
+            # FIX: Use 'mint' as the input key for consistency across all listing actions
+            'nft_mint': data.get('mint'),
             'amount': Decimal(data.get('amount')),
-            'expiry_hours': int(data.get('expiry_hours', 72))
+            'expiry_hours': int(data.get('expiry_hours', 72)),
+            'signed_transaction': data.get('signed_transaction')  # Optional: for step 2
+        }
+    )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_confirm_bid(request): # Synchronous function
+    return async_to_sync(api_view_wrapper)(
+        request,
+        marketplace_service.confirm_private_bid_tx, 
+        lambda data: {
+            'temp_bid_id': data.get('temp_bid_id'),
+            'transaction_signature': data.get('transaction_signature'),
+            'amount': Decimal(data.get('amount')) # Required for sanity check
         }
     )
 
@@ -178,7 +194,8 @@ def api_accept_bid(request): # Synchronous function
         request,
         marketplace_service.accept_private_bid,
         lambda data: {
-            'bid_id': data.get('bid_id')
+            'bid_id': data.get('bid_id'),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -189,7 +206,8 @@ def api_reject_bid(request): # Synchronous function
         request,
         marketplace_service.reject_private_bid,
         lambda data: {
-            'bid_id': data.get('bid_id')
+            'bid_id': data.get('bid_id'),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -200,7 +218,8 @@ def api_cancel_bid(request): # Synchronous function
         request,
         marketplace_service.cancel_private_bid,
         lambda data: {
-            'bid_id': data.get('bid_id')
+            'bid_id': data.get('bid_id'),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -215,7 +234,8 @@ def api_create_auction(request): # Synchronous function
             'nft_mint': data.get('nft_mint'),
             'starting_price': Decimal(data.get('starting_price')),
             'duration_hours': int(data.get('duration_hours')),
-            'reserve_price': Decimal(data.get('reserve_price')) if data.get('reserve_price') else None
+            'reserve_price': Decimal(data.get('reserve_price')) if data.get('reserve_price') else None,
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -227,7 +247,8 @@ def api_place_auction_bid(request): # Synchronous function
         marketplace_service.place_auction_bid,
         lambda data: {
             'auction_id': data.get('auction_id'),
-            'amount': Decimal(data.get('amount'))
+            'amount': Decimal(data.get('amount')),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -238,7 +259,20 @@ def api_cancel_auction(request): # Synchronous function
         request,
         marketplace_service.cancel_auction,
         lambda data: {
-            'auction_id': data.get('auction_id')
+            'auction_id': data.get('auction_id'),
+            'signed_transaction': data.get('signed_transaction')
+        }
+    )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_finalize_auction(request): # Synchronous function
+    return async_to_sync(api_view_wrapper)(
+        request,
+        marketplace_service.finalize_auction,
+        lambda data: {
+            'auction_id': data.get('auction_id'),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -251,7 +285,8 @@ def api_owner_counter_bid(request): # Synchronous function
         marketplace_service.owner_counter_bid,
         lambda data: {
             'bid_id': data.get('bid_id'),
-            'counter_amount': Decimal(data.get('counter_amount'))
+            'counter_amount': Decimal(data.get('counter_amount')),
+            'signed_transaction': data.get('signed_transaction')
         }
     )
 
@@ -262,8 +297,43 @@ def api_bidder_counter_sell_intent(request): # Synchronous function
         request,
         marketplace_service.bidder_counter_sell_intent,
         lambda data: {
-            'nft_mint': data.get('nft_mint'),
+            # FIX: Use 'mint' as the input key for consistency
+            'nft_mint': data.get('mint'),
             'counter_amount': Decimal(data.get('counter_amount'))
         }
-    ) 
+    )
 
+# --- Get NFT Offers ---
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_get_nft_offers(request, nft_mint):
+    """
+    Fetch all bids/offers for a specific NFT.
+    Returns list of bids with their status, amount, bidder, timestamps.
+    """
+    try:
+        # Get all bids for this NFT
+        bids = PrivateBid.objects.filter(nft_mint=nft_mint).order_by('-created_at')
+
+        # Serialize bid data
+        offers_data = []
+        for bid in bids:
+            offers_data.append({
+                'bid_id': str(bid.bid_id),
+                'amount': str(bid.amount),
+                'bidder': bid.bidder_wallet,
+                'status': bid.status,
+                'created_at': bid.created_at.isoformat() if bid.created_at else None,
+                'expires_at': bid.expires_at.isoformat() if bid.expires_at else None,
+            })
+
+        return JsonResponse({
+            'success': True,
+            'offers': offers_data
+        })
+    except Exception as e:
+        logger.error(f"Error fetching NFT offers: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

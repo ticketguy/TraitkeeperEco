@@ -972,16 +972,43 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
     window.traitkeeperConfig = {
         csrfToken: "{{ csrf_token }}",
         apiEndpoints: {
+            // Core bidding actions
             placeBid: "{% url 'marketplace:api_place_bid' %}",
+            acceptBid: "{% url 'marketplace:api_accept_bid' %}",
+            rejectBid: "{% url 'marketplace:api_reject_reject' %}",
+            cancelBid: "{% url 'marketplace:api_cancel_bid' %}",
+
+            // Purchase actions
             buyDirect: "{% url 'marketplace:api_buy_direct_sell' %}",
-            acceptAsk: "{% url 'marketplace:api_accept_asking_price' %}"
+            acceptAsk: "{% url 'marketplace:api_accept_asking_price' %}",
+
+            // Sell intent actions
+            setSellIntent: "{% url 'marketplace:api_set_sell_intent' %}",
+            removeSellIntent: "{% url 'marketplace:api_remove_sell_intent' %}",
+
+            // Counter offers
+            counterOffer: "{% url 'marketplace:api_owner_counter_bid' %}",
+            counterSellIntent: "{% url 'marketplace:api_bidder_counter_sell_intent' %}",
+
+            // Auction actions
+            createAuction: "{% url 'marketplace:api_create_auction' %}",
+            placeAuctionBid: "{% url 'marketplace:api_place_auction_bid' %}",
+            cancelAuction: "{% url 'marketplace:api_cancel_auction' %}",
+            finalizeAuction: "{% url 'marketplace:api_finalize_auction' %}"
         },
-        isAuthenticated: {{ request.user.is_authenticated|yesno:"true,false" }} 
+        isAuthenticated: {{ request.user.is_authenticated|yesno:"true,false" }}
     };
 </script>
     <!-- Scripts -->
     <script src="{% static 'js/src/solana-stats.js' %}" defer
         onerror="console.error('Failed to load solana-stats.js')"></script>
+
+    <!-- Solana Web3.js for blockchain interactions -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
+    <!-- Solana transaction builder and signer -->
+    <script src="{% static 'js/src/wallet/solana-transaction.js' %}" defer
+        onerror="console.error('Failed to load solana-transaction.js')"></script>
 
     <script src="{% static 'js/src/wallet/wallet-connection.js' %}" defer
         onerror="console.error('Failed to load wallet-connection.js')"></script>

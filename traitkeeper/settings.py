@@ -48,7 +48,12 @@ MIGRATING = 'migrate' in sys.argv
 
 # SECURITY WARNING: Keep the secret key used in production secret!
 # This key is used for cryptographic signing. In production, it should be a securely generated value.
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-#0_e8!2edgoh8*z!mn6!s@@u%u^(xf^5tc!xdtoc43^*1t_2u1')
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+
+# --- PROGRAM AUTHORITY KEY ---
+# This is the 64-byte private key used to sign transactions originating from the server
+# (e.g., configuring the Quest program).
+PROGRAM_AUTHORITY_PRIVATE_KEY_B58 = os.getenv('PROGRAM_AUTHORITY_PRIVATE_KEY_B58', '')
 
 # SECURITY WARNING: Don't run with debug turned on in production!
 # Debug mode provides detailed error pages, which can expose sensitive information.
@@ -91,6 +96,7 @@ INSTALLED_APPS = [
     'nftmemories',               # NFT memories app
     'marketplace',               # Marketplace app
     'system_health',             # System health monitoring app
+    'admin_secure',              # Secure encrypted storage for sensitive credentials
     "advertisement",             # Advertisement app
     'indexer',                   # Indexer app for blockchain data
     'notifications',             # Notifications app
