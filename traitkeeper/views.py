@@ -582,7 +582,8 @@ def collection_detail(request, address):
     )
     
     # --- 6. Pagination ---
-    paginator = Paginator(nfts_queryset, 24)
+    # Increased from 24 to 500 to show all NFTs until proper pagination UI is added
+    paginator = Paginator(nfts_queryset, 500)
     page_number = request.GET.get('page')
     
     try:
