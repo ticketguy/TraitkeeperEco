@@ -105,7 +105,7 @@ def get_user_most_interacted_memories(user: User, limit: int = 5) -> List[Dict]:
     memories = []
 
     # Check CollectionEvents
-    for event in CollectionEvent.objects.select_related('event__collection').iterator(chunk_size=100):
+    for event in CollectionEvent.objects.select_related('event').iterator(chunk_size=100):
         interactions = event.user_interactions
         comments = interactions.get('comments', [])
         tributes = interactions.get('tributes', [])

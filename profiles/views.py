@@ -28,9 +28,17 @@ def profile_view(request, username):
     """
     Displays the user profile page with NFTs, marketplace data, watchlist, and achievements.
     """
+    # Import AdminUser
+    from admin_panel.models import AdminUser
+
     try:
         # Fetch the user whose profile is being viewed
         profile_user = User.objects.select_related('profile').get(username=username)
+
+        # Block admin users from having public profiles
+        if isinstance(profile_user, AdminUser):
+            raise Http404("Admin users do not have public profiles")
+
     except User.DoesNotExist:
         raise Http404("User not found")
 
@@ -165,6 +173,12 @@ def settings_profile_view(request):
     """
     Handles displaying and updating profile information.
     """
+    # Block admin users from accessing profile settings
+    from admin_panel.models import AdminUser
+    if isinstance(request.user, AdminUser):
+        messages.error(request, 'Admin users cannot access profile settings.')
+        return redirect('admin:index')
+
     profile = request.user.profile
 
     if request.method == 'POST':

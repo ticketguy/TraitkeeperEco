@@ -313,7 +313,7 @@ def api_get_nft_offers(request, nft_mint):
     """
     try:
         # Get all bids for this NFT
-        bids = PrivateBid.objects.filter(nft_mint=nft_mint).order_by('-created_at')
+        bids = PrivateBid.objects.filter(nft__mint_address=nft_mint).order_by('-created_at')
 
         # Serialize bid data
         offers_data = []
