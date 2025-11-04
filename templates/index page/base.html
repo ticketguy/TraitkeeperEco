@@ -1313,6 +1313,33 @@ if (header) {
                     });
                 }
 
+                // User Profile Dropdown Toggle (Desktop and Mobile)
+                const profileLink = document.querySelector('.profile-link');
+                const userProfileMenu = document.getElementById('user-profile-menu-mobile');
+
+                if (profileLink && userProfileMenu) {
+                    // Toggle dropdown on click
+                    profileLink.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        userProfileMenu.classList.toggle('hidden');
+                    });
+
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', (event) => {
+                        const walletModal = document.getElementById('wallet-modal');
+                        const walletBackdrop = document.getElementById('wallet-backdrop');
+                        if (!profileLink.contains(event.target) && !userProfileMenu.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
+                            userProfileMenu.classList.add('hidden');
+                        }
+                    });
+
+                    // Prevent dropdown from closing when clicking inside it
+                    userProfileMenu.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+
                 const transactionCheckbox = document.querySelector('input[name="transaction"]');
                 const transactionSettings = document.querySelector('.transaction-settings');
                 if (transactionCheckbox && transactionSettings) {
