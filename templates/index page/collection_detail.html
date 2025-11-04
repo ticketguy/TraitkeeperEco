@@ -432,7 +432,7 @@
                     <div class="relative mt-2 h-9">
                         <p class="absolute inset-0 font-bold text-text-secondary-light dark:text-text-secondary-dark transition-opacity duration-300 group-hover:opacity-0">
 {{ nft.buy_price|floatformat:2|default:"&nbsp;" }} {% if nft.buy_price %}SOL{% endif %}                        </p>
-                        <a href="#make-offer" class="make-offer-link absolute inset-0 flex items-center justify-center bg-primary text-brand-white text-sm font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <a href="#make-offer" class="make-offer-link absolute inset-0 flex items-center justify-center bg-primary text-brand-white text-sm font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ring-2 ring-primary ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark hover:ring-4">
                             Make Offer
                         </a>
                     </div>
@@ -560,7 +560,7 @@
                             <div id="modal-action-buttons" class="flex flex-col gap-2">
                                 <!-- Buyer Actions (shown if user doesn't own NFT) -->
                                 <div id="buyer-actions" class="flex items-center gap-2" style="display: none;">
-                                    <button class="btn-outline px-4 py-2 rounded-full text-sm" onclick="window.handleMakeOfferClick(event)">Make Offer</button>
+                                    <button class="btn-outline px-4 py-2 rounded-full text-sm ring-2 ring-primary hover:ring-4 transition-all" onclick="window.handleMakeOfferClick(event)">Make Offer</button>
                                     <button id="buy-now-btn" class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors" style="display: none;">Buy Now</button>
                                 </div>
 
@@ -726,6 +726,10 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Ensure scroll is enabled on page load
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+
     AOS.init({ duration: 600, once: true, delay: 100 });
 
     // --- Configuration & Elements ---
