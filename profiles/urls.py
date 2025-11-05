@@ -34,4 +34,15 @@ urlpatterns = [
     path('watchlist/add/', views.add_to_watchlist, name='add_to_watchlist'),
     path('watchlist/remove/<int:watchlist_id>/', views.remove_from_watchlist, name='remove_from_watchlist'),
     path('watchlist/update-notes/<int:watchlist_id>/', views.update_watchlist_notes, name='update_watchlist_notes'),
+
+    # Quest pages and actions
+    path('quests/', views.quests_page_view, name='quests'),
+    path('quests/<int:quest_id>/claim/', views.quest_claim_view, name='quest_claim'),
+    path('quests/claim/confirm/', views.quest_claim_confirm_view, name='quest_claim_confirm'),
+
+    # Quest & Achievement API endpoints
+    path('api/quests/', views.api_quests_list, name='api_quests_list'),
+    path('api/quests/<int:quest_id>/progress/', views.api_quest_progress, name='api_quest_progress'),
+    path('api/achievements/', views.api_achievements_list, name='api_achievements_list'),
+    path('api/achievements/<str:username>/', views.api_achievements_list, name='api_achievements_user'),
 ]

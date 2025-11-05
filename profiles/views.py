@@ -529,3 +529,356 @@ def update_watchlist_notes(request, watchlist_id):
             messages.error(request, 'An error occurred while updating notes.')
 
     return redirect(request.META.get('HTTP_REFERER', 'profiles:profile'))
+
+
+# ============================================================================
+# QUEST & ACHIEVEMENT VIEWS
+# ============================================================================
+
+def quests_page_view(request):
+    """
+    Display all available quests with user progress.
+    """
+    from .models import Quest, QuestUserProgress
+    from django.db.models import Q
+    from django.utils import timezone
+
+    # Get all active quests
+    now = timezone.now()
+    active_quests = Quest.objects.filter(
+        is_active=True,
+        status='active'
+    ).filter(
+        Q(start_date__isnull=True) | Q(start_date__lte=now),
+        Q(end_date__isnull=True) | Q(end_date__gte=now)
+    ).order_by('display_order', '-created_at')
+
+    # Get user progress if authenticated
+    user_progress = None
+    quest_progress_dict = {}
+    claimed_quest_ids = set()
+
+    if request.user.is_authenticated:
+        user_progress, created = QuestUserProgress.objects.get_or_create(
+            user=request.user
+        )
+
+        # Get claimed quest IDs
+        from .models import QuestClaim
+        claimed_quest_ids = set(
+            QuestClaim.objects.filter(user=request.user).values_list('quest_id', flat=True)
+        )
+
+        # Calculate progress for each quest
+        for quest in active_quests:
+            if quest.action_type == 'buy':
+                current = user_progress.nfts_bought
+            elif quest.action_type == 'bid':
+                current = user_progress.bids_placed
+            else:  # list
+                current = user_progress.nfts_listed
+
+            quest_progress_dict[quest.id] = {
+                'current': current,
+                'target': quest.target_count,
+                'percentage': min(100, int((current / quest.target_count) * 100)),
+                'completed': current >= quest.target_count,
+                'claimed': quest.id in claimed_quest_ids
+            }
+
+    context = {
+        'quests': active_quests,
+        'user_progress': user_progress,
+        'quest_progress_dict': quest_progress_dict,
+        'claimed_quest_ids': claimed_quest_ids,
+    }
+    return render(request, 'profiles/quests.html', context)
+
+
+@login_required
+def quest_claim_view(request, quest_id):
+    """
+    Handle quest reward claiming (prepares transaction for Solana).
+    Returns JSON with transaction data for frontend to sign and submit.
+    """
+    from django.http import JsonResponse
+    from .models import Quest, QuestUserProgress, QuestClaim
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        quest = get_object_or_404(Quest, id=quest_id, is_active=True)
+
+        # Check if already claimed
+        if QuestClaim.objects.filter(user=request.user, quest=quest).exists():
+            return JsonResponse({'error': 'Quest already claimed'}, status=400)
+
+        # Check progress
+        user_progress, created = QuestUserProgress.objects.get_or_create(
+            user=request.user
+        )
+
+        if quest.action_type == 'buy':
+            current = user_progress.nfts_bought
+        elif quest.action_type == 'bid':
+            current = user_progress.bids_placed
+        else:  # list
+            current = user_progress.nfts_listed
+
+        if current < quest.target_count:
+            return JsonResponse({
+                'error': 'Quest not completed',
+                'current': current,
+                'required': quest.target_count
+            }, status=400)
+
+        # Get primary wallet
+        from wallet.models import WalletProfile
+        primary_wallet = WalletProfile.get_primary_wallet(request.user)
+
+        if not primary_wallet:
+            return JsonResponse({'error': 'No wallet connected'}, status=400)
+
+        # Return transaction data for frontend
+        # Frontend will construct and sign the Solana transaction
+        return JsonResponse({
+            'success': True,
+            'quest_id': quest.quest_id,
+            'quest_on_chain_address': quest.on_chain_address,
+            'reward_lamports': quest.reward_lamports,
+            'reward_sol': quest.reward_sol,
+            'user_wallet': primary_wallet.public_key,
+            'message': f'Ready to claim {quest.reward_sol:.4f} SOL'
+        })
+
+    except Exception as e:
+        logger.error(f"Error claiming quest: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def quest_claim_confirm_view(request):
+    """
+    Confirm quest claim after Solana transaction is successful.
+    Called by frontend after transaction signature is obtained.
+    """
+    from django.http import JsonResponse
+    from .models import Quest, QuestClaim
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        quest_id = data.get('quest_id')
+        transaction_signature = data.get('transaction_signature')
+
+        if not quest_id or not transaction_signature:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        quest = get_object_or_404(Quest, id=quest_id)
+
+        # Check if already claimed
+        if QuestClaim.objects.filter(user=request.user, quest=quest).exists():
+            return JsonResponse({'error': 'Quest already claimed'}, status=400)
+
+        # Record claim
+        claim = QuestClaim.objects.create(
+            user=request.user,
+            quest=quest,
+            reward_lamports=quest.reward_lamports,
+            transaction_signature=transaction_signature
+        )
+
+        logger.info(f"Quest {quest.quest_id} claimed by {request.user.username} - TX: {transaction_signature}")
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully claimed {quest.reward_sol:.4f} SOL!',
+            'claimed_at': claim.claimed_at.isoformat(),
+            'transaction_url': f'https://solscan.io/tx/{transaction_signature}'
+        })
+
+    except Exception as e:
+        logger.error(f"Error confirming quest claim: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================================================
+# QUEST & ACHIEVEMENT API ENDPOINTS
+# ============================================================================
+
+def api_quests_list(request):
+    """
+    API endpoint: List all active quests with optional progress for authenticated users.
+    GET /api/quests/
+    """
+    from django.http import JsonResponse
+    from .models import Quest, QuestUserProgress, QuestClaim
+    from django.db.models import Q
+    from django.utils import timezone
+
+    # Get active quests
+    now = timezone.now()
+    quests = Quest.objects.filter(
+        is_active=True,
+        status='active'
+    ).filter(
+        Q(start_date__isnull=True) | Q(start_date__lte=now),
+        Q(end_date__isnull=True) | Q(end_date__gte=now)
+    ).order_by('display_order', '-created_at')
+
+    quests_data = []
+    for quest in quests:
+        quest_dict = {
+            'id': quest.id,
+            'quest_id': quest.quest_id,
+            'title': quest.title,
+            'description': quest.description,
+            'icon': quest.icon,
+            'action_type': quest.action_type,
+            'action_display': quest.get_action_type_display(),
+            'target_count': quest.target_count,
+            'reward_lamports': quest.reward_lamports,
+            'reward_sol': quest.reward_sol,
+            'progress_description': quest.progress_description,
+            'on_chain_address': quest.on_chain_address,
+        }
+
+        # Add progress if user is authenticated
+        if request.user.is_authenticated:
+            user_progress, created = QuestUserProgress.objects.get_or_create(
+                user=request.user
+            )
+
+            if quest.action_type == 'buy':
+                current = user_progress.nfts_bought
+            elif quest.action_type == 'bid':
+                current = user_progress.bids_placed
+            else:  # list
+                current = user_progress.nfts_listed
+
+            is_claimed = QuestClaim.objects.filter(
+                user=request.user, quest=quest
+            ).exists()
+
+            quest_dict['progress'] = {
+                'current': current,
+                'target': quest.target_count,
+                'percentage': min(100, int((current / quest.target_count) * 100)),
+                'completed': current >= quest.target_count,
+                'claimed': is_claimed
+            }
+
+        quests_data.append(quest_dict)
+
+    return JsonResponse({
+        'quests': quests_data,
+        'count': len(quests_data)
+    })
+
+
+@login_required
+def api_quest_progress(request, quest_id):
+    """
+    API endpoint: Get user's progress for a specific quest.
+    GET /api/quests/<quest_id>/progress/
+    """
+    from django.http import JsonResponse
+    from .models import Quest, QuestUserProgress, QuestClaim
+
+    quest = get_object_or_404(Quest, id=quest_id)
+    user_progress, created = QuestUserProgress.objects.get_or_create(
+        user=request.user
+    )
+
+    if quest.action_type == 'buy':
+        current = user_progress.nfts_bought
+    elif quest.action_type == 'bid':
+        current = user_progress.bids_placed
+    else:  # list
+        current = user_progress.nfts_listed
+
+    is_claimed = QuestClaim.objects.filter(
+        user=request.user, quest=quest
+    ).exists()
+
+    claim = None
+    if is_claimed:
+        claim_obj = QuestClaim.objects.get(user=request.user, quest=quest)
+        claim = {
+            'claimed_at': claim_obj.claimed_at.isoformat(),
+            'transaction_signature': claim_obj.transaction_signature,
+            'reward_sol': claim_obj.reward_sol
+        }
+
+    return JsonResponse({
+        'quest_id': quest.quest_id,
+        'title': quest.title,
+        'action_type': quest.action_type,
+        'current': current,
+        'target': quest.target_count,
+        'percentage': min(100, int((current / quest.target_count) * 100)),
+        'completed': current >= quest.target_count,
+        'claimed': is_claimed,
+        'claim': claim,
+        'on_chain_progress': {
+            'nfts_bought': user_progress.nfts_bought,
+            'bids_placed': user_progress.bids_placed,
+            'nfts_listed': user_progress.nfts_listed,
+            'on_chain_address': user_progress.on_chain_address,
+            'last_synced_at': user_progress.last_synced_at.isoformat() if user_progress.last_synced_at else None
+        }
+    })
+
+
+def api_achievements_list(request, username=None):
+    """
+    API endpoint: List achievements for a user.
+    GET /api/achievements/<username>/
+    """
+    from django.http import JsonResponse
+    from .models import UserAchievement, Achievement
+
+    if username:
+        user = get_object_or_404(User, username=username)
+    elif request.user.is_authenticated:
+        user = request.user
+    else:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    # Get earned achievements
+    earned = UserAchievement.objects.filter(
+        user=user
+    ).select_related('achievement', 'achievement__category').order_by('-earned_at')
+
+    achievements_data = []
+    for ua in earned:
+        achievements_data.append({
+            'key': ua.achievement.key,
+            'name': ua.achievement.name,
+            'description': ua.achievement.description,
+            'category': ua.achievement.category.name if ua.achievement.category else None,
+            'rarity': ua.achievement.rarity,
+            'points': ua.achievement.points,
+            'icon_url': ua.achievement.get_icon_url,
+            'earned_at': ua.earned_at.isoformat()
+        })
+
+    # Calculate stats
+    total_points = sum(ua.achievement.points for ua in earned)
+    by_rarity = {}
+    for ua in earned:
+        rarity = ua.achievement.rarity
+        by_rarity[rarity] = by_rarity.get(rarity, 0) + 1
+
+    return JsonResponse({
+        'achievements': achievements_data,
+        'stats': {
+            'total_earned': len(achievements_data),
+            'total_points': total_points,
+            'by_rarity': by_rarity
+        }
+    })
