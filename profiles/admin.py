@@ -91,7 +91,7 @@ class AchievementCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Achievement)
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ['icon_display', 'name', 'category', 'rarity_badge', 'points', 'status_indicators', 'earned_count']
+    list_display = ['icon_display', 'name', 'category', 'rarity_badge', 'points', 'is_active', 'is_hidden', 'earned_count']
     list_filter = ['category', 'rarity', 'is_active', 'is_hidden', 'created_at']
     list_editable = ['is_active', 'is_hidden']
     search_fields = ['key', 'name', 'description']
