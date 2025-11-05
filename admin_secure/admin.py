@@ -10,10 +10,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib import messages
 from .models import EncryptedSecret, SecretAccessLog
+from .forms import EncryptedSecretForm
 
 
 @admin.register(EncryptedSecret)
 class EncryptedSecretAdmin(admin.ModelAdmin):
+    form = EncryptedSecretForm
     list_display = [
         'name',
         'secret_type',
@@ -38,11 +40,16 @@ class EncryptedSecretAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Secret Information', {
-            'fields': ('name', 'secret_type', 'description', 'is_active')
+            'fields': ('name', 'secret_type', 'description', 'plaintext_value', 'is_active')
         }),
-        ('Security', {
-            'fields': ('encrypted_value', 'encryption_key_id', 'expires_at'),
+        ('Advanced', {
+            'fields': ('expires_at',),
             'classes': ('collapse',)
+        }),
+        ('Security (Read-Only)', {
+            'fields': ('encrypted_value', 'encryption_key_id'),
+            'classes': ('collapse',),
+            'description': 'These fields are automatically managed. Do not edit manually.'
         }),
         ('Access Tracking', {
             'fields': ('access_count', 'last_accessed_at'),
@@ -60,7 +67,7 @@ class EncryptedSecretAdmin(admin.ModelAdmin):
                 '<a class="button" href="{}" target="_blank" '
                 'style="background-color: #e67e22; color: white; padding: 5px 10px; '
                 'border-radius: 3px; text-decoration: none;">🔓 Decrypt</a>',
-                reverse('admin:admin_secure_decrypt_secret', args=[obj.id])
+                reverse('admin_secure:decrypt_secret', args=[obj.id])
             )
         return format_html(
             '<span style="color: #95a5a6;">Inactive</span>'
@@ -74,7 +81,7 @@ class EncryptedSecretAdmin(admin.ModelAdmin):
                 '<a class="button" href="{}" '
                 'style="background-color: #3498db; color: white; padding: 5px 10px; '
                 'border-radius: 3px; text-decoration: none;">🔄 Rotate</a>',
-                reverse('admin:admin_secure_rotate_secret', args=[obj.id])
+                reverse('admin_secure:rotate_secret', args=[obj.id])
             )
         return '-'
     rotate_button.short_description = 'Rotate'
