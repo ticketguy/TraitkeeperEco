@@ -1252,35 +1252,67 @@ if (header) {
                     markAllReadMobile: !!markAllReadMobile
                 });
 
+                // Setup desktop notification dropdown
                 if (notificationToggle && notificationDropdown) {
                     notificationToggle.addEventListener('click', function (e) {
                         e.stopPropagation();
+                        e.preventDefault();
+                        console.log('Desktop notification toggle clicked');
                         notificationDropdown.classList.toggle('hidden');
-                    });
-
-                    document.addEventListener('click', (event) => {
-                        const walletModal = document.getElementById('wallet-modal');
-                        const walletBackdrop = document.getElementById('wallet-backdrop');
-                        if (!notificationToggle.contains(event.target) && !notificationDropdown.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
-                            notificationDropdown.classList.add('hidden');
-                        }
-                    });
-                }
-
-                if (notificationToggleMobile && notificationDropdownMobile) {
-                    notificationToggleMobile.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        notificationDropdownMobile.classList.toggle('hidden');
-                    });
-
-                    document.addEventListener('click', (event) => {
-                        const walletModal = document.getElementById('wallet-modal');
-                        const walletBackdrop = document.getElementById('wallet-backdrop');
-                        if (!notificationToggleMobile.contains(event.target) && !notificationDropdownMobile.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
+                        // Close mobile dropdown if open
+                        if (notificationDropdownMobile) {
                             notificationDropdownMobile.classList.add('hidden');
                         }
                     });
+
+                    // Prevent dropdown from closing when clicking inside
+                    notificationDropdown.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
                 }
+
+                // Setup mobile notification dropdown
+                if (notificationToggleMobile && notificationDropdownMobile) {
+                    notificationToggleMobile.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log('Mobile notification toggle clicked');
+                        notificationDropdownMobile.classList.toggle('hidden');
+                        // Close desktop dropdown if open
+                        if (notificationDropdown) {
+                            notificationDropdown.classList.add('hidden');
+                        }
+                    });
+
+                    // Prevent dropdown from closing when clicking inside
+                    notificationDropdownMobile.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+
+                // Single global click handler for closing both notification dropdowns
+                document.addEventListener('click', (event) => {
+                    const walletModal = document.getElementById('wallet-modal');
+                    const walletBackdrop = document.getElementById('wallet-backdrop');
+
+                    // Check if click is outside all notification elements
+                    const clickedInsideNotification = (
+                        (notificationToggle && notificationToggle.contains(event.target)) ||
+                        (notificationDropdown && notificationDropdown.contains(event.target)) ||
+                        (notificationToggleMobile && notificationToggleMobile.contains(event.target)) ||
+                        (notificationDropdownMobile && notificationDropdownMobile.contains(event.target))
+                    );
+
+                    const clickedInsideModal = (
+                        (walletModal && walletModal.contains(event.target)) ||
+                        (walletBackdrop && walletBackdrop.contains(event.target))
+                    );
+
+                    if (!clickedInsideNotification && !clickedInsideModal) {
+                        if (notificationDropdown) notificationDropdown.classList.add('hidden');
+                        if (notificationDropdownMobile) notificationDropdownMobile.classList.add('hidden');
+                    }
+                });
 
                 if (notificationSettingsToggle) {
                     notificationSettingsToggle.addEventListener('click', function (e) {
