@@ -130,7 +130,7 @@
                 <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Avg Price</span>
                 <p class="text-xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
                     {% if collection_stats.total_sales > 0 %}
-                        {{ collection_stats.total_volume_24h|floatformat:2|default:"0.00"|floattimes:1.0|divideby:collection_stats.total_sales|floatformat:2 }} SOL
+                        {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
                     {% else %}
                         -- SOL
                     {% endif %}
@@ -170,7 +170,7 @@
                     <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider block">Avg Price</span>
                     <p class="text-2xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
                         {% if collection_stats.total_sales > 0 %}
-                            {{ collection_stats.total_volume_24h|floatformat:2|default:"0.00"|floattimes:1.0|divideby:collection_stats.total_sales|floatformat:2 }} SOL
+                            {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
                         {% else %}
                             -- SOL
                         {% endif %}

@@ -275,6 +275,9 @@ def index(request):
                 'delay': index * 100,
             })
 
+        # Calculate average price
+        avg_price = float(total_volume_24h / total_sales) if total_sales > 0 else 0.0
+
         # Build context
         context = {
             **context,
@@ -282,6 +285,7 @@ def index(request):
                 'total_volume_24h': float(total_volume_24h),
                 'market_cap': float(market_cap),
                 'total_sales': total_sales,
+                'avg_price_24h': avg_price,
             },
             'hero_slides': hero_slides_data,
             'collection_sweeps': collection_sweeps_list,
