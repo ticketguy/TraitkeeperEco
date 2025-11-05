@@ -701,9 +701,12 @@ def export_statistics(request):
     end_date = timezone.now()
     start_date = end_date - timedelta(days=7)
     
+    # Exclude admin users from regular user counts
+    admin_user_ids = list(AdminUser.objects.values_list('id', flat=True))
+
     user_stats = {
-        'total_users': CustomUser.objects.count(),
-        'active_users': CustomUser.objects.filter(last_login__gte=start_date).count(),
+        'total_users': CustomUser.objects.exclude(id__in=admin_user_ids).count(),
+        'active_users': CustomUser.objects.exclude(id__in=admin_user_ids).filter(last_login__gte=start_date).count(),
         'wallet_connections': WalletProfile.objects.count(),
         'admin_users': AdminUser.objects.count(),
     }
@@ -1043,4 +1046,8 @@ def restart_task_manager(request):
 @login_required
 def task_dashboard(request):
     """Render the task management dashboard."""
+    # Check if user is admin
+    from admin_panel.models import AdminUser
+    if not isinstance(request.user, AdminUser) and not request.user.is_staff:
+        raise Http404("Page not found")
     return render(request, 'admin_panel/task_dashboard.html')

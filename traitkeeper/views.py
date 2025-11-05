@@ -958,16 +958,16 @@ def stream_site_updates(request):
                     try:
                         update_data['x_feed'] = [
                             {
-                                'username': 'traitkeeper', 
-                                'content': 'Welcome to the TraitKeeper alpha! 🚀 Follow us for live Solana NFT analytics.', 
-                                'time': '1m ago', 
-                                'avatar_url': '/static/img/tk-logo.png'
+                                'username': 'traitkeeper',
+                                'content': 'Welcome to the TraitKeeper alpha! 🚀 Follow us for live Solana NFT analytics.',
+                                'time': '1m ago',
+                                'avatar_url': '/static/img/trait-keeper-logo-purple-combination-mark.png'
                             },
                             {
-                                'username': 'sol_whale', 
-                                'content': 'Just swept 10 @SomeCollection NFTs using @traitkeeper, the analytics are insane!', 
-                                'time': '5m ago', 
-                                'avatar_url': '/static/img/user-avatar-default.jpg'
+                                'username': 'sol_whale',
+                                'content': 'Just swept 10 @SomeCollection NFTs using @traitkeeper, the analytics are insane!',
+                                'time': '5m ago',
+                                'avatar_url': 'https://ui-avatars.com/api/?name=SW&background=9333ea&color=fff'
                             }
                         ]
                     except Exception as e:

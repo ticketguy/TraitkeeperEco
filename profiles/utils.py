@@ -144,7 +144,9 @@ def check_and_award_social_achievements(user):
         completion_score += 1
     if profile.bio:
         completion_score += 1
-    if profile.get_avatar_url != '/static/img/user-avatar-default.jpg':
+    # Check if user has a custom avatar (not using ui-avatars.com generated one)
+    avatar_url = profile.get_avatar_url
+    if avatar_url and not avatar_url.startswith('https://ui-avatars.com'):
         completion_score += 1
     if profile.social_x or profile.social_discord or profile.website_url:
         completion_score += 1

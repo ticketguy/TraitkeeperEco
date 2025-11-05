@@ -36,14 +36,18 @@ class AdminAnalyticsService:
             return stats
 
         logger.info("Cache miss for user stats, calculating from database...")
-        
+
+        # Exclude admin users from counts
+        from admin_panel.models import AdminUser
+        admin_user_ids = await sync_to_async(list)(AdminUser.objects.values_list('id', flat=True))
+
         # If not cached, run the database queries.
         # sync_to_async is used because Django ORM calls are synchronous.
-        total_users = await sync_to_async(CustomUser.objects.count)()
+        total_users = await sync_to_async(CustomUser.objects.exclude(id__in=admin_user_ids).count)()
         active_users = await sync_to_async(
-            CustomUser.objects.filter(last_login__gte=timezone.now() - timedelta(days=30)).count
+            CustomUser.objects.exclude(id__in=admin_user_ids).filter(last_login__gte=timezone.now() - timedelta(days=30)).count
         )()
-        new_users_query = CustomUser.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7))
+        new_users_query = CustomUser.objects.exclude(id__in=admin_user_ids).filter(date_joined__gte=timezone.now() - timedelta(days=7))
         new_user_count = await sync_to_async(new_users_query.count)()
         retained_users = await sync_to_async(
             new_users_query.filter(last_login__gt=F('date_joined')).count
