@@ -6,26 +6,47 @@
     <title>System Health Dashboard - TraitKeeper</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9333ea',
+                        'primary-dark': '#7e22ce',
+                        'primary-light': '#a855f7',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @keyframes pulse-green {
+        @keyframes pulse-primary {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .pulse-green {
-            animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .pulse-primary {
+            animation: pulse-primary 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .gradient-animate {
+            background-size: 200% 200%;
+            animation: gradient-shift 8s ease infinite;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100">
+<body class="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-gray-100 min-h-screen">
     <div class="min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 border-b border-gray-700">
+        <header class="bg-gradient-to-r from-purple-900/30 via-purple-800/20 to-purple-900/30 border-b border-purple-500/30 backdrop-blur-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-white">🏥 System Health Dashboard</h1>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏥 System Health Dashboard</h1>
                     <div class="flex items-center space-x-4">
-                        <span id="last-updated" class="text-sm text-gray-400">Loading...</span>
-                        <button onclick="refreshData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition">
+                        <span id="last-updated" class="text-sm text-purple-300">Loading...</span>
+                        <button onclick="refreshData()" class="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-purple-800 rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-primary/30">
                             🔄 Refresh
                         </button>
                     </div>
@@ -35,74 +56,74 @@
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Overall Status -->
-            <div id="overall-status" class="mb-8 p-6 bg-gray-800 rounded-lg border-l-4">
+            <div id="overall-status" class="mb-8 p-6 bg-gradient-to-br from-gray-800/80 via-purple-900/20 to-gray-800/80 rounded-lg border-l-4 border-primary shadow-lg shadow-primary/20 backdrop-blur-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-semibold mb-2">Ecosystem Status</h2>
-                        <p id="status-message" class="text-gray-400">Checking system health...</p>
+                        <h2 class="text-xl font-semibold mb-2 text-purple-200">Ecosystem Status</h2>
+                        <p id="status-message" class="text-purple-300">Checking system health...</p>
                     </div>
-                    <div id="status-indicator" class="w-16 h-16 rounded-full"></div>
+                    <div id="status-indicator" class="w-16 h-16 rounded-full shadow-lg"></div>
                 </div>
             </div>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- CPU -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-gray-400">CPU Usage</h3>
-                        <span class="text-2xl">💻</span>
+                        <h3 class="text-sm font-medium text-purple-300">CPU Usage</h3>
+                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💻</span>
                     </div>
-                    <p id="cpu-value" class="text-3xl font-bold">--</p>
+                    <p id="cpu-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
                     <div id="cpu-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="cpu-fill" class="h-full transition-all duration-500"></div>
+                        <div id="cpu-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
                     </div>
                 </div>
 
                 <!-- Memory -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-gray-400">Memory Usage</h3>
-                        <span class="text-2xl">🧠</span>
+                        <h3 class="text-sm font-medium text-purple-300">Memory Usage</h3>
+                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">🧠</span>
                     </div>
-                    <p id="memory-value" class="text-3xl font-bold">--</p>
+                    <p id="memory-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
                     <div id="memory-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="memory-fill" class="h-full transition-all duration-500"></div>
+                        <div id="memory-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
                     </div>
                 </div>
 
                 <!-- Disk -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-gray-400">Disk Usage</h3>
-                        <span class="text-2xl">💾</span>
+                        <h3 class="text-sm font-medium text-purple-300">Disk Usage</h3>
+                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💾</span>
                     </div>
-                    <p id="disk-value" class="text-3xl font-bold">--</p>
+                    <p id="disk-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
                     <div id="disk-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="disk-fill" class="h-full transition-all duration-500"></div>
+                        <div id="disk-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
                     </div>
                 </div>
 
                 <!-- Active Tasks -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-gray-400">Active Tasks</h3>
-                        <span class="text-2xl">⚙️</span>
+                        <h3 class="text-sm font-medium text-purple-300">Active Tasks</h3>
+                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">⚙️</span>
                     </div>
-                    <p id="tasks-value" class="text-3xl font-bold">--</p>
-                    <p id="tasks-failed" class="text-sm text-gray-400 mt-2">Failed (24h): --</p>
+                    <p id="tasks-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
+                    <p id="tasks-failed" class="text-sm text-purple-300 mt-2">Failed (24h): --</p>
                 </div>
             </div>
 
             <!-- Docker Services Status -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+            <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 mb-8">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold">🐳 Docker Services</h2>
-                    <span id="services-summary" class="text-sm text-gray-400">Loading...</span>
+                    <h2 class="text-xl font-semibold text-purple-200">🐳 Docker Services</h2>
+                    <span id="services-summary" class="text-sm text-purple-300">Loading...</span>
                 </div>
                 <div id="docker-services-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Services will be populated by JavaScript -->
-                    <div class="flex items-center justify-center p-8 text-gray-500 col-span-full">
+                    <div class="flex items-center justify-center p-8 text-purple-400 col-span-full">
                         Loading services...
                     </div>
                 </div>
@@ -111,43 +132,43 @@
             <!-- Transaction Health & Marketplace -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Transaction Health (NEW) -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <h2 class="text-xl font-semibold mb-4">⚡ Transaction Health</h2>
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-purple-200">⚡ Transaction Health</h2>
                     <div class="space-y-3">
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Stuck Transactions</span>
-                            <span id="tx-stuck" class="font-semibold">--</span>
+                            <span class="text-purple-300">Stuck Transactions</span>
+                            <span id="tx-stuck" class="font-semibold text-purple-100">--</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Failure Rate (24h)</span>
-                            <span id="tx-failure-rate" class="font-semibold">--%</span>
+                            <span class="text-purple-300">Failure Rate (24h)</span>
+                            <span id="tx-failure-rate" class="font-semibold text-purple-100">--%</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Avg Confirmation</span>
-                            <span id="tx-avg-time" class="font-semibold">--ms</span>
+                            <span class="text-purple-300">Avg Confirmation</span>
+                            <span id="tx-avg-time" class="font-semibold text-purple-100">--ms</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Status</span>
+                            <span class="text-purple-300">Status</span>
                             <span id="tx-status" class="font-semibold text-green-400">--</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Marketplace Stats -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <h2 class="text-xl font-semibold mb-4">📊 Marketplace (24h)</h2>
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-purple-200">📊 Marketplace (24h)</h2>
                     <div class="space-y-3">
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Sales</span>
-                            <span id="marketplace-sales" class="font-semibold">--</span>
+                            <span class="text-purple-300">Sales</span>
+                            <span id="marketplace-sales" class="font-semibold text-purple-100">--</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Volume</span>
-                            <span id="marketplace-volume" class="font-semibold">-- SOL</span>
+                            <span class="text-purple-300">Volume</span>
+                            <span id="marketplace-volume" class="font-semibold text-purple-100">-- SOL</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-400">Active Listings</span>
-                            <span id="marketplace-listings" class="font-semibold">--</span>
+                            <span class="text-purple-300">Active Listings</span>
+                            <span id="marketplace-listings" class="font-semibold text-purple-100">--</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Unique Traders</span>
