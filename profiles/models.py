@@ -358,3 +358,7 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f"{self.user} earned {self.achievement.name}"
+
+
+# Import Quest models
+from .quest_models import Quest, QuestUserProgress, QuestClaim
