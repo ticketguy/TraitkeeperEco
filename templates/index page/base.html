@@ -251,12 +251,12 @@
     .user-profile { position: relative; }
     .user-dropdown { width: 192px; max-width: calc(100vw - 40px); position: fixed; z-index: 1000; }
     #user-profile-menu { top: 4rem; right: 50px; left: auto; transform: none; }
-    #user-profile-menu-mobile { top: 4rem; right: 50px; left: auto; transform: none; }
+    #user-profile-menu-desktop, #user-profile-menu-mobile { top: 4rem; right: 50px; left: auto; transform: none; }
     .user-dropdown[style*="display: block"] { display: block !important; }
     .profile-link { pointer-events: auto !important; cursor: pointer; user-select: none; }
     .profile-link img, .profile-link .profile_username { pointer-events: auto !important; cursor: pointer; }
-    #user-profile-menu, #user-profile-menu-mobile { z-index: 1000; display: none; }
-    #user-profile-menu:not(.hidden), #user-profile-menu-mobile:not(.hidden) { display: block !important; }
+    #user-profile-menu, #user-profile-menu-desktop, #user-profile-menu-mobile { z-index: 1000; display: none; }
+    #user-profile-menu:not(.hidden), #user-profile-menu-desktop:not(.hidden), #user-profile-menu-mobile:not(.hidden) { display: block !important; }
 
 
 
@@ -504,7 +504,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 </span>
                             </div>
                         </div>
-<div id="user-profile-menu-mobile"
+<div id="user-profile-menu-desktop"
     class="user-dropdown hidden absolute top-12 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
                             <ul class="space-y-2">
                                 <li><a href="{% url 'profiles:profile' user.username %}"
@@ -513,7 +513,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 <li><a href="{% url 'profiles:settings_profile' %}"
                                         class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
                                         <i class="fas fa-cog mr-2"></i> Account Settings</a></li>
-                                <li id="disconnect-wallet"
+                                <li id="disconnect-wallet-desktop"
                                     class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded cursor-pointer animate-fade-in">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Disconnect</li>
                             </ul>
@@ -1314,29 +1314,51 @@ if (header) {
                 }
 
                 // User Profile Dropdown Toggle (Desktop and Mobile)
-                const profileLink = document.querySelector('.profile-link');
-                const userProfileMenu = document.getElementById('user-profile-menu-mobile');
+                const profileLinks = document.querySelectorAll('.profile-link');
+                const desktopMenu = document.getElementById('user-profile-menu-desktop');
+                const mobileMenu = document.getElementById('user-profile-menu-mobile');
 
-                if (profileLink && userProfileMenu) {
-                    // Toggle dropdown on click
-                    profileLink.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        userProfileMenu.classList.toggle('hidden');
-                    });
+                // Setup dropdown for both desktop and mobile
+                if (profileLinks.length > 0) {
+                    profileLinks.forEach((profileLink, index) => {
+                        const menu = index === 0 ? desktopMenu : mobileMenu;
 
-                    // Close dropdown when clicking outside
-                    document.addEventListener('click', (event) => {
-                        const walletModal = document.getElementById('wallet-modal');
-                        const walletBackdrop = document.getElementById('wallet-backdrop');
-                        if (!profileLink.contains(event.target) && !userProfileMenu.contains(event.target) && (!walletModal || !walletModal.contains(event.target)) && (!walletBackdrop || !walletBackdrop.contains(event.target))) {
-                            userProfileMenu.classList.add('hidden');
+                        if (profileLink && menu) {
+                            // Toggle dropdown on click
+                            profileLink.addEventListener('click', function (e) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                menu.classList.toggle('hidden');
+                                // Close the other menu
+                                const otherMenu = index === 0 ? mobileMenu : desktopMenu;
+                                if (otherMenu) otherMenu.classList.add('hidden');
+                            });
+
+                            // Prevent dropdown from closing when clicking inside it
+                            menu.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                            });
                         }
                     });
 
-                    // Prevent dropdown from closing when clicking inside it
-                    userProfileMenu.addEventListener('click', function(e) {
-                        e.stopPropagation();
+                    // Close all dropdowns when clicking outside
+                    document.addEventListener('click', (event) => {
+                        const walletModal = document.getElementById('wallet-modal');
+                        const walletBackdrop = document.getElementById('wallet-backdrop');
+
+                        let clickedOutside = true;
+                        profileLinks.forEach(link => {
+                            if (link.contains(event.target)) clickedOutside = false;
+                        });
+
+                        if (clickedOutside &&
+                            (!desktopMenu || !desktopMenu.contains(event.target)) &&
+                            (!mobileMenu || !mobileMenu.contains(event.target)) &&
+                            (!walletModal || !walletModal.contains(event.target)) &&
+                            (!walletBackdrop || !walletBackdrop.contains(event.target))) {
+                            if (desktopMenu) desktopMenu.classList.add('hidden');
+                            if (mobileMenu) mobileMenu.classList.add('hidden');
+                        }
                     });
                 }
 

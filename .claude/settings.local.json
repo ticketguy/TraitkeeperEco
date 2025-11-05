@@ -13,7 +13,9 @@
       "Bash(git add:*)",
       "Bash(python manage.py startapp:*)",
       "Bash(python manage.py check:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Increase NFT display limit and improve collection page UX\n\n## Collection View Improvements\n\n### 1. Fix NFT Display Limit (Critical)\n- **File**: traitkeeper/views.py:585-586\n- **Issue**: Only 24 NFTs showing per collection with no pagination UI\n- **Fix**: Increased page size from 24 to 500 NFTs\n- **Reason**: Template has no pagination controls (no Load More/page numbers)\n- **Impact**: Now shows up to 500 NFTs per collection\n- **TODO**: Add proper pagination UI with infinite scroll or Load More button\n\n### 2. Collection Page Scroll Fix\n- **File**: templates/index page/collection_detail.html:729-731\n- **Issue**: Page scroll locked on load\n- **Fix**: Force reset overflow styles in DOMContentLoaded event\n- **Impact**: Smooth scrolling restored\n\n### 3. Make Offer Button Visual Enhancement\n- **File**: templates/index page/collection_detail.html:435, 563\n- **Added**: Prominent ring styling to make offer buttons\n  - 2px ring expanding to 4px on hover\n  - Dark mode compatible ring offsets\n  - Clear visual feedback for interactive elements\n\n## Performance Note\n500 NFTs per page is temporary - performance may degrade for large collections\nProper solution: Implement infinite scroll or \"Load More\" button with AJAX\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

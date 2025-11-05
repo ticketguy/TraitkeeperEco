@@ -46,7 +46,7 @@ urlpatterns = [
     path('system-health/', include('system_health.urls')),
 
     # Admin Secure URLs (encrypted secrets management)
-    path('admin-secure/', include('admin_secure.urls'))Human: continue
+    path('admin-secure/', include('admin_secure.urls')),
 
     # API URLs
     path('api/', include('traitkeeper.api.urls')),  
