@@ -187,7 +187,23 @@
     </div>
 </div>
 
+<!-- Include Solana Web3.js -->
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@project-serum/anchor@0.29.0/dist/browser/index.js"></script>
+<script src="{% static 'js/solana-quest-utils.js' %}"></script>
+
 <script>
+// Quest Program Constants
+const QUEST_PROGRAM_ID = new solanaWeb3.PublicKey('QuestwwsVeGELdnSHJGcWpFD6Z4T8TonhX45EmoJciX');
+const QUEST_USER_SEED = 'quest_user';
+const QUEST_WALLET_SEED = 'quest_wallet';
+
+// Solana connection (using mainnet-beta, change to devnet for testing)
+const connection = new solanaWeb3.Connection(
+    'https://api.mainnet-beta.solana.com',
+    'confirmed'
+);
+
 // Claim Quest Function
 async function claimQuest(questId, questOnChainId, questAddress) {
     console.log('Claiming quest:', questId, questOnChainId, questAddress);
@@ -224,14 +240,79 @@ async function claimQuest(questId, questOnChainId, questAddress) {
             throw new Error('Wallet not connected. Please connect your wallet first.');
         }
 
-        // Step 3: Call Solana smart contract to claim reward
-        // TODO: Implement actual Solana transaction
-        // For now, we'll simulate it
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate transaction time
+        const wallet = window.solana;
+        const userPublicKey = wallet.publicKey;
 
-        const mockTxSignature = 'simulated_tx_' + Date.now(); // Replace with actual tx signature
+        console.log('User wallet:', userPublicKey.toString());
+        console.log('Quest on-chain address:', data.quest_on_chain_address);
+        console.log('Reward:', data.reward_sol, 'SOL');
 
-        // Step 4: Confirm claim on backend
+        // Step 3: Build Solana transaction to claim quest reward
+
+        // Derive PDAs
+        const [questUserPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            [
+                Buffer.from(QUEST_USER_SEED),
+                userPublicKey.toBuffer()
+            ],
+            QUEST_PROGRAM_ID
+        );
+
+        const [questWalletPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from(QUEST_WALLET_SEED)],
+            QUEST_PROGRAM_ID
+        );
+
+        console.log('Quest User PDA:', questUserPDA.toString());
+        console.log('Quest Wallet PDA:', questWalletPDA.toString());
+
+        // Create instruction data for claim_quest_reward
+        // Get instruction discriminator from utility
+        const instructionData = Buffer.from(getQuestInstructionDiscriminator('claim_quest_reward'));
+
+        // Build instruction
+        const questConfigPubkey = new solanaWeb3.PublicKey(data.quest_on_chain_address);
+
+        const claimInstruction = new solanaWeb3.TransactionInstruction({
+            programId: QUEST_PROGRAM_ID,
+            keys: [
+                { pubkey: userPublicKey, isSigner: true, isWritable: true },
+                { pubkey: questConfigPubkey, isSigner: false, isWritable: false },
+                { pubkey: questUserPDA, isSigner: false, isWritable: true },
+                { pubkey: questWalletPDA, isSigner: false, isWritable: true },
+                { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false }
+            ],
+            data: instructionData
+        });
+
+        // Create transaction
+        const transaction = new solanaWeb3.Transaction();
+        transaction.add(claimInstruction);
+
+        // Get recent blockhash
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = userPublicKey;
+
+        console.log('Transaction created, requesting signature...');
+
+        // Step 4: Sign and send transaction
+        const signedTransaction = await wallet.signTransaction(transaction);
+        console.log('Transaction signed');
+
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        console.log('Transaction sent:', signature);
+
+        // Wait for confirmation
+        const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+
+        if (confirmation.value.err) {
+            throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+        }
+
+        console.log('Transaction confirmed!');
+
+        // Step 5: Confirm claim on backend
         const confirmResponse = await fetch('/profiles/quests/claim/confirm/', {
             method: 'POST',
             headers: {
@@ -240,7 +321,7 @@ async function claimQuest(questId, questOnChainId, questAddress) {
             },
             body: JSON.stringify({
                 quest_id: questId,
-                transaction_signature: mockTxSignature
+                transaction_signature: signature
             })
         });
 
@@ -265,7 +346,18 @@ async function claimQuest(questId, questOnChainId, questAddress) {
         console.error('Claim error:', err);
         loader.classList.add('hidden');
         error.classList.remove('hidden');
-        document.getElementById('claim-error-message').textContent = err.message;
+
+        // User-friendly error messages
+        let errorMessage = err.message;
+        if (err.message.includes('User rejected')) {
+            errorMessage = 'Transaction cancelled by user';
+        } else if (err.message.includes('insufficient funds')) {
+            errorMessage = 'Insufficient SOL for transaction fee';
+        } else if (err.message.includes('not connected')) {
+            errorMessage = 'Please connect your wallet first';
+        }
+
+        document.getElementById('claim-error-message').textContent = errorMessage;
     }
 }
 
