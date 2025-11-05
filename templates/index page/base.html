@@ -1203,7 +1203,10 @@ if (header) {
                     // Show the corresponding tab content
                     if (tabContent) {
                         tabContent.classList.remove('hidden');
-                        setTimeout(() => tabContent.classList.remove('opacity-0'), 10); // Small delay for smooth transition
+                        setTimeout(() => {
+                            tabContent.classList.remove('opacity-0');
+                            tabContent.classList.add('opacity-100');
+                        }, 10); // Small delay for smooth transition
                     }
                 }
 
