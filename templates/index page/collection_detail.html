@@ -447,45 +447,131 @@
     <div id="traits-tab-content" class="tab-content fade-in hidden p-4 sm:p-6 lg:p-8 bg-accent-light dark:bg-gray-950 min-h-screen">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <div class="lg:col-span-2 bg-background-light dark:bg-accent-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-6">
-                <h3 class="text-xl font-semibold text-text-light dark:text-text-dark mb-5">Trait Performance Scores</h3>
-                
-                <div id="trait-performance-list" class="space-y-4">
-                    {% for trait in traits %}
-                    <div class="flex items-center justify-between p-4 bg-accent-light dark:bg-gray-800/50 rounded-lg">
-                        <p class="font-medium text-text-light dark:text-text-dark">{{ trait.trait_name }} - <span class="text-text-secondary-light">{{ trait.trait_value }}</span></p>
-                        <div class="flex items-center gap-3">
-                            {% with score=trait.performance_score|default:50.0 %}
-                            <span class="font-semibold 
-                                {% if score > 75 %}text-green-500
-                                {% elif score < 40 %}text-red-500
-                                {% else %}text-yellow-500
-                                {% endif %}">
-                                {{ score|floatformat:1 }}
-                            </span>
-                            <div class="w-24 h-2 bg-border-light dark:bg-border-dark rounded-full">
-                                <div class="h-2 rounded-full
-                                    {% if score > 75 %}bg-green-500
-                                    {% elif score < 40 %}bg-red-500
-                                    {% else %}bg-yellow-500
-                                    {% endif %}"
-                                    style="width: {{ score|default:50 }}%;">
-                                </div>
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-xl font-semibold text-text-light dark:text-text-dark">Trait Performance Scores</h3>
+                    <button id="expand-all-traits" class="text-sm text-primary hover:text-primary-dark transition-colors">
+                        <i class="fas fa-expand-alt mr-1"></i> Expand All
+                    </button>
+                </div>
+
+                <div id="trait-performance-list" class="space-y-3">
+                    {% regroup traits by trait_name as trait_groups %}
+                    {% for trait_group in trait_groups %}
+                    <div class="trait-type-section border border-border-light dark:border-border-dark rounded-lg overflow-hidden">
+                        <!-- Collapsible Header -->
+                        <button class="trait-type-header w-full flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 transition-all duration-300 group"
+                                data-trait-type="{{ trait_group.grouper }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-chevron-down trait-chevron transition-transform duration-300 text-primary"></i>
+                                <h4 class="font-semibold text-text-light dark:text-text-dark">{{ trait_group.grouper }}</h4>
+                                <span class="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">{{ trait_group.list|length }}</span>
                             </div>
-                            {% endwith %}
+                            <div class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                {% with avg_score=trait_group.list|first|default:"" %}
+                                    {% if avg_score %}
+                                    <span class="font-medium">Avg: {{ avg_score.performance_score|default:50.0|floatformat:1 }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </button>
+
+                        <!-- Collapsible Content -->
+                        <div class="trait-type-content hidden">
+                            <div class="p-4 space-y-2 bg-accent-light dark:bg-gray-800/30">
+                                {% for trait in trait_group.list %}
+                                <div class="flex items-center justify-between p-3 bg-background-light dark:bg-gray-800/50 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors duration-200">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-text-light dark:text-text-dark text-sm">{{ trait.trait_value }}</p>
+                                        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+                                            Rarity: <span class="font-medium">{{ trait.rarity|default:"--" }}%</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        {% with score=trait.performance_score|default:50.0 %}
+                                        <span class="font-semibold text-sm
+                                            {% if score > 75 %}text-green-500
+                                            {% elif score < 40 %}text-red-500
+                                            {% else %}text-yellow-500
+                                            {% endif %}">
+                                            {{ score|floatformat:1 }}
+                                        </span>
+                                        <div class="w-20 h-2 bg-border-light dark:bg-border-dark rounded-full overflow-hidden">
+                                            <div class="h-2 rounded-full transition-all duration-500
+                                                {% if score > 75 %}bg-gradient-to-r from-green-400 to-green-500
+                                                {% elif score < 40 %}bg-gradient-to-r from-red-400 to-red-500
+                                                {% else %}bg-gradient-to-r from-yellow-400 to-yellow-500
+                                                {% endif %}"
+                                                style="width: {{ score|default:50 }}%;">
+                                            </div>
+                                        </div>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% empty %}
-                    <p class="text-text-secondary-light">No trait performance data available for this collection yet.</p>
+                    <p class="text-text-secondary-light text-center py-8">No trait performance data available for this collection yet.</p>
                     {% endfor %}
                 </div>
             </div>
 
             <div class="lg:col-span-1 bg-background-light dark:bg-accent-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-6">
                 <h3 class="text-xl font-semibold text-text-light dark:text-text-dark mb-5">Collection Market Performance</h3>
-                </div>
-            
+            </div>
+
         </div>
     </div>
+
+    <script>
+        // Trait type collapsible sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const traitHeaders = document.querySelectorAll('.trait-type-header');
+            const expandAllBtn = document.getElementById('expand-all-traits');
+            let allExpanded = false;
+
+            traitHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const chevron = this.querySelector('.trait-chevron');
+                    const isHidden = content.classList.contains('hidden');
+
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        chevron.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', function() {
+                    allExpanded = !allExpanded;
+                    const icon = this.querySelector('i');
+
+                    traitHeaders.forEach(header => {
+                        const content = header.nextElementSibling;
+                        const chevron = header.querySelector('.trait-chevron');
+
+                        if (allExpanded) {
+                            content.classList.remove('hidden');
+                            chevron.style.transform = 'rotate(180deg)';
+                        } else {
+                            content.classList.add('hidden');
+                            chevron.style.transform = 'rotate(0deg)';
+                        }
+                    });
+
+                    this.innerHTML = allExpanded
+                        ? '<i class="fas fa-compress-alt mr-1"></i> Collapse All'
+                        : '<i class="fas fa-expand-alt mr-1"></i> Expand All';
+                });
+            }
+        });
+    </script>
 
     <div id="activity-tab-content" class="tab-content fade-in hidden">
         <div id="activity-list" class="border-t border-gray-200 dark:border-gray-800">
