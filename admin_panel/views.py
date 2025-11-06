@@ -45,6 +45,7 @@ from wallet.models import CustomUser, WalletProfile
 from nft_data.services import NFTDataService
 from admin_panel.services import AdminAnalyticsService
 from indexer.background_task_manager import task_manager, get_task_manager_status, Task, TaskPriority
+from admin_secure.models import EncryptedSecret, SecretAccessLog
 
 # Constants
 MAX_LOGIN_ATTEMPTS = 5
@@ -1051,3 +1052,66 @@ def task_dashboard(request):
     if not isinstance(request.user, AdminUser) and not request.user.is_staff:
         raise Http404("Page not found")
     return render(request, 'admin_panel/task_dashboard.html')
+
+
+@login_required
+def secrets_management(request):
+    """
+    Secrets Management Dashboard for admin panel.
+    Shows encrypted secrets, access logs, and statistics.
+    Only accessible to superusers.
+    """
+    from admin_panel.models import AdminUser
+    from django.http import Http404
+    from django.core.exceptions import PermissionDenied
+    from django.db.models import Count, Max
+
+    # Check if user is admin
+    if not isinstance(request.user, AdminUser) and not request.user.is_staff:
+        raise Http404("Page not found")
+
+    # Only superusers can access secrets
+    if not request.user.is_superuser:
+        raise PermissionDenied("Only superusers can access secret management")
+
+    # Get all secrets with access counts
+    secrets = EncryptedSecret.objects.annotate(
+        total_accesses=Count('access_logs'),
+        last_access=Max('access_logs__timestamp')
+    ).order_by('-created_at')
+
+    # Get recent access logs (last 50)
+    recent_logs = SecretAccessLog.objects.select_related(
+        'secret', 'user'
+    ).order_by('-timestamp')[:50]
+
+    # Access statistics by action type (last 30 days)
+    from datetime import timedelta
+    cutoff_date = timezone.now() - timedelta(days=30)
+    access_by_action = SecretAccessLog.objects.filter(
+        timestamp__gte=cutoff_date
+    ).values('action').annotate(count=Count('id'))
+
+    # Secret type distribution
+    secret_type_stats = EncryptedSecret.objects.filter(
+        is_active=True
+    ).values('secret_type').annotate(count=Count('id'))
+
+    # Calculate total stats
+    total_secrets = secrets.count()
+    active_secrets = secrets.filter(is_active=True).count()
+    total_accesses = SecretAccessLog.objects.count()
+    failed_attempts = SecretAccessLog.objects.filter(success=False).count()
+
+    context = {
+        'secrets': secrets,
+        'recent_logs': recent_logs,
+        'access_by_action': list(access_by_action),
+        'secret_type_stats': list(secret_type_stats),
+        'total_secrets': total_secrets,
+        'active_secrets': active_secrets,
+        'total_accesses': total_accesses,
+        'failed_attempts': failed_attempts,
+    }
+
+    return render(request, 'admin_panel/secrets_management.html', context)

@@ -50,4 +50,7 @@ urlpatterns = [
     path('task-manager/trigger-stats/', views.trigger_stats_update, name='trigger-stats'),
     path('task-manager/history/', views.task_history, name='task-history'),
     path('task-manager/restart/', views.restart_task_manager, name='restart-task-manager'),
+
+    # Secrets Management
+    path('secrets/', views.secrets_management, name='secrets-management'),
 ]

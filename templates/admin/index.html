@@ -151,6 +151,65 @@
         </div>
     </div>
 
+    <!-- Quick Access Links -->
+    <div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
+        <h2 class="section-header text-xl sm:text-2xl mb-4 flex items-center">
+            <i class="fas fa-bolt text-primary mr-2"></i>
+            Quick Access
+        </h2>
+        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto">Essential administrative tools and system monitoring.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- System Health -->
+            <a href="{% url 'system_health:dashboard' %}" class="admin-card bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-5 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-green-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-heartbeat text-green-600 text-2xl"></i>
+                    </div>
+                    <i class="fas fa-arrow-right text-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                </div>
+                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">System Health</h3>
+                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Monitor system status and alerts</p>
+            </a>
+
+            <!-- Task Manager -->
+            <a href="{% url 'admin_panel:task-dashboard' %}" class="admin-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-blue-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-tasks text-blue-600 text-2xl"></i>
+                    </div>
+                    <i class="fas fa-arrow-right text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                </div>
+                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Task Manager</h3>
+                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Background task monitoring</p>
+            </a>
+
+            <!-- Secrets Management -->
+            <a href="{% url 'admin_panel:secrets-management' %}" class="admin-card bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-5 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-purple-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-lock text-purple-600 text-2xl"></i>
+                    </div>
+                    <i class="fas fa-arrow-right text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                </div>
+                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Secrets Management</h3>
+                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Manage encrypted credentials</p>
+            </a>
+
+            <!-- Statistics Export -->
+            <a href="{% url 'admin_panel:statistics' %}" class="admin-card bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-5 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-orange-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-chart-bar text-orange-600 text-2xl"></i>
+                    </div>
+                    <i class="fas fa-arrow-right text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                </div>
+                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Statistics</h3>
+                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">View detailed analytics</p>
+            </a>
+        </div>
+    </div>
+
 <!-- Statistics Overview -->
 <div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
     <div class="flex justify-between items-center mb-4">
