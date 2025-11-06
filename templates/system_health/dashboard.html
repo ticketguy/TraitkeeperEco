@@ -205,11 +205,18 @@
                 </div>
             </div>
 
-            <!-- Active Alerts -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
-                <h2 class="text-xl font-semibold mb-4">🚨 Active Alerts</h2>
+            <!-- Active Alerts - Redesigned -->
+            <div class="bg-gradient-to-br from-gray-800/90 via-purple-900/20 to-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-purple-200">🚨 Active System Alerts</h2>
+                    <div id="alert-count-badge" class="px-3 py-1 bg-purple-900/50 text-purple-200 rounded-full text-sm font-medium">
+                        Loading...
+                    </div>
+                </div>
                 <div id="alerts-container" class="space-y-3">
-                    <p class="text-gray-400">Loading alerts...</p>
+                    <div class="flex items-center justify-center p-8 text-purple-400">
+                        <div class="animate-pulse">Loading alerts...</div>
+                    </div>
                 </div>
             </div>
 
@@ -323,32 +330,62 @@
                 const data = await response.json();
 
                 const container = document.getElementById('alerts-container');
+                const badge = document.getElementById('alert-count-badge');
+
+                // Update count badge
+                if (data.count === 0) {
+                    badge.innerHTML = '<span class="text-green-300">✅ 0 Active</span>';
+                    badge.className = 'px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium';
+                } else {
+                    badge.textContent = `${data.count} Active`;
+                    // Color badge based on highest severity
+                    const hasCritical = data.alerts.some(a => a.alert_level === 'CRITICAL');
+                    const hasError = data.alerts.some(a => a.alert_level === 'ERROR');
+                    if (hasCritical) {
+                        badge.className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium animate-pulse';
+                    } else if (hasError) {
+                        badge.className = 'px-3 py-1 bg-orange-900/50 text-orange-200 rounded-full text-sm font-medium';
+                    } else {
+                        badge.className = 'px-3 py-1 bg-yellow-900/50 text-yellow-200 rounded-full text-sm font-medium';
+                    }
+                }
 
                 if (data.count === 0) {
-                    container.innerHTML = '<p class="text-green-400">✅ No active alerts. System is healthy!</p>';
+                    container.innerHTML = '<div class="text-center p-8 bg-green-900/20 rounded-lg border border-green-500/30"><p class="text-green-400 text-lg font-medium">✅ No active alerts</p><p class="text-green-300/70 text-sm mt-2">All systems operating normally</p></div>';
                 } else {
                     container.innerHTML = data.alerts.map(alert => {
+                        const levelIcons = {
+                            'INFO': '💙',
+                            'WARNING': '⚠️',
+                            'ERROR': '🔥',
+                            'CRITICAL': '🚨'
+                        };
                         const levelColors = {
-                            'INFO': 'bg-blue-900 border-blue-500 text-blue-200',
-                            'WARNING': 'bg-yellow-900 border-yellow-500 text-yellow-200',
-                            'ERROR': 'bg-orange-900 border-orange-500 text-orange-200',
-                            'CRITICAL': 'bg-red-900 border-red-500 text-red-200'
+                            'INFO': 'bg-blue-900/30 border-blue-500/50 text-blue-200 hover:bg-blue-900/50',
+                            'WARNING': 'bg-yellow-900/30 border-yellow-500/50 text-yellow-200 hover:bg-yellow-900/50',
+                            'ERROR': 'bg-orange-900/30 border-orange-500/50 text-orange-200 hover:bg-orange-900/50',
+                            'CRITICAL': 'bg-red-900/30 border-red-500/50 text-red-200 hover:bg-red-900/50 animate-pulse'
                         };
                         const colorClass = levelColors[alert.alert_level] || 'bg-gray-700 border-gray-500';
+                        const icon = levelIcons[alert.alert_level] || '📢';
 
                         const duration = formatDuration(alert.duration_seconds);
 
                         return `
-                            <div class="${colorClass} border-l-4 p-4 rounded">
+                            <div class="${colorClass} border-l-4 p-4 rounded-lg shadow-lg transition-all duration-300 hover:scale-[1.02]">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
-                                        <div class="flex items-center space-x-2 mb-1">
-                                            <span class="font-semibold">${alert.alert_level}</span>
-                                            <span class="text-xs opacity-75">${alert.category}</span>
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-2xl">${icon}</span>
+                                            <span class="font-bold text-lg">${alert.alert_level}</span>
+                                            <span class="text-xs opacity-75 bg-black/30 px-2 py-1 rounded">${alert.category}</span>
                                         </div>
-                                        <p class="font-medium mb-1">${alert.title}</p>
-                                        <p class="text-sm opacity-90">${alert.message}</p>
-                                        <p class="text-xs mt-2 opacity-75">Duration: ${duration}</p>
+                                        <p class="font-semibold text-lg mb-2">${alert.title}</p>
+                                        <p class="text-sm opacity-90 mb-2">${alert.message}</p>
+                                        <div class="flex items-center space-x-4 text-xs mt-3 opacity-75">
+                                            <span>⏱️ Active for: ${duration}</span>
+                                            ${alert.affected_service ? `<span>🔧 Service: ${alert.affected_service}</span>` : ''}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -357,6 +394,8 @@
                 }
             } catch (error) {
                 console.error('Error fetching alerts:', error);
+                document.getElementById('alert-count-badge').textContent = 'Error';
+                document.getElementById('alert-count-badge').className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium';
             }
         }
 
