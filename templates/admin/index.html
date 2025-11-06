@@ -159,7 +159,7 @@
         </h2>
         <p class="text-brand-black dark:text-brand-white mb-4 font-roboto">Essential administrative tools and system monitoring.</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- System Health -->
             <a href="{% url 'system_health:dashboard' %}" class="admin-card bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-5 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 group">
                 <div class="flex items-center justify-between mb-3">
@@ -196,8 +196,20 @@
                 <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Manage encrypted credentials</p>
             </a>
 
-            <!-- Statistics Export -->
-            <a href="{% url 'admin_panel:statistics' %}" class="admin-card bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-5 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 group">
+            <!-- Pending Collections -->
+            <a href="{% url 'admin_panel:pending_collections' %}" class="admin-card bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-5 rounded-lg border border-yellow-200 dark:border-yellow-700 hover:shadow-lg transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="bg-yellow-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-list-alt text-yellow-600 text-2xl"></i>
+                    </div>
+                    <i class="fas fa-arrow-right text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                </div>
+                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Pending Collections</h3>
+                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Review NFT submissions</p>
+            </a>
+
+            <!-- Statistics -->
+            <a href="{% url 'admin_panel:statistics' %}" class="admin-card bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-5 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 group">
                 <div class="flex items-center justify-between mb-3">
                     <div class="bg-orange-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                         <i class="fas fa-chart-bar text-orange-600 text-2xl"></i>
@@ -357,120 +369,90 @@
         </div>
     </div>
 
-<!-- Pending Collections -->
+<!-- Pending Collections Summary -->
     <div class="section-card bg-background-light dark:bg-background-dark rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-glass-600 shadow-sm">
         <div class="flex justify-between items-center mb-4">
             <h2 class="section-header text-xl sm:text-2xl flex items-center">
                 <i class="fas fa-list-alt text-primary mr-2"></i>
-                Pending Collections
+                Pending Collections Summary
             </h2>
-            <button id="toggle-pending" class="glow-button text-white text-sm inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-300 hover:bg-opacity-90" aria-expanded="true" aria-controls="pending-section">
-                <span class="font-roboto">Toggle View</span>
-                <i class="fas fa-chevron-down ml-2 transition-transform duration-300"></i>
-            </button>
+            <a href="{% url 'admin_panel:pending_collections' %}" class="glow-button text-white text-sm inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-300 hover:bg-opacity-90">
+                <span class="font-roboto">View All</span>
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
-        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto text-sm opacity-80">Review and manage pending NFT collection submissions.</p>
-        <!-- Debug: Display the count of pending collections -->
-        <p class="text-brand-black dark:text-brand-white mb-6 font-roboto text-sm font-medium bg-gray-100 dark:bg-gray-800 inline-block px-3 py-1 rounded-full">
-            Total Pending Collections: <span class="text-primary font-semibold">{{ page_obj.paginator.count }}</span>
-        </p>
-        <div id="pending-section">
-            {% if messages %}
-                <div class="mb-6">
-                    {% for message in messages %}
-                        <div class="p-3 sm:p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100{% elif message.tags == 'error' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100{% else %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100{% endif %} shadow-md font-roboto text-sm">
-                            {{ message|safe }}
-                        </div>
-                    {% endfor %}
+        <p class="text-brand-black dark:text-brand-white mb-6 font-roboto text-sm opacity-80">Quick overview of pending NFT collection submissions.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Pending -->
+            <div class="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-6 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="bg-yellow-500 bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                    </div>
                 </div>
-            {% endif %}
-            <form id="pending-collections-form" method="post" action="{% url 'admin_panel:pending_collections' %}">
-                {% csrf_token %}
-                <div class="flex flex-wrap gap-3 mb-6">
-                    <select name="action" class="p-2.5 border border-gray-300 dark:border-glass-600 rounded-lg bg-white dark:bg-gray-800 text-sm font-roboto text-brand-black dark:text-brand-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-30 transition-all duration-300">
-                        <option value="">Select Action</option>
-                        <option value="approve">Approve Selected</option>
-                        <option value="reject">Reject Selected</option>
-                    </select>
-                    <button type="submit" class="glow-button text-white px-4 py-2 rounded-lg text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
-                        Apply
-                    </button>
+                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">Total Pending</h3>
+                <p class="text-4xl font-bold text-yellow-600 mt-2">{{ page_obj.paginator.count }}</p>
+            </div>
+
+            <!-- Recent Submissions -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="bg-blue-500 bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-upload text-blue-600 text-2xl"></i>
+                    </div>
                 </div>
-                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-glass-600">
-                    <table class="min-w-full bg-background-light dark:bg-background-dark font-roboto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-purple-600 to-purple-800 text-white text-sm">
-                                <th class="py-3 px-4 text-left font-semibold">
-                                    <input type="checkbox" id="select-all" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer">
-                                </th>
-                                <th class="py-3 px-4 text-left font-semibold">Name</th>
-                                <th class="py-3 px-4 text-left font-semibold">Mint Address</th>
-                                <th class="py-3 px-4 text-left font-semibold">Status</th>
-                                <th class="py-3 px-4 text-left font-semibold">Submitted By</th>
-                                <th class="py-3 px-4 text-left font-semibold">Submitted At</th>
-                                <th class="py-3 px-4 text-left font-semibold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for collection in page_obj %}
-                            <tr class="border-b border-gray-200 dark:border-glass-600 last:border-none hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300">
-                                <td class="py-3 px-4">
-                                    <input type="checkbox" name="collection_ids" value="{{ collection.id }}" class="collection-checkbox w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer">
-                                </td>
-                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm font-medium">{{ collection.name|default:"N/A" }}</td>
-                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm font-mono">{{ collection.mint_address|truncatechars:10|default:"N/A" }}</td>
-                                <td class="py-3 px-4">
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold {% if collection.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300{% endif %}">
-                                        {{ collection.status|capfirst|default:"N/A" }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">{{ collection.submitted_by|default:"N/A" }}</td>
-                                <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">{{ collection.submitted_at|date:"M d, Y"|default:"N/A" }}</td>
-                                <td class="py-3 px-4">
-                                    {% url 'admin:nft_data_pendingcollection_change' collection.id as view_url %}
-                                    {% if view_url %}
-                                        <a href="{{ view_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white text-sm font-medium underline underline-offset-2 transition-colors duration-200" title="View details of this collection">
-                                            View
-                                        </a>
-                                    {% else %}
-                                        <span class="text-gray-500 text-sm italic" title="View link unavailable">View (N/A)</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="py-4 text-center text-brand-black/50 dark:text-brand-white/50 text-sm font-roboto">No pending collections found.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">This Week</h3>
+                <p class="text-4xl font-bold text-blue-600 mt-2">{{ page_obj|length }}</p>
+            </div>
+
+            <!-- Action Required -->
+            <div class="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 p-6 rounded-lg border border-red-200 dark:border-red-700">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="bg-red-500 bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
                 </div>
-                {% if page_obj.has_other_pages %}
-                <div class="flex justify-center mt-6 space-x-3">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}" class="glow-button text-white py-2 px-4 rounded-lg inline-flex items-center text-sm font-roboto hover:bg-opacity-90 transition-all duration-300">
-                            Previous
-                        </a>
-                    {% else %}
-                        <span class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-gray-400 cursor-not-allowed text-sm font-roboto bg-gray-100 dark:bg-gray-800">Previous</span>
-                    {% endif %}
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if num == page_obj.number %}
-                            <span class="glow-button text-white py-2 px-4 rounded-lg mx-1 text-sm font-roboto bg-opacity-90">{{ num }}</span>
-                        {% else %}
-                            <a href="?page={{ num }}" class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-brand-purple hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors mx-1 text-sm font-roboto bg-white dark:bg-gray-800">{{ num }}</a>
-                        {% endif %}
-                    {% endfor %}
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" class="glow-button text-white py-2 px-4 rounded-lg inline-flex items-center text-sm font-roboto hover:bg-opacity-90 transition-all duration-300">
-                            Next
-                        </a>
-                    {% else %}
-                        <span class="py-2 px-4 border border-gray-300 dark:border-glass-600 rounded-lg text-gray-400 cursor-not-allowed text-sm font-roboto bg-gray-100 dark:bg-gray-800">Next</span>
-                    {% endif %}
+                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">Needs Review</h3>
+                <p class="text-4xl font-bold text-red-600 mt-2">{{ page_obj.paginator.count }}</p>
+            </div>
+        </div>
+
+        <!-- Recent Items Preview -->
+        {% if page_obj %}
+        <div class="mt-8">
+            <h3 class="text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Recent Submissions</h3>
+            <div class="space-y-3">
+                {% for collection in page_obj|slice:":5" %}
+                <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-glass-600 hover:shadow-md transition-shadow">
+                    <div class="flex-1">
+                        <p class="font-semibold text-brand-black dark:text-brand-white font-roboto">{{ collection.name|default:"Unnamed Collection" }}</p>
+                        <p class="text-sm text-brand-black/70 dark:text-brand-white/70 font-mono">{{ collection.mint_address|truncatechars:20 }}</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {% if collection.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300{% endif %}">
+                            {{ collection.status|capfirst }}
+                        </span>
+                        <span class="text-sm text-brand-black/60 dark:text-brand-white/60">{{ collection.submitted_at|date:"M d" }}</span>
+                    </div>
                 </div>
-                {% endif %}
-            </form>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="mt-8 text-center p-8 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+            <i class="fas fa-check-circle text-green-600 text-4xl mb-3"></i>
+            <p class="text-lg font-semibold text-green-800 dark:text-green-300 font-roboto">All caught up!</p>
+            <p class="text-sm text-green-600 dark:text-green-400 mt-2">No pending collections to review.</p>
+        </div>
+        {% endif %}
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'admin_panel:pending_collections' %}" class="glow-button text-white px-6 py-3 rounded-lg inline-flex items-center text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
+                <i class="fas fa-th-list mr-2"></i>
+                <span>Manage All Pending Collections</span>
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
     </div>
 
