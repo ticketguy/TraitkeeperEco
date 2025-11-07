@@ -612,24 +612,31 @@
             data-aos="fade-up">Trending Solana Traits</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4">
             {% if trending_traits %}
-            {% for trait in trending_traits %}
+            {% for nft in trending_traits %}
             <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
-                data-aos-delay="{{ trait.delay }}" data-nft-modal
-                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
-                data-nft-description="Occurrences: {{ trait.count }}" data-nft-rarity="Trending">
+                data-aos-delay="{{ nft.delay }}" data-nft-modal
+                data-mint-address="{{ nft.mint_address }}"
+                data-nft-name="{{ nft.name }}"
+                data-nft-image="{{ nft.image_url }}"
+                data-nft-description="{{ nft.collection }}">
                 <div
-                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
-                    Trending</div>
-                <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
+                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-gradient-to-r from-primary to-accent-light text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge shadow-lg">
+                    🔥 Trending</div>
+                <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
                     class="w-full h-28 xs:h-32 sm:h-36 object-cover">
                 <div class="p-2 xs:p-3 sm:p-4">
-                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">{{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                        Occurrences: {{ trait.count }}</p>
-                    <span
-                        class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Trending</span>
+                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">{{ nft.name }}</h3>
+                    <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
+                        {{ nft.collection }}</p>
+                    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-[10px] xs:text-xs font-semibold text-primary">
+                            {{ nft.trait_type }}: {{ nft.trait_value }}
+                        </p>
+                        <p class="text-[9px] xs:text-[10px] text-text-secondary-light dark:text-text-secondary-dark">
+                            Score: {{ nft.performance_score|floatformat:1 }}
+                        </p>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -808,33 +815,47 @@
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Rank</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Trait</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Collection</th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Floor Price
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Avg Sale</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Premium
                         </th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Sales</th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Market Cap
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Velocity</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Momentum
                         </th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Trend</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Rarity</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Score</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if top_traits %}
                     {% for trait in top_traits %}
-                    <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
+                    <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg cursor-pointer"
+                        {% if trait.mint_address %}
+                        data-nft-modal
+                        data-mint-address="{{ trait.mint_address }}"
+                        {% endif %}>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter|add:top_traits.start_index|add:-1 }}</td>
                         <td
                             class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[9px] xs:text-[10px] sm:text-xs truncate">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">{{ trait.collection }}</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.volume|floatformat:2 }} SOL</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.floor_price|floatformat:2 }} SOL</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.sales }}</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.market_cap|floatformat:2 }} SOL</td>
-                        <td
-                            class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                            ↑ {{ trait.trend_percentage }}%</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.count }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">
+                            <a href="{% url 'collection_detail' address=trait.collection_address %}" class="hover:text-primary">
+                                {{ trait.collection }}
+                            </a>
+                        </td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.avg_sale_price|floatformat:2 }} SOL</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.premium_score|floatformat:2 }}x</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.velocity_score|floatformat:2 }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                            {% if trait.momentum_score > 0 %}
+                            <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                            {% elif trait.momentum_score < 0 %}
+                            <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                            {% else %}
+                            <span class="text-gray-400">→ 0.00</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.rarity_score|floatformat:1 }}%</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap font-bold text-primary">{{ trait.performance_score|floatformat:1 }}</td>
                     </tr>
                     {% endfor %}
                     {% else %}
@@ -857,98 +878,75 @@
             {% if top_traits %}
             {% for trait in top_traits %}
             <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
-                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-nft-modal
-                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
-                data-nft-description="Collection: {{ trait.collection }} | Count: {{ trait.count }}"
-                data-nft-trend="{{ trait.trend_percentage }}%">
+                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                {% if trait.mint_address %}
+                data-nft-modal
+                data-mint-address="{{ trait.mint_address }}"
+                {% endif %}>
                 <div
                     class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
-                    Top</div>
+                    #{{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
                 <div
                     class="trait-image h-28 xs:h-32 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
                     <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
-                        class="max-w-[80%] max-h-[80%] object-contain">
+                        class="w-full h-full object-cover">
                 </div>
                 <div class="p-2 xs:p-3 sm:p-4 flex-1">
-                    <div class="flex justify-between items-center mb-1">
-                        <h3
-                            class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">
+                    <div class="mb-2">
+                        <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark">TREND:
-                            <span class="text-green-400">↑ {{ trait.trend_percentage }}%</span>
+                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
+                            {{ trait.collection }}
                         </p>
                     </div>
                     <div class="space-y-1">
                         <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    RANK</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.volume|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    VOLUME</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.floor_price|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    FLOOR</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.sales }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    SALES</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.market_cap|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    MARKET CAP</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.count }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-primary">
+                                    {{ trait.performance_score|floatformat:1 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
                                     SCORE</div>
                             </div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.avg_sale_price|floatformat:2 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    AVG SALE</div>
+                            </div>
                         </div>
                         <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.collection }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    COLLECTION</div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.premium_score|floatformat:2 }}x</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    PREMIUM</div>
                             </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.trait_name }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    TRAIT</div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.velocity_score|floatformat:2 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    VELOCITY</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold">
+                                    {% if trait.momentum_score > 0 %}
+                                    <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    {% elif trait.momentum_score < 0 %}
+                                    <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    {% else %}
+                                    <span class="text-gray-400">→ 0.00</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    MOMENTUM</div>
+                            </div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.rarity_score|floatformat:1 }}%</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    RARITY</div>
                             </div>
                         </div>
                     </div>

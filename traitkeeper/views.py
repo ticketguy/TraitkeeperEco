@@ -278,6 +278,151 @@ def index(request):
         # Calculate average price
         avg_price = float(total_volume_24h / total_sales) if total_sales > 0 else 0.0
 
+        # ============================================================================
+        # TRENDING TRAITS (NFTs) - Level 2A + Level 3
+        # ============================================================================
+        # Goal: Display NFTs ranked by their highest-performing trending trait
+        # Strategy:
+        # 1. Get top 5 trending traits from TrendingTrait model
+        # 2. Find all NFTs that have ANY of these trending traits
+        # 3. Annotate each NFT with the MAX performance_score from their trending traits
+        # 4. Sort NFTs by this max score and display with the signifying trait
+
+        trending_nfts = []
+        try:
+            # Step 1: Get top 5 trending trait_values
+            trending_traits_qs = TrendingTrait.objects.select_related(
+                'trait_value', 'trait_value__trait_type'
+            ).order_by('-trend_score')[:5]
+
+            trending_trait_value_ids = [tt.trait_value.id for tt in trending_traits_qs if tt.trait_value]
+
+            if trending_trait_value_ids:
+                # Step 2: Get TraitPerformanceScore for these traits to use for ranking
+                trending_trait_scores = TraitPerformanceScore.objects.filter(
+                    trait_value_id__in=trending_trait_value_ids
+                ).select_related('trait_value', 'trait_type')
+
+                # Create a map of trait_value_id -> performance_score
+                trait_score_map = {
+                    tps.trait_value_id: tps.performance_score
+                    for tps in trending_trait_scores
+                }
+
+                # Step 3: Find NFTs with these trending traits
+                # Use subquery to get max performance score for each NFT
+                nfts_with_trending_traits = NFT.objects.filter(
+                    trait_values__id__in=trending_trait_value_ids
+                ).select_related('collection').prefetch_related(
+                    Prefetch(
+                        'trait_values',
+                        queryset=TraitValue.objects.filter(
+                            id__in=trending_trait_value_ids
+                        ).select_related('trait_type')
+                    )
+                ).distinct()
+
+                # Step 4: Annotate and rank
+                nft_scores = []
+                for nft in nfts_with_trending_traits:
+                    # Find the max score from this NFT's trending traits
+                    nft_trending_traits = [tv for tv in nft.trait_values.all() if tv.id in trending_trait_value_ids]
+
+                    if nft_trending_traits:
+                        # Get scores for all trending traits on this NFT
+                        scores_with_traits = [
+                            (trait_score_map.get(tv.id, 0), tv)
+                            for tv in nft_trending_traits
+                        ]
+
+                        # Find the trait with max score (the signifying trait)
+                        max_score, signifying_trait = max(scores_with_traits, key=lambda x: x[0])
+
+                        nft_scores.append({
+                            'nft': nft,
+                            'max_score': max_score,
+                            'signifying_trait': signifying_trait,
+                        })
+
+                # Sort by max score descending
+                nft_scores.sort(key=lambda x: x['max_score'], reverse=True)
+
+                # Take top 10 and format for template
+                for index, item in enumerate(nft_scores[:10]):
+                    nft = item['nft']
+                    trait = item['signifying_trait']
+
+                    trending_nfts.append({
+                        'mint_address': nft.mint_address,
+                        'name': nft.name or f"{nft.collection.name} #{nft.mint_address[:8]}",
+                        'image_url': nft.image_url or '/static/img/nft-default.png',
+                        'collection': nft.collection.display_name or nft.collection.name,
+                        'collection_address': nft.collection.address,
+                        'trait_type': trait.trait_type.name,
+                        'trait_value': trait.value,
+                        'performance_score': float(item['max_score']),
+                        'delay': index * 100,
+                    })
+
+        except Exception as e:
+            logger.error(f"Error fetching trending traits NFTs: {e}", exc_info=True)
+
+        # ============================================================================
+        # TOP 100 TRAITS - Level 2A Direct Query
+        # ============================================================================
+        # Goal: Display traits sorted by performance_score from TraitPerformanceScore
+        # This is straightforward - just query and sort
+
+        # Get search and pagination params
+        search_query = request.GET.get('q', '').strip()
+        page_number = request.GET.get('page', 1)
+
+        # Base queryset
+        top_traits_qs = TraitPerformanceScore.objects.select_related(
+            'trait_type', 'trait_value', 'collection'
+        ).order_by('-performance_score')
+
+        # Apply search filter if provided
+        if search_query:
+            top_traits_qs = top_traits_qs.filter(
+                Q(trait_type__name__icontains=search_query) |
+                Q(trait_value__value__icontains=search_query) |
+                Q(collection__name__icontains=search_query)
+            )
+
+        # Paginate (100 per page)
+        paginator = Paginator(top_traits_qs, 100)
+
+        try:
+            top_traits_page = paginator.page(page_number)
+        except PageNotAnInteger:
+            top_traits_page = paginator.page(1)
+        except EmptyPage:
+            top_traits_page = paginator.page(paginator.num_pages)
+
+        # Format traits for template
+        top_traits_list = []
+        for trait_perf in top_traits_page:
+            # Get a sample NFT with this trait for the image
+            sample_nft = NFT.objects.filter(
+                trait_values=trait_perf.trait_value
+            ).select_related('collection').first()
+
+            top_traits_list.append({
+                'trait_name': trait_perf.trait_type.name,
+                'trait_value': trait_perf.trait_value.value,
+                'collection': trait_perf.collection.display_name or trait_perf.collection.name,
+                'collection_address': trait_perf.collection.address,
+                'performance_score': float(trait_perf.performance_score),
+                'rarity_score': float(trait_perf.rarity_score),
+                'avg_sale_price': float(trait_perf.avg_sale_price),
+                'premium_score': float(trait_perf.premium_score),
+                'velocity_score': float(trait_perf.velocity_score),
+                'momentum_score': float(trait_perf.momentum_score),
+                'image_url': sample_nft.image_url if sample_nft else '/static/img/nft-default.png',
+                'mint_address': sample_nft.mint_address if sample_nft else None,
+            })
+
         # Build context
         context = {
             **context,
@@ -300,6 +445,9 @@ def index(request):
             'top_collections': top_collections,
             'top_performing_nfts': top_performing_nfts,
             'recent_transfers': recent_transfers_list,
+            'trending_traits': trending_nfts,  # NFTs ranked by trending trait performance
+            'top_traits': top_traits_page,  # Paginated TraitPerformanceScore objects
+            'search_query': search_query,  # For search persistence
             'vapid_public_key': settings.VAPID_PUBLIC_KEY,
             'initial_data_json': json.dumps({
                 'collections': collections_data,
