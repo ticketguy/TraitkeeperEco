@@ -613,8 +613,15 @@ class TraitAnalyticsService:
                         )
                         
                         # Calculate overall performance score
+                        # Formula: (50% premium) + (30% velocity) + (20% momentum)
+                        # Expected ranges: premium (0.8-2.0), velocity*10 (0-5), momentum+1 (0-2)
+                        # Typical raw score: 0.5-4.0
                         performance_score = ((0.5 * premium) + (0.3 * velocity * 10) + (0.2 * (momentum + 1)))
-                        normalized_score = min(100, max(0, performance_score * 20))
+
+                        # Normalize to 0-100 scale
+                        # Using factor of 15 instead of 20 to utilize full range better
+                        # Raw score of ~6.67 = 100 (very high performance trait)
+                        normalized_score = min(100, max(0, performance_score * 15))
                         
                         # Create performance record
                         trait_performance_bulk.append(
