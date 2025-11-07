@@ -37,8 +37,9 @@ from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 from nft_data.models import NFT, NFTCollection, TraitValue
-from indexer.models import NFTEvent, CollectionMarketStats
+from indexer.models import NFTEvent, CollectionMarketStats  # CollectionMarketStats only for source counting
 from analytics.models import (
+    AggregatedCollectionStats,
     TraitPerformanceScore,
     WalletProminence,
     WalletBehaviorProfile
@@ -215,10 +216,9 @@ class VitalityCalculationService:
     async def _calculate_market_momentum(self, nft: NFT) -> float:
         """
         Calculate market momentum component (25% weight).
-        
-        REFACTORED: Now leverages collection-level data from CollectionMarketStats
-        instead of querying NFTEvent for each individual NFT.
-        
+
+        REFACTORED: Uses Level 1 AggregatedCollectionStats for clean, multi-sourced data.
+
         Market momentum is primarily driven by the collection's overall momentum,
         with some NFT-specific adjustments if the NFT has recent sales.
 
@@ -226,17 +226,16 @@ class VitalityCalculationService:
             Score from 0-1 (0 = declining, 0.5 = stable, 1 = strong momentum)
         """
         try:
-            # Get collection-level market stats (pre-calculated by MarketAggregationService)
+            # 🎯 LEVEL 1: Get aggregated stats (pre-calculated by MarketAggregationService)
             collection_stats = await sync_to_async(
-                CollectionMarketStats.objects.filter(
-                    collection=nft.collection,
-                    source='aggregated'  # Use aggregated source
+                AggregatedCollectionStats.objects.filter(
+                    collection=nft.collection
                 ).first
             )()
 
             if not collection_stats:
                 self.logger.warning(
-                    f"No aggregated market stats for collection {nft.collection.address}"
+                    f"No aggregated stats for collection {nft.collection.address}"
                 )
                 return 0.5
 
@@ -334,19 +333,17 @@ class VitalityCalculationService:
     async def _calculate_collection_health_component(self, collection: NFTCollection) -> float:
         """
         Calculate collection health component (15% weight).
-        
-        REFACTORED: Now uses CollectionMarketStats instead of AggregatedCollectionStats.
-        Reads pre-calculated health metrics from MarketAggregationService.
+
+        REFACTORED: Uses Level 1 AggregatedCollectionStats for pre-calculated health metrics.
 
         Returns:
             Score from 0-1 (0 = unhealthy, 1 = very healthy)
         """
         try:
-            # Get aggregated collection stats (calculated by MarketAggregationService)
+            # 🎯 LEVEL 1: Get aggregated stats (calculated by MarketAggregationService)
             stats = await sync_to_async(
-                CollectionMarketStats.objects.filter(
-                    collection=collection,
-                    source='aggregated'
+                AggregatedCollectionStats.objects.filter(
+                    collection=collection
                 ).first
             )()
 
@@ -535,19 +532,17 @@ class VitalityCalculationService:
     async def _calculate_market_influence(self, nft: NFT) -> float:
         """
         Calculate market influence component (5% weight).
-        
-        REFACTORED: Now uses CollectionMarketStats instead of AggregatedCollectionStats.
-        Reads pre-calculated market metrics from MarketAggregationService.
+
+        REFACTORED: Uses Level 1 AggregatedCollectionStats for market metrics.
 
         Returns:
             Score from 0-1 (0 = no influence, 1 = highly influential)
         """
         try:
-            # Get aggregated stats (calculated by MarketAggregationService)
+            # 🎯 LEVEL 1: Get aggregated stats (calculated by MarketAggregationService)
             stats = await sync_to_async(
-                CollectionMarketStats.objects.filter(
-                    collection=nft.collection,
-                    source='aggregated'
+                AggregatedCollectionStats.objects.filter(
+                    collection=nft.collection
                 ).first
             )()
 
@@ -723,17 +718,17 @@ class VitalityCalculationService:
     async def _calculate_collection_momentum(self, collection: NFTCollection) -> float:
         """
         Calculate collection-level market momentum.
-        
-        REFACTORED: Uses pre-calculated metrics from CollectionMarketStats.
+
+        REFACTORED: Uses Level 1 AggregatedCollectionStats for pre-calculated metrics.
 
         Returns:
             Score from 0-1
         """
         try:
+            # 🎯 LEVEL 1: Get aggregated stats
             stats = await sync_to_async(
-                CollectionMarketStats.objects.filter(
-                    collection=collection,
-                    source='aggregated'
+                AggregatedCollectionStats.objects.filter(
+                    collection=collection
                 ).first
             )()
 
