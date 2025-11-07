@@ -501,7 +501,7 @@ class TraitAnalyticsService:
                     logger.debug(f"Processing collection: {collection.name}")
 
                     # 🎯 LEVEL 1: Use clean, multi-sourced aggregated stats for floor price and supply
-                    from indexer.models import AggregatedCollectionStats
+                    from analytics.models import AggregatedCollectionStats
 
                     try:
                         aggregated_stats = AggregatedCollectionStats.objects.get(collection=collection)
