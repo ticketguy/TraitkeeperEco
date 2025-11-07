@@ -465,9 +465,15 @@
                             Top Collections
                         </h3>
                         <div class="flex gap-1 xs:gap-2">
-                            <button class="sort-btn">Vitality</button>
-                            <button class="sort-btn">Volume</button>
-                            <button class="sort-btn">Sales</button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary active" data-sort="vitality">
+                                Vitality
+                            </button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="volume">
+                                Volume
+                            </button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="sales">
+                                Sales
+                            </button>
                         </div>
                     </div>
                     <div class="">
@@ -475,39 +481,42 @@
                             <thead>
                                 <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
                                     <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px]">Collection</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Vitality</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-vitality">Vitality</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-volume">Volume</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-sales">Sales</th>
                                 </tr>
                             </thead>
                             <tbody id="top-collections-table">
                                 {% for collection in top_collections %}
-                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
-                                    <td colspan="3" class="p-0">
-                                        <a href="{% url 'collection_detail' address=collection.address %}" 
-                                           class="flex items-center cursor-pointer hover:no-underline">
-                                            <div class="flex-1 p-1 xs:p-2">
-                                                <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
-                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter }}</span>
-                                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                                         alt="{{ collection.name }}" 
-                                                         class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
-                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">{{ collection.name }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                                <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
-                                                    {{ collection.vitality_score|floatformat:1|default:"--" }}
-                                                </span>
-                                            </div>
-                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                                {{ collection.volume|floatformat:2 }} SOL
-                                            </div>
+                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg collection-row"
+                                    data-vitality="{{ collection.vitality_score|default:0 }}"
+                                    data-volume="{{ collection.volume|default:0 }}"
+                                    data-sales="{{ collection.sales_24h|default:0 }}">
+                                    <td class="p-1 xs:p-2">
+                                        <a href="{% url 'collection_detail' address=collection.address %}"
+                                           class="flex items-center space-x-1 xs:space-x-2 min-w-0 cursor-pointer hover:no-underline">
+                                            <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">{{ forloop.counter }}</span>
+                                            <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                                 alt="{{ collection.name }}"
+                                                 class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
+                                            <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
                                         </a>
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                        <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
+                                            {{ collection.vitality_score|floatformat:1|default:"--" }}
+                                        </span>
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                        {{ collection.volume|floatformat:2 }} SOL
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                        {{ collection.sales_24h|default:0 }}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="3" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
+                                    <td colspan="4" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
                                         No collections.
                                     </td>
                                 </tr>
@@ -1783,6 +1792,101 @@
         // Call the update function on page load with the initial data
         window.updateHighestVitalityCarousel(initialData);
 
+    });
+
+    // Top Collections Sorting Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortButtons = document.querySelectorAll('.collection-sort-btn');
+        const tableBody = document.getElementById('top-collections-table');
+        let currentSort = 'vitality'; // Default sort
+
+        sortButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sortType = this.getAttribute('data-sort');
+
+                // Update active state
+                sortButtons.forEach(btn => {
+                    btn.classList.remove('active', 'border-primary', 'bg-primary/10', 'text-primary');
+                    btn.classList.add('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+                });
+
+                this.classList.add('active', 'border-primary', 'bg-primary/10', 'text-primary');
+                this.classList.remove('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+
+                // Sort the table
+                sortCollections(sortType);
+                currentSort = sortType;
+            });
+        });
+
+        function sortCollections(sortType) {
+            // Get all rows
+            const rows = Array.from(tableBody.querySelectorAll('.collection-row'));
+
+            if (rows.length === 0) return;
+
+            // Sort rows based on the selected type
+            rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch(sortType) {
+                    case 'vitality':
+                        aValue = parseFloat(a.getAttribute('data-vitality')) || 0;
+                        bValue = parseFloat(b.getAttribute('data-vitality')) || 0;
+                        break;
+                    case 'volume':
+                        aValue = parseFloat(a.getAttribute('data-volume')) || 0;
+                        bValue = parseFloat(b.getAttribute('data-volume')) || 0;
+                        break;
+                    case 'sales':
+                        aValue = parseInt(a.getAttribute('data-sales')) || 0;
+                        bValue = parseInt(b.getAttribute('data-sales')) || 0;
+                        break;
+                    default:
+                        return 0;
+                }
+
+                // Sort in descending order (highest first)
+                return bValue - aValue;
+            });
+
+            // Clear table body
+            tableBody.innerHTML = '';
+
+            // Re-append sorted rows with updated rank numbers
+            rows.forEach((row, index) => {
+                // Update the rank number
+                const rankSpan = row.querySelector('td:first-child a span:first-child');
+                if (rankSpan) {
+                    rankSpan.textContent = index + 1;
+                }
+                tableBody.appendChild(row);
+            });
+
+            // Re-apply vitality score colors
+            applyVitalityColors();
+        }
+
+        function applyVitalityColors() {
+            const vitalityValues = document.querySelectorAll('.vitality-value');
+            vitalityValues.forEach(span => {
+                const score = parseFloat(span.getAttribute('data-score')) || 0;
+                span.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500', 'text-gray-400');
+
+                if (score >= 70) {
+                    span.classList.add('text-green-500');
+                } else if (score >= 40) {
+                    span.classList.add('text-yellow-500');
+                } else if (score > 0) {
+                    span.classList.add('text-red-500');
+                } else {
+                    span.classList.add('text-gray-400');
+                }
+            });
+        }
+
+        // Apply initial vitality colors
+        applyVitalityColors();
     });
 </script>
 <style>
