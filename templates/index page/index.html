@@ -97,147 +97,131 @@
     </div>
 </section>
 
-<!-- Solana NFT Market Stats Carousel -->
-<section id="market-highlights" class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-primary/5 dark:from-primary/10 dark:via-purple-500/10 dark:to-primary/10 border-b border-primary/20 dark:border-primary/30 py-3 overflow-hidden relative">
+<!-- Solana NFT Market Stats Carousel - Slim Horizontal Scroll -->
+<section id="market-highlights" class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-primary/5 dark:from-primary/10 dark:via-purple-500/10 dark:to-primary/10 border-b border-primary/20 dark:border-primary/30 py-2 overflow-hidden relative">
     <!-- Animated background gradient -->
     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-pulse"></div>
 
-    <div class="max-w-7xl mx-auto px-4 relative z-10">
-        <!-- Desktop: Show all stats -->
-        <div class="hidden md:grid grid-cols-4 gap-6">
-            <div class="text-center group transition-all duration-300 hover:scale-105">
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Volume</span>
-                <p id="stats-bar-volume" class="text-xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                    {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
-                </p>
-            </div>
+    <div class="relative z-10">
+        <!-- Continuous horizontal scrolling carousel -->
+        <div class="stats-scroll-wrapper overflow-hidden">
+            <div class="stats-scroll-track flex items-center gap-12 animate-scroll-rtl hover:animation-paused">
+                <!-- First set of stats -->
+                <div class="flex items-center gap-12 whitespace-nowrap">
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Volume</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-            <div class="text-center group transition-all duration-300 hover:scale-105">
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
-                <p id="stats-bar-marketcap" class="text-xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                    {{ collection_stats.market_cap|floatformat:2 }} SOL
-                </p>
-            </div>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-            <div class="text-center group transition-all duration-300 hover:scale-105">
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Sales</span>
-                <p id="stats-bar-sales" class="text-xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                    {{ collection_stats.total_sales }}
-                </p>
-            </div>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Sales</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.total_sales }}
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-            <div class="text-center group transition-all duration-300 hover:scale-105">
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Avg Price</span>
-                <p class="text-xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                    {% if collection_stats.total_sales > 0 %}
-                        {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
-                    {% else %}
-                        -- SOL
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-
-        <!-- Mobile/Tablet: Rotating carousel -->
-        <div class="md:hidden relative h-16 flex items-center justify-center">
-            <div class="stats-carousel-container w-full">
-                <!-- Stat 1: 24h Volume -->
-                <div class="stats-carousel-slide text-center transition-all duration-500 ease-in-out opacity-100" data-stat="0">
-                    <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider block">24h Volume</span>
-                    <p class="text-2xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                        {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
-                    </p>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Avg Price</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {% if collection_stats.total_sales > 0 %}
+                                {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
+                            {% else %}
+                                -- SOL
+                            {% endif %}
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
                 </div>
 
-                <!-- Stat 2: Market Cap -->
-                <div class="stats-carousel-slide text-center transition-all duration-500 ease-in-out opacity-0 absolute inset-0 flex flex-col items-center justify-center" data-stat="1">
-                    <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider block">Market Cap</span>
-                    <p class="text-2xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                        {{ collection_stats.market_cap|floatformat:2 }} SOL
-                    </p>
-                </div>
+                <!-- Duplicate set for seamless loop -->
+                <div class="flex items-center gap-12 whitespace-nowrap">
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Volume</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-                <!-- Stat 3: 24h Sales -->
-                <div class="stats-carousel-slide text-center transition-all duration-500 ease-in-out opacity-0 absolute inset-0 flex flex-col items-center justify-center" data-stat="2">
-                    <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider block">24h Sales</span>
-                    <p class="text-2xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                        {{ collection_stats.total_sales }}
-                    </p>
-                </div>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-                <!-- Stat 4: Avg Price -->
-                <div class="stats-carousel-slide text-center transition-all duration-500 ease-in-out opacity-0 absolute inset-0 flex flex-col items-center justify-center" data-stat="3">
-                    <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider block">Avg Price</span>
-                    <p class="text-2xl font-bold text-primary dark:text-primary-light mt-1 font-space-mono">
-                        {% if collection_stats.total_sales > 0 %}
-                            {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
-                        {% else %}
-                            -- SOL
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Sales</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {{ collection_stats.total_sales }}
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
 
-            <!-- Carousel indicators -->
-            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-                <span class="stats-carousel-dot w-1.5 h-1.5 rounded-full bg-primary transition-all duration-300" data-stat="0"></span>
-                <span class="stats-carousel-dot w-1.5 h-1.5 rounded-full bg-primary/30 transition-all duration-300" data-stat="1"></span>
-                <span class="stats-carousel-dot w-1.5 h-1.5 rounded-full bg-primary/30 transition-all duration-300" data-stat="2"></span>
-                <span class="stats-carousel-dot w-1.5 h-1.5 rounded-full bg-primary/30 transition-all duration-300" data-stat="3"></span>
+                    <div class="flex items-center gap-3 px-6">
+                        <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Avg Price</span>
+                        <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
+                            {% if collection_stats.total_sales > 0 %}
+                                {{ collection_stats.avg_price_24h|floatformat:2 }} SOL
+                            {% else %}
+                                -- SOL
+                            {% endif %}
+                        </p>
+                        <span class="text-primary/30">•</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Auto-rotate script for mobile carousel -->
-    <script>
-        (function() {
-            const slides = document.querySelectorAll('.stats-carousel-slide');
-            const dots = document.querySelectorAll('.stats-carousel-dot');
-            let currentSlide = 0;
-            const totalSlides = slides.length;
-
-            function showSlide(index) {
-                // Hide all slides
-                slides.forEach(slide => {
-                    slide.classList.remove('opacity-100');
-                    slide.classList.add('opacity-0');
-                });
-
-                // Show current slide
-                slides[index].classList.remove('opacity-0');
-                slides[index].classList.add('opacity-100');
-
-                // Update dots
-                dots.forEach((dot, i) => {
-                    if (i === index) {
-                        dot.classList.remove('bg-primary/30');
-                        dot.classList.add('bg-primary');
-                    } else {
-                        dot.classList.remove('bg-primary');
-                        dot.classList.add('bg-primary/30');
-                    }
-                });
+    <style>
+        /* Horizontal scroll animation - Right to Left */
+        @keyframes scroll-rtl {
+            0% {
+                transform: translateX(0);
             }
-
-            function nextSlide() {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                showSlide(currentSlide);
+            100% {
+                transform: translateX(-50%);
             }
+        }
 
-            // Auto-rotate every 3 seconds
-            if (window.innerWidth < 768) {
-                setInterval(nextSlide, 3000);
-            }
+        .animate-scroll-rtl {
+            animation: scroll-rtl 30s linear infinite;
+        }
 
-            // Allow manual navigation via dots
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    currentSlide = index;
-                    showSlide(currentSlide);
-                });
-            });
-        })();
-    </script>
+        /* Pause animation on hover */
+        .hover\:animation-paused:hover {
+            animation-play-state: paused;
+        }
+
+        /* Smooth transitions */
+        .stats-scroll-track {
+            will-change: transform;
+        }
+
+        /* Hide scrollbar */
+        .stats-scroll-wrapper {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .stats-scroll-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
 </section>
 
 
