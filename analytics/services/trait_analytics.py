@@ -499,11 +499,27 @@ class TraitAnalyticsService:
                 
                 for collection in collections:
                     logger.debug(f"Processing collection: {collection.name}")
-                    
-                    # Get collection stats for floor price
-                    latest_stats = collection.get_latest_stats()
-                    floor_price = latest_stats.floor_price if latest_stats else 0.01
-                    total_nfts = latest_stats.total_supply if latest_stats else 0
+
+                    # 🎯 LEVEL 1: Use clean, multi-sourced aggregated stats for floor price and supply
+                    from indexer.models import AggregatedCollectionStats
+
+                    try:
+                        aggregated_stats = AggregatedCollectionStats.objects.get(collection=collection)
+                        floor_price = aggregated_stats.floor_price if aggregated_stats.floor_price else 0.01
+                        total_nfts = aggregated_stats.total_supply if aggregated_stats.total_supply else 0
+                        logger.debug(
+                            f"📊 Using Level 1 aggregated stats for {collection.name}: "
+                            f"floor={floor_price}, supply={total_nfts}"
+                        )
+                    except AggregatedCollectionStats.DoesNotExist:
+                        # Fallback to get_latest_stats() if aggregated stats not available
+                        latest_stats = collection.get_latest_stats()
+                        floor_price = latest_stats.floor_price if latest_stats else 0.01
+                        total_nfts = latest_stats.total_supply if latest_stats else 0
+                        logger.warning(
+                            f"⚠️ No aggregated stats for {collection.name}, using fallback: "
+                            f"floor={floor_price}, supply={total_nfts}"
+                        )
                     
                     # Get sales transactions for this collection
                     collection_txns = NFTEvent.objects.filter(
