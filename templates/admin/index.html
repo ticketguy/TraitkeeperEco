@@ -15,7 +15,7 @@
         width: 250px;
         background: linear-gradient(180deg, #800080 0%, #660066 100%);
         transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
         z-index: 40;
         overflow-y: auto;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
@@ -23,6 +23,14 @@
 
     .sidebar.open {
         transform: translateX(0);
+    }
+
+    .sidebar-collapsed {
+        width: 60px;
+    }
+
+    .sidebar-collapsed .sidebar-text {
+        display: none;
     }
 
     .sidebar-overlay {
@@ -46,6 +54,10 @@
         }
         .main-content {
             margin-left: 250px;
+            transition: margin-left 0.2s ease;
+        }
+        .main-content.expanded {
+            margin-left: 60px;
         }
         .sidebar-overlay {
             display: none !important;
@@ -53,12 +65,11 @@
     }
 
     .sidebar-link {
-        transition: all 0.2s ease;
+        transition: background 0.15s ease;
     }
 
     .sidebar-link:hover {
         background: rgba(255, 255, 255, 0.1);
-        transform: translateX(5px);
     }
 
     .sidebar-link.active {
@@ -66,22 +77,20 @@
         border-left: 4px solid #fff;
     }
 
-    /* Modern Card Styles */
+    /* Modern Card Styles - Reduced animations */
     .modern-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
-        backdrop-filter: blur(10px);
+        background: #fff;
         border: 1px solid rgba(128, 0, 128, 0.1);
-        transition: all 0.3s ease;
+        transition: box-shadow 0.2s ease;
     }
 
     .dark .modern-card {
-        background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(30, 30, 30, 0.9) 100%);
+        background: #1e1e1e;
         border: 1px solid rgba(128, 0, 128, 0.2);
     }
 
     .modern-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(128, 0, 128, 0.15);
+        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.1);
     }
 
     /* Gradient Text */
@@ -92,135 +101,108 @@
         background-clip: text;
     }
 
-    /* Stat Cards */
-    .stat-card {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(128, 0, 128, 0.1) 0%, transparent 70%);
-        animation: pulse 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-    }
-
-    /* Quick Access Cards */
+    /* Quick Access Cards - Minimal animations */
     .quick-access-card {
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .quick-access-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, transparent 0%, rgba(128, 0, 128, 0.1) 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .quick-access-card:hover::before {
-        opacity: 1;
+        transition: box-shadow 0.2s ease;
     }
 
     .quick-access-card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 24px rgba(128, 0, 128, 0.25);
+        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.15);
     }
 
-    /* Animated Background */
-    body::before {
-        content: '';
+    /* Sidebar toggle button */
+    .sidebar-toggle {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background:
-            radial-gradient(circle at 20% 50%, rgba(128, 0, 128, 0.03) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(102, 0, 102, 0.03) 0%, transparent 50%);
-        z-index: -1;
-        animation: backgroundShift 15s ease-in-out infinite;
+        top: 70px;
+        left: 10px;
+        z-index: 45;
+        background: #800080;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    @keyframes backgroundShift {
-        0%, 100% { opacity: 0.5; }
-        50% { opacity: 1; }
+    @media (min-width: 1024px) {
+        .sidebar-toggle {
+            display: flex;
+        }
     }
 </style>
 {% endblock %}
 
 {% block admin_inner_content %}
+<!-- Desktop Sidebar Toggle Button -->
+<button onclick="toggleSidebarCollapse()" class="sidebar-toggle" title="Toggle Sidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
 <!-- Sidebar -->
 <aside id="admin-sidebar" class="sidebar">
     <div class="p-6">
-        <h3 class="text-white font-bold text-lg mb-4 flex items-center">
+        <div class="flex items-center mb-6">
+            <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper" class="h-8 sidebar-text">
+            <i class="fas fa-shield-alt text-white text-2xl" style="display: none;"></i>
+        </div>
+        <h3 class="text-white font-semibold text-sm mb-4 flex items-center sidebar-text">
             <i class="fas fa-compass mr-2"></i>
             Quick Navigation
         </h3>
         <nav class="space-y-2">
             <a href="{% url 'admin:index' %}" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-home mr-3"></i>
-                Dashboard
+                <span class="sidebar-text">Dashboard</span>
             </a>
             <a href="{% url 'system_health:dashboard' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-heartbeat mr-3"></i>
-                System Health
+                <span class="sidebar-text">System Health</span>
             </a>
             <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-tasks mr-3"></i>
-                Task Manager
+                <span class="sidebar-text">Task Manager</span>
             </a>
             <a href="{% url 'admin_panel:secrets-management' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-lock mr-3"></i>
-                Secrets
+                <span class="sidebar-text">Secrets</span>
             </a>
             <a href="{% url 'admin_panel:pending_collections' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-list-alt mr-3"></i>
-                Pending Collections
+                <span class="sidebar-text">Pending Collections</span>
             </a>
             <a href="{% url 'admin_panel:statistics' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-chart-bar mr-3"></i>
-                Statistics
+                <span class="sidebar-text">Statistics</span>
             </a>
             <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
                 <i class="fas fa-history mr-3"></i>
-                Activity Logs
+                <span class="sidebar-text">Activity Logs</span>
             </a>
         </nav>
 
         <div class="mt-8 pt-6 border-t border-white/20">
-            <h4 class="text-white/80 font-semibold text-sm mb-3">Data Management</h4>
+            <h4 class="text-white/80 font-semibold text-sm mb-3 sidebar-text">Data Management</h4>
             <nav class="space-y-2">
                 <a href="{% url 'admin:nft_data_nftcollection_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
                     <i class="fas fa-folder mr-3"></i>
-                    NFT Collections
+                    <span class="sidebar-text">NFT Collections</span>
                 </a>
                 <a href="{% url 'admin:nft_data_nft_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
                     <i class="fas fa-image mr-3"></i>
-                    NFTs
+                    <span class="sidebar-text">NFTs</span>
                 </a>
                 <a href="{% url 'admin:marketplace_nftlisting_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
                     <i class="fas fa-shopping-cart mr-3"></i>
-                    Listings
+                    <span class="sidebar-text">Listings</span>
                 </a>
                 <a href="{% url 'admin:wallet_customuser_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
                     <i class="fas fa-users mr-3"></i>
-                    Users
+                    <span class="sidebar-text">Users</span>
                 </a>
             </nav>
         </div>
@@ -497,7 +479,7 @@
                         <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold {% if collection.status == 'pending' %}bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300{% endif %}">
                             {{ collection.status|capfirst }}
                         </span>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ collection.submitted_at|date:"M d, H:i" }}</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ collection.created_at|date:"M d, H:i" }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -550,11 +532,22 @@
 
 <!-- Sidebar Toggle Script -->
 <script>
+// Mobile toggle function
 function toggleSidebar() {
     const sidebar = document.getElementById('admin-sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     sidebar.classList.toggle('open');
     overlay.classList.toggle('active');
+}
+
+// Desktop collapse function
+function toggleSidebarCollapse() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const mainContent = document.querySelector('.main-content');
+    sidebar.classList.toggle('sidebar-collapsed');
+    if (mainContent) {
+        mainContent.classList.toggle('expanded');
+    }
 }
 
 // Close sidebar when clicking on links (mobile only)
@@ -576,6 +569,7 @@ window.addEventListener('resize', () => {
     } else {
         sidebar.classList.remove('open');
         overlay.classList.remove('active');
+        sidebar.classList.remove('sidebar-collapsed');
     }
 });
 </script>

@@ -896,16 +896,18 @@ class CustomAdminSite(AdminSite):
         user_stats = cache.get(user_stats_cache_key)
         if user_stats is None:
             end_date = timezone.now()
+            # Exclude admin users (is_staff=True) from regular user counts
+            regular_users = CustomUser.objects.filter(is_staff=False)
             user_stats = {
-                'total_users': CustomUser.objects.count(),
-                'active_users': CustomUser.objects.filter(
+                'total_users': regular_users.count(),
+                'active_users': regular_users.filter(
                     last_login__gte=end_date - timedelta(days=30)
                 ).count(),
                 'wallet_connections': WalletProfile.objects.count(),
                 'admin_users': AdminUser.objects.count(),
             }
             signup_start = end_date - timedelta(days=7)
-            new_users = CustomUser.objects.filter(date_joined__gte=signup_start)
+            new_users = regular_users.filter(date_joined__gte=signup_start)
             new_user_count = new_users.count()
             retained_users = new_users.filter(
                 last_login__gt=F('date_joined')

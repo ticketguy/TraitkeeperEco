@@ -198,8 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const label = this.data.labels[index].toLowerCase();
                     const urls = {
                         'collections': '{% url "admin:nft_data_nftcollection_changelist" %}',
-                        'nfts': '{% url "admin:nft_data_nft_changelist" %}',
-                        'transactions': '{% url "admin:nft_data_nfttransaction_changelist" %}'
+                        'nfts': '{% url "admin:nft_data_nft_changelist" %}'
                     };
                     if (urls[label]) {
                         window.location.href = urls[label];
