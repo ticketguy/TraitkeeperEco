@@ -51,6 +51,7 @@ from .vitality_models import (
     CollectionVitalityHistory,
     VitalityPriceComparison
 )
+from .perception_service import perception_service
 
 logger = logging.getLogger(__name__)
 
@@ -512,26 +513,63 @@ class VitalityCalculationService:
         """
         Calculate perception index component (20% weight - anti-gaming focus).
 
-        TODO: Implement perception analysis from social media/community.
-        This metric is designed to be difficult to game and focuses on genuine
-        community engagement and perception rather than easily manipulable metrics.
+        This metric integrates data from Parallel Lines, TraitKeeper's world
+        perception engine (LLM-based sentiment analysis system).
 
-        Future data sources:
+        Parallel Lines Architecture:
+        - Submind Layer: Silent observer - captures subconscious behavioral patterns
+        - IntuOne Layer: Expressive interpreter - translates emotional resonance
+        - Output: Perception Graph + Perception Index (0-1)
+
+        Anti-Gaming Features:
+        - LLM-based analysis resists simple manipulation
+        - Detects bot activity, wash trading influence, coordinated shilling
+        - Multi-platform sentiment aggregation (Twitter, Discord, Reddit)
+        - Behavioral pattern analysis for authenticity
+
+        Data Sources (via Parallel Lines):
         - Twitter API for collection mentions and sentiment
         - Discord API for community activity and sentiment
-        - TraitKeeper user reviews/ratings for collections
-        - Sentiment analysis of collection description/metadata
-        - NFT influencer mentions and opinions
-        - Anti-gaming heuristics (detect bot activity, wash trading influence)
-
-        For now, returns neutral (0.5) as specified by user.
+        - Reddit community discussions
+        - On-chain behavioral signals
+        - TraitKeeper platform interactions
 
         Returns:
             Score from 0-1 (0 = negative perception, 1 = positive perception)
         """
-        # TODO: Implement perception analysis
-        # Placeholder for future implementation
-        return 0.5  # Neutral until implemented
+        # === COLLECTION-LEVEL PERCEPTION ===
+        # Use collection-level perception as primary signal
+        collection_perception = await perception_service.get_perception_index(
+            entity=nft.collection,
+            entity_type='collection'
+        )
+
+        # === NFT-LEVEL PERCEPTION (if available) ===
+        # Check if there's specific perception data for this NFT
+        nft_perception = await perception_service.get_perception_index(
+            entity=nft,
+            entity_type='nft'
+        )
+
+        # If both are neutral (0.5), it means no Parallel Lines data exists yet
+        if collection_perception == 0.5 and nft_perception == 0.5:
+            self.logger.debug(
+                f"No Parallel Lines perception data for {nft.mint_address}. "
+                f"Using neutral score until Parallel Lines integration is active."
+            )
+            return 0.5
+
+        # === COMBINE COLLECTION AND NFT PERCEPTION ===
+        # Weight: Collection (70%) + NFT-specific (30%)
+        # This allows for collection-wide sentiment with NFT-specific adjustments
+        perception_index = (collection_perception * 0.7) + (nft_perception * 0.3)
+
+        self.logger.debug(
+            f"Perception Index for {nft.mint_address}: {perception_index:.3f} "
+            f"(Collection: {collection_perception:.3f}, NFT: {nft_perception:.3f})"
+        )
+
+        return perception_index
 
     async def _calculate_market_influence(self, nft: NFT) -> float:
         """
