@@ -29,7 +29,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Function to toggle theme (used by both buttons)
-  function toggleTheme() {
+  function toggleTheme(event) {
+    if (event) {
+      event.stopPropagation(); // Prevent event from bubbling
+      event.preventDefault(); // Prevent default button behavior
+    }
     console.log("Theme toggle clicked!");
     const isDarkMode = htmlElement.classList.contains("dark");
 
@@ -48,13 +52,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Add click listeners to both desktop and mobile toggle buttons
   if (themeToggle) {
-    themeToggle.addEventListener("click", toggleTheme);
+    themeToggle.addEventListener("click", toggleTheme, true); // Use capture phase
+    console.log("Desktop theme toggle listener attached");
   } else {
     console.error("Desktop theme toggle button not found!");
   }
 
   if (themeToggleMobile) {
-    themeToggleMobile.addEventListener("click", toggleTheme);
+    // Add multiple event types to ensure it works
+    themeToggleMobile.addEventListener("click", toggleTheme, true); // Use capture phase
+    themeToggleMobile.addEventListener("touchend", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleTheme(e);
+    }, true);
+    console.log("Mobile theme toggle listener attached (click + touchend)");
   } else {
     console.warn("Mobile theme toggle button not found!");
   }
