@@ -465,9 +465,15 @@
                             Top Collections
                         </h3>
                         <div class="flex gap-1 xs:gap-2">
-                            <button class="sort-btn">Vitality</button>
-                            <button class="sort-btn">Volume</button>
-                            <button class="sort-btn">Sales</button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary active" data-sort="vitality">
+                                Vitality
+                            </button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="volume">
+                                Volume
+                            </button>
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="sales">
+                                Sales
+                            </button>
                         </div>
                     </div>
                     <div class="">
@@ -475,39 +481,42 @@
                             <thead>
                                 <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
                                     <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px]">Collection</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Vitality</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-vitality">Vitality</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-volume">Volume</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-sales">Sales</th>
                                 </tr>
                             </thead>
                             <tbody id="top-collections-table">
                                 {% for collection in top_collections %}
-                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
-                                    <td colspan="3" class="p-0">
-                                        <a href="{% url 'collection_detail' address=collection.address %}" 
-                                           class="flex items-center cursor-pointer hover:no-underline">
-                                            <div class="flex-1 p-1 xs:p-2">
-                                                <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
-                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter }}</span>
-                                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                                         alt="{{ collection.name }}" 
-                                                         class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
-                                                    <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">{{ collection.name }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                                <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
-                                                    {{ collection.vitality_score|floatformat:1|default:"--" }}
-                                                </span>
-                                            </div>
-                                            <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                                {{ collection.volume|floatformat:2 }} SOL
-                                            </div>
+                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg collection-row"
+                                    data-vitality="{{ collection.vitality_score|default:0 }}"
+                                    data-volume="{{ collection.volume|default:0 }}"
+                                    data-sales="{{ collection.sales_24h|default:0 }}">
+                                    <td class="p-1 xs:p-2">
+                                        <a href="{% url 'collection_detail' address=collection.address %}"
+                                           class="flex items-center space-x-1 xs:space-x-2 min-w-0 cursor-pointer hover:no-underline">
+                                            <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">{{ forloop.counter }}</span>
+                                            <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                                 alt="{{ collection.name }}"
+                                                 class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
+                                            <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
                                         </a>
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                        <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
+                                            {{ collection.vitality_score|floatformat:1|default:"--" }}
+                                        </span>
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                        {{ collection.volume|floatformat:2 }} SOL
+                                    </td>
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                        {{ collection.sales_24h|default:0 }}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="3" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
+                                    <td colspan="4" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
                                         No collections.
                                     </td>
                                 </tr>
@@ -603,24 +612,31 @@
             data-aos="fade-up">Trending Solana Traits</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4">
             {% if trending_traits %}
-            {% for trait in trending_traits %}
+            {% for nft in trending_traits %}
             <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
-                data-aos-delay="{{ trait.delay }}" data-nft-modal
-                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
-                data-nft-description="Occurrences: {{ trait.count }}" data-nft-rarity="Trending">
+                data-aos-delay="{{ nft.delay }}" data-nft-modal
+                data-mint-address="{{ nft.mint_address }}"
+                data-nft-name="{{ nft.name }}"
+                data-nft-image="{{ nft.image_url }}"
+                data-nft-description="{{ nft.collection }}">
                 <div
-                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
-                    Trending</div>
-                <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
+                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-gradient-to-r from-primary to-accent-light text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge shadow-lg">
+                    🔥 Trending</div>
+                <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
                     class="w-full h-28 xs:h-32 sm:h-36 object-cover">
                 <div class="p-2 xs:p-3 sm:p-4">
-                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">{{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                        Occurrences: {{ trait.count }}</p>
-                    <span
-                        class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Trending</span>
+                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">{{ nft.name }}</h3>
+                    <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
+                        {{ nft.collection }}</p>
+                    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-[10px] xs:text-xs font-semibold text-primary">
+                            {{ nft.trait_type }}: {{ nft.trait_value }}
+                        </p>
+                        <p class="text-[9px] xs:text-[10px] text-text-secondary-light dark:text-text-secondary-dark">
+                            Score: {{ nft.performance_score|floatformat:1 }}
+                        </p>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -802,18 +818,24 @@
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">NFTs</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Floor Price
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Avg Sale</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Premium
                         </th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Sales</th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Market Cap
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Velocity</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Momentum
                         </th>
-                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Trend</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Rarity</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Score</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if top_traits %}
                     {% for trait in top_traits %}
-                    <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg">
+                    <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg cursor-pointer"
+                        {% if trait.mint_address %}
+                        data-nft-modal
+                        data-mint-address="{{ trait.mint_address }}"
+                        {% endif %}>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ forloop.counter|add:top_traits.start_index|add:-1 }}</td>
                         <td
                             class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[9px] xs:text-[10px] sm:text-xs truncate">
@@ -830,6 +852,25 @@
                             class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
                             ↑ {{ trait.trend_percentage }}%</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.performance_score|default:trait.count }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">
+                            <a href="{% url 'collection_detail' address=trait.collection_address %}" class="hover:text-primary">
+                                {{ trait.collection }}
+                            </a>
+                        </td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.avg_sale_price|floatformat:2 }} SOL</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.premium_score|floatformat:2 }}x</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.velocity_score|floatformat:2 }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                            {% if trait.momentum_score > 0 %}
+                            <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                            {% elif trait.momentum_score < 0 %}
+                            <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                            {% else %}
+                            <span class="text-gray-400">→ 0.00</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.rarity_score|floatformat:1 }}%</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap font-bold text-primary">{{ trait.performance_score|floatformat:1 }}</td>
                     </tr>
                     {% endfor %}
                     {% else %}
@@ -852,98 +893,75 @@
             {% if top_traits %}
             {% for trait in top_traits %}
             <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
-                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-nft-modal
-                data-nft-name="{{ trait.trait_name }}: {{ trait.trait_value }}" data-nft-image="{{ trait.image_url }}"
-                data-nft-description="Collection: {{ trait.collection }} | Count: {{ trait.count }}"
-                data-nft-trend="{{ trait.trend_percentage }}%">
+                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                {% if trait.mint_address %}
+                data-nft-modal
+                data-mint-address="{{ trait.mint_address }}"
+                {% endif %}>
                 <div
                     class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
-                    Top</div>
+                    #{{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
                 <div
                     class="trait-image h-28 xs:h-32 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
                     <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
-                        class="max-w-[80%] max-h-[80%] object-contain">
+                        class="w-full h-full object-cover">
                 </div>
                 <div class="p-2 xs:p-3 sm:p-4 flex-1">
-                    <div class="flex justify-between items-center mb-1">
-                        <h3
-                            class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark">
+                    <div class="mb-2">
+                        <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark">TREND:
-                            <span class="text-green-400">↑ {{ trait.trend_percentage }}%</span>
+                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
+                            {{ trait.collection }}
                         </p>
                     </div>
                     <div class="space-y-1">
                         <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    RANK</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.volume|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    VOLUME</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.floor_price|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    FLOOR</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.sales }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    SALES</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.market_cap|floatformat:2 }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    MARKET CAP</div>
-                            </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.count }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-primary">
+                                    {{ trait.performance_score|floatformat:1 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
                                     SCORE</div>
                             </div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.avg_sale_price|floatformat:2 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    AVG SALE</div>
+                            </div>
                         </div>
                         <div class="flex justify-between">
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.collection }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    COLLECTION</div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.premium_score|floatformat:2 }}x</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    PREMIUM</div>
                             </div>
-                            <div class="text-center">
-                                <div
-                                    class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.trait_name }}</div>
-                                <div
-                                    class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    TRAIT</div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.velocity_score|floatformat:2 }}</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    VELOCITY</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold">
+                                    {% if trait.momentum_score > 0 %}
+                                    <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    {% elif trait.momentum_score < 0 %}
+                                    <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    {% else %}
+                                    <span class="text-gray-400">→ 0.00</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    MOMENTUM</div>
+                            </div>
+                            <div class="text-center flex-1">
+                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
+                                    {{ trait.rarity_score|floatformat:1 }}%</div>
+                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                    RARITY</div>
                             </div>
                         </div>
                     </div>
@@ -1787,6 +1805,101 @@
         // Call the update function on page load with the initial data
         window.updateHighestVitalityCarousel(initialData);
 
+    });
+
+    // Top Collections Sorting Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortButtons = document.querySelectorAll('.collection-sort-btn');
+        const tableBody = document.getElementById('top-collections-table');
+        let currentSort = 'vitality'; // Default sort
+
+        sortButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sortType = this.getAttribute('data-sort');
+
+                // Update active state
+                sortButtons.forEach(btn => {
+                    btn.classList.remove('active', 'border-primary', 'bg-primary/10', 'text-primary');
+                    btn.classList.add('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+                });
+
+                this.classList.add('active', 'border-primary', 'bg-primary/10', 'text-primary');
+                this.classList.remove('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+
+                // Sort the table
+                sortCollections(sortType);
+                currentSort = sortType;
+            });
+        });
+
+        function sortCollections(sortType) {
+            // Get all rows
+            const rows = Array.from(tableBody.querySelectorAll('.collection-row'));
+
+            if (rows.length === 0) return;
+
+            // Sort rows based on the selected type
+            rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch(sortType) {
+                    case 'vitality':
+                        aValue = parseFloat(a.getAttribute('data-vitality')) || 0;
+                        bValue = parseFloat(b.getAttribute('data-vitality')) || 0;
+                        break;
+                    case 'volume':
+                        aValue = parseFloat(a.getAttribute('data-volume')) || 0;
+                        bValue = parseFloat(b.getAttribute('data-volume')) || 0;
+                        break;
+                    case 'sales':
+                        aValue = parseInt(a.getAttribute('data-sales')) || 0;
+                        bValue = parseInt(b.getAttribute('data-sales')) || 0;
+                        break;
+                    default:
+                        return 0;
+                }
+
+                // Sort in descending order (highest first)
+                return bValue - aValue;
+            });
+
+            // Clear table body
+            tableBody.innerHTML = '';
+
+            // Re-append sorted rows with updated rank numbers
+            rows.forEach((row, index) => {
+                // Update the rank number
+                const rankSpan = row.querySelector('td:first-child a span:first-child');
+                if (rankSpan) {
+                    rankSpan.textContent = index + 1;
+                }
+                tableBody.appendChild(row);
+            });
+
+            // Re-apply vitality score colors
+            applyVitalityColors();
+        }
+
+        function applyVitalityColors() {
+            const vitalityValues = document.querySelectorAll('.vitality-value');
+            vitalityValues.forEach(span => {
+                const score = parseFloat(span.getAttribute('data-score')) || 0;
+                span.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500', 'text-gray-400');
+
+                if (score >= 70) {
+                    span.classList.add('text-green-500');
+                } else if (score >= 40) {
+                    span.classList.add('text-yellow-500');
+                } else if (score > 0) {
+                    span.classList.add('text-red-500');
+                } else {
+                    span.classList.add('text-gray-400');
+                }
+            });
+        }
+
+        // Apply initial vitality colors
+        applyVitalityColors();
     });
 </script>
 <style>

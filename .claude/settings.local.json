@@ -26,7 +26,9 @@
       "Bash(echo:*)",
       "Bash(make migrate:*)",
       "Bash(nul)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(default:0 }}\"\n    data-volume=\"{{ collection.volume)",
+      "Bash(default:0 }}\"\n    data-sales=\"{{ collection.sales_24h)"
     ],
     "deny": [],
     "ask": []

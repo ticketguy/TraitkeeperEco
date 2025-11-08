@@ -499,11 +499,27 @@ class TraitAnalyticsService:
                 
                 for collection in collections:
                     logger.debug(f"Processing collection: {collection.name}")
-                    
-                    # Get collection stats for floor price
-                    latest_stats = collection.get_latest_stats()
-                    floor_price = latest_stats.floor_price if latest_stats else 0.01
-                    total_nfts = latest_stats.total_supply if latest_stats else 0
+
+                    # 🎯 LEVEL 1: Use clean, multi-sourced aggregated stats for floor price and supply
+                    from analytics.models import AggregatedCollectionStats
+
+                    try:
+                        aggregated_stats = AggregatedCollectionStats.objects.get(collection=collection)
+                        floor_price = aggregated_stats.floor_price if aggregated_stats.floor_price else 0.01
+                        total_nfts = aggregated_stats.total_supply if aggregated_stats.total_supply else 0
+                        logger.debug(
+                            f"📊 Using Level 1 aggregated stats for {collection.name}: "
+                            f"floor={floor_price}, supply={total_nfts}"
+                        )
+                    except AggregatedCollectionStats.DoesNotExist:
+                        # Fallback to get_latest_stats() if aggregated stats not available
+                        latest_stats = collection.get_latest_stats()
+                        floor_price = latest_stats.floor_price if latest_stats else 0.01
+                        total_nfts = latest_stats.total_supply if latest_stats else 0
+                        logger.warning(
+                            f"⚠️ No aggregated stats for {collection.name}, using fallback: "
+                            f"floor={floor_price}, supply={total_nfts}"
+                        )
                     
                     # Get sales transactions for this collection
                     collection_txns = NFTEvent.objects.filter(
@@ -597,8 +613,15 @@ class TraitAnalyticsService:
                         )
                         
                         # Calculate overall performance score
+                        # Formula: (50% premium) + (30% velocity) + (20% momentum)
+                        # Expected ranges: premium (0.8-2.0), velocity*10 (0-5), momentum+1 (0-2)
+                        # Typical raw score: 0.5-4.0
                         performance_score = ((0.5 * premium) + (0.3 * velocity * 10) + (0.2 * (momentum + 1)))
-                        normalized_score = min(100, max(0, performance_score * 20))
+
+                        # Normalize to 0-100 scale
+                        # Using factor of 15 instead of 20 to utilize full range better
+                        # Raw score of ~6.67 = 100 (very high performance trait)
+                        normalized_score = min(100, max(0, performance_score * 15))
                         
                         # Create performance record
                         trait_performance_bulk.append(

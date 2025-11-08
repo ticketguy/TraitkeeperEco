@@ -92,7 +92,7 @@ class CustomAdminSite(AdminSite):
             # This pattern ensures that only allowed apps can be accessed via /admin/<app_label>/
             # Added traitkeeper to fix NoReverseMatch error when traitkeeper appeared in admin logs
             re_path(
-                r'^(?P<app_label>wallet|admin_panel|auth|nft_data|advertisement|indexer|traitkeeper|analytics|marketplace|learn|nftmemories|notifications|axplorer|system_health)/$',
+                r'^(?P<app_label>wallet|admin_panel|auth|nft_data|advertisement|indexer|traitkeeper|analytics|marketplace|learn|nftmemories|notifications|axplorer|system_health|admin_secure)/$',
                 self.admin_view(self.app_index),
                 name='app_list'
             ), 
