@@ -625,29 +625,29 @@
             </button>
             <div id="tools-dropdown-mobile" class="hidden pl-4">
                 <a href="{% url 'admin:populate_collections' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm">
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
                     <i class="fas fa-plus-circle mr-2"></i>Populate Collections
                 </a>
                 <a href="{% url 'admin:refresh_collections' %}"
-                    class="block px-4 py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
                     <i class="fas fa-sync-alt mr-2"></i>Refresh Collections
                 </a>
                 <a href="{% url 'admin:set_primary_provider' %}"
-                    class="block px-4 py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
                     <i class="fas fa-server mr-2"></i>Set Primary RPC Provider
                 </a>
                 <a href="{% url 'admin:token_list_view' %}"
-                    class="block px-4 py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
                     <i class="fas fa-key mr-2"></i>Manage API Tokens
                 </a>
-                 <a href="{% url 'admin:generate_tokens' %}"
-                            class="block px-4 py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                            <i class="fas fa-ticket-alt mr-2"></i>Generate API Tokens
-                        </a>
-                            <a href="{% url 'admin_panel:task-dashboard' %}"
-                            class="block px-4 py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                            <i class="fas fa-tasks mr-2"></i>Task Manager
-                        </a>
+                <a href="{% url 'admin:generate_tokens' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-ticket-alt mr-2"></i>Generate API Tokens
+                </a>
+                <a href="{% url 'admin_panel:task-dashboard' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-tasks mr-2"></i>Task Manager
+                </a>
             </div>
         </div>
         <!-- NFT Data Models Link -->
