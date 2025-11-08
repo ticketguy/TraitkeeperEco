@@ -509,7 +509,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             </div>
                         </div>
 <div id="user-profile-menu-desktop"
-    class="user-dropdown hidden absolute top-12 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
+    class="user-dropdown hidden absolute top-12 right-0 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
                             <ul class="space-y-2">
                                 <li><a href="{% url 'profiles:profile' user.username %}"
                                         class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
@@ -569,7 +569,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             </div>
                         </div>
 <div id="user-profile-menu-mobile"
-    class="user-dropdown hidden absolute top-12 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
+    class="user-dropdown hidden absolute top-12 right-0 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 w-48 z-50 animate-scale-in">
                             <ul class="space-y-2">
                                 <li><a href="{% url 'profiles:profile' user.username %}"
                                         class="block px-4 py-2 text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-gray-700 rounded animate-fade-in">
@@ -1277,6 +1277,13 @@ if (header) {
 
                 if (mobileMenuButtons) {
                     mobileMenuButtons.addEventListener('click', function (e) {
+                        // Allow theme toggle clicks to propagate
+                        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+                        if (themeToggleMobile && themeToggleMobile.contains(e.target)) {
+                            console.log('Theme toggle clicked, allowing propagation');
+                            return; // Let the theme toggle handler process this
+                        }
+
                         e.stopPropagation();
                         e.stopImmediatePropagation();
                         console.log('Clicked inside mobile menu buttons, preventing close');
