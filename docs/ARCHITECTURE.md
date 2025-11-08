@@ -279,15 +279,16 @@ TraitKeeper consists of **13 specialized Django apps**, each with a specific dom
        ▼
 ┌──────────────────────────────────────┐
 │ VitalityService.calculate_vitality() │
+│ (Anti-Gaming Architecture v3.0)      │
 └──────┬───────────────────────────────┘
        │
-       ├─▶ Market Momentum (25%)
+       ├─▶ Perception Index (20%) - Anti-gaming focus
        ├─▶ Trait Performance (20%)
        ├─▶ Collection Health (15%)
        ├─▶ Collection Utility (10%)
+       ├─▶ Market Momentum (10%) - Reduced to prevent gaming
        ├─▶ Rarity Score (10%)
        ├─▶ Holder Quality (10%)
-       ├─▶ Sentiment Score (5%)
        └─▶ Market Influence (5%)
                │
                ▼
