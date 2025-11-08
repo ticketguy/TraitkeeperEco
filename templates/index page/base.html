@@ -984,7 +984,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 </div>
 
                 <!-- Username Tab Content -->
-                <div id="login-tab-content" class="tab-content p-6 transition-all duration-300 opacity-0 hidden absolute inset-0">
+                <div id="login-tab-content" class="tab-content p-6 transition-all duration-300 opacity-0 hidden">
                     <form id="email-login-form" method="POST" action="{% url 'wallet:email_login' %}" class="space-y-5">
                         {% csrf_token %}
 
@@ -1258,7 +1258,15 @@ if (header) {
                     const walletDropdownToggles = document.querySelectorAll('#wallet-dropdown-toggle, #wallet-dropdown-toggle-mobile');
                     const clickedInsideWalletToggle = Array.from(walletDropdownToggles).some(toggle => toggle.contains(e.target));
 
-                    if (mobileMenuButtons && mobileMenuToggle && !mobileMenuButtons.contains(e.target) && !mobileMenuToggle.contains(e.target) && !clickedInsideWalletToggle && (!walletModal || !walletModal.contains(e.target)) && (!walletBackdrop || !walletBackdrop.contains(e.target))) {
+                    // Exclude theme toggle buttons from this click handler
+                    const themeToggleButtons = document.querySelectorAll('#theme-toggle, #theme-toggle-mobile');
+                    const clickedThemeToggle = Array.from(themeToggleButtons).some(btn => btn && btn.contains(e.target));
+
+                    // Exclude footer elements from closing mobile menu
+                    const footer = document.querySelector('footer.bottom-bar');
+                    const clickedFooter = footer && footer.contains(e.target);
+
+                    if (mobileMenuButtons && mobileMenuToggle && !mobileMenuButtons.contains(e.target) && !mobileMenuToggle.contains(e.target) && !clickedInsideWalletToggle && !clickedThemeToggle && !clickedFooter && (!walletModal || !walletModal.contains(e.target)) && (!walletBackdrop || !walletBackdrop.contains(e.target))) {
                         // Only proceed if the mobile menu is visible (not hidden)
                         if (!mobileMenuButtons.classList.contains('hidden')) {
                             console.log('Clicked outside mobile menu, closing');
