@@ -3,7 +3,7 @@ URL patterns for the TraitKeeper admin panel, mapping routes to views for authen
 NFT data management, statistics, and API endpoints for dashboard charts.
 """
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 from traitkeeper.admin_site import admin_site
 
@@ -50,7 +50,4 @@ urlpatterns = [
 
     # Secrets Management
     path('secrets/', views.secrets_management, name='secrets-management'),
-
-    # Admin site URLs (catch-all - MUST BE LAST)
-    path('', admin_site.urls, name='index'),
 ]
