@@ -65,7 +65,7 @@ The analytics app is the **intelligence layer** of TraitKeeper, transforming raw
 
 - `vitality_score` - Collection health score (0-100)
 - `holder_quality_score` - Average holder influence
-- `sentiment_score` - Community sentiment (TODO)
+- `sentiment_score` - Legacy field (deprecated - see perception_index in marketplace)
 - `market_influence_score` - Broader market impact
 - `performance_score` - Overall performance metric
 - `market_cap` - floor_price × total_supply
@@ -419,12 +419,13 @@ MetricsCalculationService
 
 **Primary consumer of analytics data**.
 
-**Provides for Vitality:**
+**Provides for Vitality (Anti-Gaming Architecture v3.0):**
 
 - TraitPerformanceScore → trait_performance component (20%)
 - AggregatedCollectionStats → collection_health component (15%)
 - WalletProminence → holder_quality component (10%)
 - AggregatedCollectionStats → market_influence component (5%)
+- **TODO**: Social/community data → perception_index component (20% - not yet implemented)
 
 ### ← Indexer App
 
@@ -479,7 +480,7 @@ Tied to collection priority (from `core.cache_manager`):
 ### High Priority
 
 - [ ] Implement WalletBehaviorProfile calculation service
-- [ ] Add sentiment score calculation (Twitter, Discord)
+- [ ] Implement perception index calculation (Twitter, Discord, anti-gaming heuristics)
 - [ ] Optimize trait performance calculations for large collections
 - [ ] Add collection utility detection/scoring
 
