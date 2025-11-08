@@ -359,6 +359,3 @@ def get_health_status():
     if health_task_manager:
         return health_task_manager.get_status()
     return {'is_running': False, 'status': 'disabled'}
-
-
-health_task_manager = SystemHealthTaskManager()
