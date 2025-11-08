@@ -799,6 +799,7 @@
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Rank</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Trait</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs">Collection</th>
+                        <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">NFTs</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Volume</th>
                         <th class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Floor Price
                         </th>
@@ -818,6 +819,9 @@
                             class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[9px] xs:text-[10px] sm:text-xs truncate">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">{{ trait.collection }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                            <span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{{ trait.count|default:"0" }}</span>
+                        </td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.volume|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.floor_price|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.sales }}</td>
@@ -825,12 +829,12 @@
                         <td
                             class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
                             ↑ {{ trait.trend_percentage }}%</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.count }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.performance_score|default:trait.count }}</td>
                     </tr>
                     {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="9"
+                        <td colspan="10"
                             class="p-1 xs:p-2 sm:p-3 text-center text-text-secondary-light dark:text-text-secondary-dark text-[9px] xs:text-[10px] sm:text-xs">
                             {% if search_query %}
                             No traits found for "{{ search_query }}".

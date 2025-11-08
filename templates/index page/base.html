@@ -437,9 +437,10 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 </nav>
                 
                 <!-- Search Bar - Takes Most Space -->
-                <div class="desktop-search flex-1">
-                    <input type="search" placeholder="Search traits, collections, creators..."
+                <div class="desktop-search flex-1 relative">
+                    <input id="desktop-search-input" type="search" placeholder="Search collections..." autocomplete="off"
                         class="w-full px-4 py-2 rounded-lg border border-accent-light dark:border-accent-dark bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-800 shadow-md transition-all animate-slide-up">
+                    <div id="desktop-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-accent-light dark:border-accent-dark rounded-lg shadow-xl max-h-96 overflow-y-auto z-50"></div>
                 </div>
                 
                 <!-- User/Login - Right Edge -->
@@ -537,9 +538,10 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             class="h-8 xs:h-9 w-auto animate-float">
                     </a>
                 </div>
-                <div class="mobile-search flex-1 max-w-[120px] xs:max-w-[140px] mx-1 xs:mx-2">
-                    <input type="search" placeholder="Search traits..."
+                <div class="mobile-search flex-1 max-w-[120px] xs:max-w-[140px] mx-1 xs:mx-2 relative">
+                    <input id="mobile-search-input" type="search" placeholder="Search..." autocomplete="off"
                         class="w-full px-2 xs:px-3 py-1 xs:py-1.5 text-xs xs:text-sm rounded-lg border border-accent-light dark:border-accent-dark focus:outline-none focus:ring-2 focus:ring-primary animate-slide-up">
+                    <div id="mobile-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-accent-light dark:border-accent-dark rounded-lg shadow-xl max-h-64 overflow-y-auto z-50 w-[280px]"></div>
                 </div>
                 <div class="mobile-header-right flex items-center space-x-1 xs:space-x-2">
                     {% if user.is_authenticated %}
@@ -1618,7 +1620,103 @@ if (header) {
             });
     });
 
-    
+    // Real-time Collection Search
+    (function() {
+        const desktopInput = document.getElementById('desktop-search-input');
+        const mobileInput = document.getElementById('mobile-search-input');
+        const desktopResults = document.getElementById('desktop-search-results');
+        const mobileResults = document.getElementById('mobile-search-results');
+
+        let searchTimeout;
+        const SEARCH_DELAY = 300; // milliseconds
+
+        function performSearch(query, resultsContainer) {
+            if (query.length < 2) {
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+
+            // Show loading state
+            resultsContainer.innerHTML = '<div class="p-4 text-center"><div class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div><span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Searching...</span></div>';
+            resultsContainer.classList.remove('hidden');
+
+            // Fetch search results
+            fetch(`/api/search-collections/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        const html = data.results.map(collection => `
+                            <a href="/collection/${collection.slug || collection.address}/"
+                               class="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                                <img src="${collection.image_url || '/static/img/placeholder-nft.png'}"
+                                     alt="${collection.name}"
+                                     class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                     onerror="this.src='/static/img/placeholder-nft.png'">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-sm text-gray-900 dark:text-white truncate">${collection.name}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        ${collection.nft_count || 0} NFTs
+                                        ${collection.floor_price ? ` • ${collection.floor_price} SOL floor` : ''}
+                                    </div>
+                                </div>
+                                ${collection.verified ? '<i class="fas fa-check-circle text-primary flex-shrink-0"></i>' : ''}
+                            </a>
+                        `).join('');
+                        resultsContainer.innerHTML = html;
+                    } else {
+                        resultsContainer.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">No collections found</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<div class="p-4 text-center text-sm text-red-500">Search failed. Please try again.</div>';
+                });
+        }
+
+        function setupSearchInput(input, results) {
+            if (!input || !results) return;
+
+            input.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+
+                if (query.length < 2) {
+                    results.classList.add('hidden');
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    performSearch(query, results);
+                }, SEARCH_DELAY);
+            });
+
+            input.addEventListener('focus', (e) => {
+                const query = e.target.value.trim();
+                if (query.length >= 2 && !results.classList.contains('hidden')) {
+                    performSearch(query, results);
+                }
+            });
+
+            // Close results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !results.contains(e.target)) {
+                    results.classList.add('hidden');
+                }
+            });
+
+            // Handle keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    results.classList.add('hidden');
+                    input.blur();
+                }
+            });
+        }
+
+        setupSearchInput(desktopInput, desktopResults);
+        setupSearchInput(mobileInput, mobileResults);
+    })();
+
     </script>
     {% block extra_js %}
     {% endblock %}
