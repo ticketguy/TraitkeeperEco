@@ -1201,9 +1201,9 @@
     </button>
     <button id="open-filters-mobile" type="button">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
-        <span>Filters</span>
+        <span>Menu</span>
     </button>
 </div>
 
@@ -1247,18 +1247,23 @@
 <div id="mobile-filters-modal" class="mobile-modal-container">
     <div class="mobile-modal-content">
         <div class="mobile-modal-handle"></div>
-        <h3 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Filters & View</h3>
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Menu</h3>
+            <button id="mobile-clear-filters" class="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-all">
+                Clear Filters
+            </button>
+        </div>
 
         <!-- Mobile Tabs -->
         <div class="mobile-tabs">
-            <button class="mobile-tab-btn active" data-mobile-tab="items">Items</button>
+            <button class="mobile-tab-btn active" data-mobile-tab="nfts">Items</button>
             <button class="mobile-tab-btn" data-mobile-tab="traits">Traits</button>
             <button class="mobile-tab-btn" data-mobile-tab="activity">Activity</button>
             <button class="mobile-tab-btn" data-mobile-tab="about">About</button>
         </div>
 
-        <!-- Mobile Filters Content -->
-        <div id="mobile-filters-content">
+        <!-- Mobile Items Filters Content -->
+        <div id="mobile-items-content" class="mobile-tab-panel">
             <!-- Search Input -->
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Search NFTs</label>
@@ -1311,6 +1316,51 @@
             <button id="apply-mobile-filters" class="w-full mt-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all">
                 Apply Filters
             </button>
+        </div>
+
+        <!-- Mobile Traits Content -->
+        <div id="mobile-traits-content" class="mobile-tab-panel hidden">
+            <div class="space-y-2 max-h-[60vh] overflow-y-auto">
+                {% regroup traits by trait_name as trait_groups %}
+                {% for trait_group in trait_groups %}
+                <div class="trait-mobile-item bg-gradient-to-r from-purple-50 to-green-50 dark:from-purple-900/20 dark:to-green-900/20 rounded-lg overflow-hidden border border-purple-200 dark:border-purple-700/30">
+                    <button class="trait-mobile-toggle w-full px-3 py-2 flex justify-between items-center text-left">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-3 h-3 trait-mobile-chevron transition-transform text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <span class="font-bold text-sm text-text-light dark:text-text-dark">{{ trait_group.grouper }}</span>
+                            <span class="text-xs px-1.5 py-0.5 bg-purple-200 dark:bg-purple-700/50 text-purple-700 dark:text-purple-300 rounded-full">{{ trait_group.list|length }}</span>
+                        </div>
+                    </button>
+                    <div class="trait-mobile-panel hidden px-3 pb-2 space-y-1.5">
+                        {% for trait in trait_group.list %}
+                        <div class="flex justify-between items-center text-xs py-1.5 px-2 bg-white/60 dark:bg-gray-800/40 rounded">
+                            <span class="font-medium text-text-light dark:text-text-dark truncate flex-1">{{ trait.trait_value }}</span>
+                            <div class="flex items-center gap-2 ml-2">
+                                {% with score=trait.performance_score|default:50.0 %}
+                                <span class="font-bold text-xs {% if score > 75 %}text-green-500{% elif score < 40 %}text-red-500{% else %}text-yellow-500{% endif %}">{{ score|floatformat:0 }}</span>
+                                <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full {% if score > 75 %}bg-green-500{% elif score < 40 %}bg-red-500{% else %}bg-yellow-500{% endif %} rounded-full" style="width: {{ score }}%"></div>
+                                </div>
+                                {% endwith %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mobile Activity Content -->
+        <div id="mobile-activity-content" class="mobile-tab-panel hidden">
+            <p class="text-sm text-center text-text-secondary-light dark:text-text-secondary-dark py-4">Switch to Activity tab to view</p>
+        </div>
+
+        <!-- Mobile About Content -->
+        <div id="mobile-about-content" class="mobile-tab-panel hidden">
+            <p class="text-sm text-center text-text-secondary-light dark:text-text-secondary-dark py-4">Switch to About tab to view</p>
         </div>
     </div>
 </div>
@@ -1460,6 +1510,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Mobile Tab Switching
     const mobileTabBtns = document.querySelectorAll('.mobile-tab-btn');
+    const mobileTabPanels = {
+        'nfts': document.getElementById('mobile-items-content'),
+        'traits': document.getElementById('mobile-traits-content'),
+        'activity': document.getElementById('mobile-activity-content'),
+        'about': document.getElementById('mobile-about-content')
+    };
+
     mobileTabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabName = btn.getAttribute('data-mobile-tab');
@@ -1468,13 +1525,59 @@ document.addEventListener("DOMContentLoaded", function () {
             mobileTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Switch to the corresponding desktop tab
-            switchTab(tabName);
+            // Show/hide mobile panels
+            Object.keys(mobileTabPanels).forEach(key => {
+                if (mobileTabPanels[key]) {
+                    if (key === tabName) {
+                        mobileTabPanels[key].classList.remove('hidden');
+                    } else {
+                        mobileTabPanels[key].classList.add('hidden');
+                    }
+                }
+            });
 
-            // Close mobile modal
-            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            // For activity and about, also switch desktop tab and close modal
+            if (tabName === 'activity' || tabName === 'about') {
+                switchTab(tabName);
+                closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            }
         });
     });
+
+    // Mobile Traits Accordion
+    document.querySelectorAll('.trait-mobile-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const panel = toggle.nextElementSibling;
+            const chevron = toggle.querySelector('.trait-mobile-chevron');
+            panel.classList.toggle('hidden');
+            if (panel.classList.contains('hidden')) {
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                chevron.style.transform = 'rotate(90deg)';
+            }
+        });
+    });
+
+    // Clear Filters Button
+    const clearFiltersBtn = document.getElementById('mobile-clear-filters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            // Clear search
+            if (mobileSearchInput) mobileSearchInput.value = '';
+            if (desktopSearchInput) desktopSearchInput.value = '';
+
+            // Reset sort
+            if (mobileSortSelect) mobileSortSelect.value = 'trait_perf_desc';
+            if (desktopSortSelect) desktopSortSelect.value = 'trait_perf_desc';
+
+            // Uncheck all traits
+            document.querySelectorAll('input[name="mobile-trait"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="trait"]').forEach(cb => cb.checked = false);
+
+            // Apply cleared filters via AJAX
+            applyFiltersAjax();
+        });
+    }
 
     // Mobile Search Input - Sync with desktop
     const mobileSearchInput = document.getElementById('mobile-search-input');
@@ -1496,6 +1599,74 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // AJAX Filter Function
+    function applyFiltersAjax() {
+        const searchQuery = desktopSearchInput ? desktopSearchInput.value : '';
+        const sortBy = desktopSortSelect ? desktopSortSelect.value : 'trait_perf_desc';
+        const selectedTraits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+
+        // Build URL with query params
+        const url = new URL(window.location.href);
+        url.searchParams.set('q', searchQuery);
+        url.searchParams.set('sort_by', sortBy);
+        url.searchParams.delete('trait'); // Clear existing traits
+
+        selectedTraits.forEach(trait => {
+            url.searchParams.append('trait', trait);
+        });
+
+        // Update browser URL without reload
+        window.history.pushState({}, '', url);
+
+        // Show loading indicator
+        const grid = document.getElementById('nfts-grid');
+        if (grid) {
+            grid.style.opacity = '0.5';
+            grid.style.pointerEvents = 'none';
+        }
+
+        // Fetch filtered results
+        fetch(url.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Parse response and update grid
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newGrid = doc.getElementById('nfts-grid');
+            const loadMoreBtn = doc.getElementById('load-more-nfts');
+
+            if (newGrid && grid) {
+                grid.innerHTML = newGrid.innerHTML;
+                grid.style.opacity = '1';
+                grid.style.pointerEvents = 'auto';
+            }
+
+            // Update Load More button
+            const currentLoadMore = document.getElementById('load-more-nfts');
+            if (currentLoadMore && currentLoadMore.parentElement) {
+                if (loadMoreBtn) {
+                    currentLoadMore.parentElement.innerHTML = loadMoreBtn.parentElement.innerHTML;
+                } else {
+                    currentLoadMore.parentElement.remove();
+                }
+            }
+
+            // Close mobile modal
+            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        })
+        .catch(error => {
+            console.error('Filter error:', error);
+            if (grid) {
+                grid.style.opacity = '1';
+                grid.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
     // Apply Mobile Filters Button
     const applyFiltersBtn = document.getElementById('apply-mobile-filters');
     if (applyFiltersBtn) {
@@ -1514,14 +1685,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (desktopCb) desktopCb.checked = true;
             });
 
-            // Submit the desktop form
-            const collectionFilterForm = document.getElementById('collection-filter');
-            if (collectionFilterForm) {
-                collectionFilterForm.submit();
-            }
-
-            // Close modal
-            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            // Apply filters via AJAX
+            applyFiltersAjax();
         });
     }
 
