@@ -249,10 +249,7 @@
 
     /* User Dropdown (Existing) */
     .user-profile { position: relative; }
-    .user-dropdown { width: 192px; max-width: calc(100vw - 40px); position: fixed; z-index: 1000; }
-    #user-profile-menu { top: 4rem; right: 50px; left: auto; transform: none; }
-    #user-profile-menu-desktop, #user-profile-menu-mobile { top: 4rem; right: 50px; left: auto; transform: none; }
-    .user-dropdown[style*="display: block"] { display: block !important; }
+    .user-dropdown { width: 192px; max-width: calc(100vw - 40px); position: absolute; z-index: 1000; }
     .profile-link { pointer-events: auto !important; cursor: pointer; user-select: none; }
     .profile-link img, .profile-link .profile_username { pointer-events: auto !important; cursor: pointer; }
     #user-profile-menu, #user-profile-menu-desktop, #user-profile-menu-mobile { z-index: 1000; display: none; }
@@ -1355,17 +1352,34 @@ if (header) {
                 const desktopMenu = document.getElementById('user-profile-menu-desktop');
                 const mobileMenu = document.getElementById('user-profile-menu-mobile');
 
+                console.log('Profile dropdown setup:', {
+                    profileLinksCount: profileLinks.length,
+                    hasDesktopMenu: !!desktopMenu,
+                    hasMobileMenu: !!mobileMenu
+                });
+
                 // Setup dropdown for both desktop and mobile
                 if (profileLinks.length > 0) {
                     profileLinks.forEach((profileLink, index) => {
                         const menu = index === 0 ? desktopMenu : mobileMenu;
+                        const menuType = index === 0 ? 'desktop' : 'mobile';
+
+                        console.log(`Setting up ${menuType} profile dropdown`, {
+                            hasProfileLink: !!profileLink,
+                            hasMenu: !!menu
+                        });
 
                         if (profileLink && menu) {
                             // Toggle dropdown on click
                             profileLink.addEventListener('click', function (e) {
+                                console.log(`${menuType} profile link clicked`);
                                 e.stopPropagation();
                                 e.preventDefault();
+
+                                const wasHidden = menu.classList.contains('hidden');
                                 menu.classList.toggle('hidden');
+                                console.log(`${menuType} menu toggled from ${wasHidden ? 'hidden' : 'visible'} to ${!wasHidden ? 'hidden' : 'visible'}`);
+
                                 // Close the other menu
                                 const otherMenu = index === 0 ? mobileMenu : desktopMenu;
                                 if (otherMenu) otherMenu.classList.add('hidden');
@@ -1374,6 +1388,11 @@ if (header) {
                             // Prevent dropdown from closing when clicking inside it
                             menu.addEventListener('click', function(e) {
                                 e.stopPropagation();
+                            });
+                        } else {
+                            console.error(`Failed to setup ${menuType} profile dropdown:`, {
+                                profileLink: !!profileLink,
+                                menu: !!menu
                             });
                         }
                     });
@@ -1397,6 +1416,8 @@ if (header) {
                             if (mobileMenu) mobileMenu.classList.add('hidden');
                         }
                     });
+                } else {
+                    console.error('No profile links found!');
                 }
 
                 const transactionCheckbox = document.querySelector('input[name="transaction"]');
