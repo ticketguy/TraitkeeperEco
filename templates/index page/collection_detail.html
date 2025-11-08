@@ -143,6 +143,12 @@
         #collection-stats-bar, #tabs-and-filters-bar { display: none; }
         #mobile-bottom-bar, .mobile-modal-container { display: block; }
 
+        /* Reduce banner height for mobile */
+        #banner-container {
+            height: 40vh !important;
+            min-height: 300px !important;
+        }
+
         /* Anime-style Mobile Bottom Bar */
         #mobile-bottom-bar {
             position: fixed;
@@ -153,18 +159,19 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1rem;
-            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            gap: 0.75rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.95));
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 2px solid rgba(153, 69, 255, 0.3);
-            box-shadow: 0 -4px 20px rgba(153, 69, 255, 0.1);
+            border-top: 2px solid transparent;
+            border-image: linear-gradient(90deg, #9945FF, #14F195, #9945FF) 1;
+            box-shadow: 0 -8px 32px rgba(153, 69, 255, 0.15), 0 -2px 8px rgba(0, 0, 0, 0.05);
             animation: slideUpFade 0.5s ease-out;
         }
         .dark #mobile-bottom-bar {
-            background: linear-gradient(to top, rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.85));
-            border-top-color: rgba(153, 69, 255, 0.5);
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(31, 41, 55, 0.95));
+            box-shadow: 0 -8px 32px rgba(153, 69, 255, 0.25), 0 -2px 8px rgba(0, 0, 0, 0.3);
         }
 
         /* Anime-style button effects */
@@ -209,20 +216,47 @@
             }
         }
 
-        /* Mobile NFT Grid - Anime style */
+        /* Mobile NFT Grid - Compact and Anime style */
         #nfts-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 1rem !important;
-            padding-bottom: 5rem; /* Space for bottom bar */
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 0.5rem !important;
+            padding: 0.5rem !important;
+            padding-bottom: 5rem !important; /* Space for bottom bar */
         }
 
         .nft-card {
+            border-radius: 12px;
+            overflow: hidden;
             transform: translateY(0);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(153, 69, 255, 0.1);
         }
 
         .nft-card:active {
-            transform: translateY(-8px) scale(1.02);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 24px rgba(153, 69, 255, 0.25);
+        }
+
+        /* Make NFT card images and text smaller for mobile */
+        .nft-card img {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .nft-card .nft-name {
+            font-size: 0.75rem !important;
+            padding: 0.5rem !important;
+            line-height: 1.2;
+        }
+
+        .nft-card .nft-price {
+            font-size: 0.7rem !important;
+            padding: 0 0.5rem 0.5rem !important;
+        }
+
+        /* Hide less important info on mobile cards */
+        .nft-card .nft-rarity,
+        .nft-card .nft-performance {
+            font-size: 0.65rem !important;
         }
 
         /* Mobile Stats Cards - Anime style */
@@ -265,108 +299,158 @@
             animation: pulse 2s infinite;
         }
         #mobile-bottom-bar button {
-            flex: 1; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            font-weight: 600; 
-            padding: 0.75rem 1.5rem; 
-            border-radius: 9999px;
-            transition: background-color 0.2s ease;
+            font-weight: 700;
+            font-size: 0.875rem;
+            padding: 0.875rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        #mobile-bottom-bar button svg { width: 1.25rem; height: 1.25rem; }
-        #open-stats-mobile { background-color: #e5e7eb; color: var(--text-dark); }
-        #open-filters-mobile { background-color: var(--primary-color); color: white; }
-        .dark #open-stats-mobile { background-color: #374151; color: var(--text-light); }
+        #mobile-bottom-bar button svg { width: 1.125rem; height: 1.125rem; }
+
+        #open-stats-mobile {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #1f2937;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        #open-stats-mobile:active {
+            transform: scale(0.96);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #open-filters-mobile {
+            background: linear-gradient(135deg, #9945FF, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 12px rgba(153, 69, 255, 0.3);
+        }
+        #open-filters-mobile:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 6px rgba(153, 69, 255, 0.4);
+        }
+
+        .dark #open-stats-mobile {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            color: #f9fafb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .dark #open-filters-mobile {
+            box-shadow: 0 4px 12px rgba(153, 69, 255, 0.4);
+        }
 
         .mobile-modal-container {
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mobile-modal-container.is-open { transform: translateY(0); }
-        
+        .mobile-modal-container.is-open {
+            transform: translateY(0);
+        }
+
         .mobile-modal-content {
-            background-color: white;
-            border-top-left-radius: 1.5rem;
-            border-top-right-radius: 1.5rem;
-            padding: 1rem; 
-            padding-top: 0.5rem;
-            max-height: 85vh; 
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.95));
+            backdrop-filter: blur(20px);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 1.25rem;
+            padding-top: 0.75rem;
+            max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 -12px 40px rgba(153, 69, 255, 0.15), 0 -4px 16px rgba(0, 0, 0, 0.1);
+            border-top: 2px solid rgba(153, 69, 255, 0.2);
         }
-        .dark .mobile-modal-content { background-color: #1f2937; }
+        .dark .mobile-modal-content {
+            background: linear-gradient(to bottom, rgba(17, 24, 39, 0.98), rgba(31, 41, 55, 0.95));
+            border-top-color: rgba(153, 69, 255, 0.3);
+            box-shadow: 0 -12px 40px rgba(153, 69, 255, 0.25), 0 -4px 16px rgba(0, 0, 0, 0.3);
+        }
+
         .mobile-modal-handle {
-            width: 3rem; 
-            height: 0.375rem; 
-            background-color: #d1d5db; 
-            border-radius: 9999px; 
-            margin: 0.5rem auto 1rem;
+            width: 3.5rem;
+            height: 0.375rem;
+            background: linear-gradient(90deg, #9945FF, #14F195);
+            border-radius: 9999px;
+            margin: 0.5rem auto 1.25rem;
+            opacity: 0.6;
         }
-        .dark .mobile-modal-handle { background-color: #4b5563; }
-        
+        .dark .mobile-modal-handle {
+            opacity: 0.8;
+        }
+
         .mobile-modal-backdrop {
-            position: fixed; 
-            inset: 0; 
-            background-color: rgba(0,0,0,0.5); 
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+            backdrop-filter: blur(4px);
             z-index: 99;
-            opacity: 0; 
-            transition: opacity 0.3s ease; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
             pointer-events: none;
         }
-        .mobile-modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+        .mobile-modal-backdrop.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        /* Mobile Stats Grid - Anime Enhanced */
+        /* Mobile Stats Grid - Anime Enhanced and Compact */
         #mobile-stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            padding: 1rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.625rem;
+            padding: 0;
+            margin-bottom: 1rem;
         }
         #mobile-stats-grid .stat-item {
-            background: linear-gradient(135deg, rgba(153, 69, 255, 0.08), rgba(153, 69, 255, 0.02));
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(20, 241, 149, 0.05));
             backdrop-filter: blur(10px);
-            padding: 1rem;
-            border-radius: 16px;
+            padding: 0.75rem;
+            border-radius: 14px;
             text-align: center;
-            border: 1px solid rgba(153, 69, 255, 0.15);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1.5px solid rgba(153, 69, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(153, 69, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeInUp 0.5s ease-out;
             animation-fill-mode: backwards;
         }
         .dark #mobile-stats-grid .stat-item {
-            background: linear-gradient(135deg, rgba(153, 69, 255, 0.15), rgba(153, 69, 255, 0.05));
-            border-color: rgba(153, 69, 255, 0.25);
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.18), rgba(20, 241, 149, 0.08));
+            border-color: rgba(153, 69, 255, 0.3);
+            box-shadow: 0 4px 16px rgba(153, 69, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
         #mobile-stats-grid .stat-item:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 8px rgba(153, 69, 255, 0.2);
+            transform: scale(0.96);
+            box-shadow: 0 2px 8px rgba(153, 69, 255, 0.25);
         }
         #mobile-stats-grid strong {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
             background: linear-gradient(135deg, #9945FF, #14F195);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             display: block;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
+            line-height: 1.3;
         }
         #mobile-stats-grid span {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-weight: 600;
+            font-weight: 700;
         }
-        .dark #mobile-stats-grid span { color: #9ca3af; }
+        .dark #mobile-stats-grid span {
+            color: #9ca3af;
+        }
 
         /* Staggered animation */
         #mobile-stats-grid .stat-item:nth-child(1) { animation-delay: 0.1s; }
@@ -376,17 +460,66 @@
         #mobile-stats-grid .stat-item:nth-child(5) { animation-delay: 0.3s; }
         #mobile-stats-grid .stat-item:nth-child(6) { animation-delay: 0.35s; }
         
-        #mobile-filters-modal form { space-y: 1.5rem; }
-        #mobile-filters-modal .form-input-minimal {
-            border: 1px solid var(--border-color-light); 
-            border-radius: 0.75rem; 
-            padding: 0.75rem 1rem;
+        /* Mobile Tabs - Anime Style */
+        .mobile-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.375rem;
+            background: rgba(153, 69, 255, 0.08);
+            border-radius: 12px;
         }
-        .dark #mobile-filters-modal .form-input-minimal { border-color: var(--border-color-dark); }
-        #mobile-filters-modal .trait-accordion-toggle { padding: 0.75rem 0; font-weight: 500; }
-        #mobile-filters-modal .trait-accordion-panel { padding-left: 0.5rem; }
+        .mobile-tab-btn {
+            flex: 1;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #6b7280;
+        }
+        .dark .mobile-tab-btn {
+            color: #9ca3af;
+        }
+        .mobile-tab-btn.active {
+            background: linear-gradient(135deg, #9945FF, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 12px rgba(153, 69, 255, 0.3);
+        }
+        .mobile-tab-btn:not(.active):active {
+            transform: scale(0.95);
+        }
 
-        #nfts-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        /* Mobile Filters Form */
+        #mobile-filters-modal .form-input-minimal {
+            border: 1.5px solid rgba(153, 69, 255, 0.2);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        #mobile-filters-modal .form-input-minimal:focus {
+            border-color: #9945FF;
+            box-shadow: 0 0 0 3px rgba(153, 69, 255, 0.1);
+        }
+        .dark #mobile-filters-modal .form-input-minimal {
+            border-color: rgba(153, 69, 255, 0.3);
+            background: rgba(17, 24, 39, 0.5);
+        }
+        #mobile-filters-modal .trait-accordion-toggle {
+            padding: 0.75rem;
+            font-weight: 600;
+            background: rgba(153, 69, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        #mobile-filters-modal .trait-accordion-panel {
+            padding: 0.5rem 0.75rem;
+        }
     }
 
     /* --- General Styles --- */
@@ -1053,6 +1186,130 @@
     </div>
 </div>
 
+<!-- Mobile Bottom Bar -->
+<div id="mobile-bottom-bar">
+    <button id="open-stats-mobile" type="button">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span>Stats</span>
+    </button>
+    <button id="open-filters-mobile" type="button">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+        </svg>
+        <span>Filters</span>
+    </button>
+</div>
+
+<!-- Mobile Stats Modal -->
+<div id="mobile-stats-backdrop" class="mobile-modal-backdrop"></div>
+<div id="mobile-stats-modal" class="mobile-modal-container">
+    <div class="mobile-modal-content">
+        <div class="mobile-modal-handle"></div>
+        <h3 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Collection Stats</h3>
+        <div id="mobile-stats-grid">
+            <div class="stat-item">
+                <strong id="mobile-vitality">--</strong>
+                <span>Vitality</span>
+            </div>
+            <div class="stat-item">
+                <strong id="mobile-performance">--</strong>
+                <span>Performance</span>
+            </div>
+            <div class="stat-item">
+                <strong id="mobile-floor">-- SOL</strong>
+                <span>Floor Price</span>
+            </div>
+            <div class="stat-item">
+                <strong id="mobile-volume-24h">-- SOL</strong>
+                <span>24h Volume</span>
+            </div>
+            <div class="stat-item">
+                <strong id="mobile-total-vol">-- SOL</strong>
+                <span>Total Volume</span>
+            </div>
+            <div class="stat-item">
+                <strong id="mobile-market-cap">-- SOL</strong>
+                <span>Market Cap</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filters/Tabs Modal -->
+<div id="mobile-filters-backdrop" class="mobile-modal-backdrop"></div>
+<div id="mobile-filters-modal" class="mobile-modal-container">
+    <div class="mobile-modal-content">
+        <div class="mobile-modal-handle"></div>
+        <h3 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Filters & View</h3>
+
+        <!-- Mobile Tabs -->
+        <div class="mobile-tabs">
+            <button class="mobile-tab-btn active" data-mobile-tab="items">Items</button>
+            <button class="mobile-tab-btn" data-mobile-tab="traits">Traits</button>
+            <button class="mobile-tab-btn" data-mobile-tab="activity">Activity</button>
+            <button class="mobile-tab-btn" data-mobile-tab="about">About</button>
+        </div>
+
+        <!-- Mobile Filters Content -->
+        <div id="mobile-filters-content">
+            <!-- Search Input -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Search NFTs</label>
+                <input type="text" id="mobile-search-input" placeholder="Search by name, trait, or #number..." class="form-input-minimal w-full">
+            </div>
+
+            <!-- Sort By -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Sort By</label>
+                <select id="mobile-sort-select" class="form-input-minimal w-full">
+                    <option value="trait_perf_desc">Trait Performance: High to Low</option>
+                    <option value="trait_perf_asc">Trait Performance: Low to High</option>
+                    <option value="vitality_desc">Vitality: High to Low</option>
+                    <option value="vitality_asc">Vitality: Low to High</option>
+                    <option value="rarity_desc">Rarity: Rare to Common</option>
+                    <option value="rarity_asc">Rarity: Common to Rare</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="recent">Recently Listed</option>
+                </select>
+            </div>
+
+            <!-- Trait Filters -->
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Filter by Traits</label>
+                <div class="space-y-2" id="mobile-trait-filters">
+                    {% regroup traits by trait_name as grouped_traits %}
+                    {% for group in grouped_traits %}
+                    <div>
+                        <button type="button" class="trait-accordion-toggle w-full flex justify-between items-center">
+                            <span class="font-semibold text-text-light dark:text-text-dark">{{ group.grouper }}</span>
+                            <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="trait-accordion-panel hidden space-y-2">
+                            {% for item in group.list %}
+                            <label class="flex items-center space-x-2 cursor-pointer text-sm">
+                                <input type="checkbox" name="mobile-trait" value="{{ group.grouper }}:{{ item.trait_value }}" class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary">
+                                <span class="text-text-secondary-light dark:text-text-secondary-dark">{{ item.trait_value }} <span class="text-xs">({{ item.count|default:0 }})</span></span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Apply Filters Button -->
+            <button id="apply-mobile-filters" class="w-full mt-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 
@@ -1150,6 +1407,146 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     initializeAccordion('#trait-filter-popover');
     initializeAccordion('#mobile-filters-modal');
+
+    // --- Mobile Modal Handlers ---
+    function openMobileModal(modal, backdrop) {
+        if (modal && backdrop) {
+            modal.classList.add('is-open');
+            backdrop.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeMobileModal(modal, backdrop) {
+        if (modal && backdrop) {
+            modal.classList.remove('is-open');
+            backdrop.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Mobile Stats Modal
+    if (openStatsMobileBtn) {
+        openStatsMobileBtn.addEventListener('click', () => {
+            openMobileModal(mobileStatsModal, mobileStatsBackdrop);
+            // Sync stats from desktop to mobile
+            syncStatsToMobile();
+        });
+    }
+
+    if (mobileStatsBackdrop) {
+        mobileStatsBackdrop.addEventListener('click', () => {
+            closeMobileModal(mobileStatsModal, mobileStatsBackdrop);
+        });
+    }
+
+    // Mobile Filters Modal
+    if (openFiltersMobileBtn) {
+        openFiltersMobileBtn.addEventListener('click', () => {
+            openMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        });
+    }
+
+    if (mobileFiltersBackdrop) {
+        mobileFiltersBackdrop.addEventListener('click', () => {
+            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        });
+    }
+
+    // Mobile Tab Switching
+    const mobileTabBtns = document.querySelectorAll('.mobile-tab-btn');
+    mobileTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.getAttribute('data-mobile-tab');
+
+            // Update active state
+            mobileTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Switch to the corresponding desktop tab
+            switchTab(tabName);
+
+            // Close mobile modal
+            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        });
+    });
+
+    // Mobile Search Input - Sync with desktop
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const desktopSearchInput = document.getElementById('nft-search-input');
+    if (mobileSearchInput && desktopSearchInput) {
+        mobileSearchInput.value = desktopSearchInput.value;
+        mobileSearchInput.addEventListener('input', (e) => {
+            desktopSearchInput.value = e.target.value;
+        });
+    }
+
+    // Mobile Sort Select - Sync with desktop
+    const mobileSortSelect = document.getElementById('mobile-sort-select');
+    const desktopSortSelect = document.querySelector('select[name="sort_by"]');
+    if (mobileSortSelect && desktopSortSelect) {
+        mobileSortSelect.value = desktopSortSelect.value;
+        mobileSortSelect.addEventListener('change', (e) => {
+            desktopSortSelect.value = e.target.value;
+        });
+    }
+
+    // Apply Mobile Filters Button
+    const applyFiltersBtn = document.getElementById('apply-mobile-filters');
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            // Sync mobile trait checkboxes to desktop
+            const mobileTraitCheckboxes = document.querySelectorAll('input[name="mobile-trait"]:checked');
+            const desktopTraitCheckboxes = document.querySelectorAll('input[name="trait"]');
+
+            // Uncheck all desktop checkboxes first
+            desktopTraitCheckboxes.forEach(cb => cb.checked = false);
+
+            // Check desktop checkboxes based on mobile selection
+            mobileTraitCheckboxes.forEach(mobileCb => {
+                const value = mobileCb.value;
+                const desktopCb = Array.from(desktopTraitCheckboxes).find(cb => cb.value === value);
+                if (desktopCb) desktopCb.checked = true;
+            });
+
+            // Submit the desktop form
+            const collectionFilterForm = document.getElementById('collection-filter');
+            if (collectionFilterForm) {
+                collectionFilterForm.submit();
+            }
+
+            // Close modal
+            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        });
+    }
+
+    // Function to sync stats from desktop to mobile
+    function syncStatsToMobile() {
+        const desktopStats = document.querySelectorAll('#collection-stats-flex .stat-item strong');
+        if (desktopStats.length >= 2) {
+            document.getElementById('mobile-vitality').textContent = desktopStats[0].textContent;
+            document.getElementById('mobile-performance').textContent = desktopStats[1].textContent;
+        }
+
+        // Get floor and volume from desktop
+        const floorElements = document.querySelectorAll('#collection-stats-flex .stat-item');
+        if (floorElements.length >= 4) {
+            const floorText = floorElements[2].querySelector('strong')?.textContent || '-- SOL';
+            const volumeText = floorElements[3].querySelector('strong')?.textContent || '-- SOL';
+            document.getElementById('mobile-floor').textContent = floorText;
+            document.getElementById('mobile-volume-24h').textContent = volumeText;
+        }
+
+        if (floorElements.length >= 5) {
+            const totalVolText = floorElements[4].querySelector('strong')?.textContent || '-- SOL';
+            document.getElementById('mobile-total-vol').textContent = totalVolText;
+        }
+
+        if (floorElements.length >= 6) {
+            const marketCapText = floorElements[5].querySelector('strong')?.textContent || '-- SOL';
+            document.getElementById('mobile-market-cap').textContent = marketCapText;
+        }
+    }
 
     // --- Grid View Switcher ---
     const gridViewBtn = document.getElementById('grid-view-btn');
