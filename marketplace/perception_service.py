@@ -181,44 +181,96 @@ class ParallelLinesIntegrationService:
         Authenticate webhook request from Parallel Lines.
 
         Supports:
-        - HMAC signature verification
-        - API key validation
+        - HMAC signature verification (using EncryptedSecret from admin_secure)
+        - API key validation (using EncryptedSecret from admin_secure)
         - IP whitelist (if configured)
 
         Returns:
             bool: True if authenticated, False otherwise
         """
-        # === METHOD 1: HMAC Signature ===
-        if hasattr(settings, 'PARALLEL_LINES_WEBHOOK_SECRET'):
-            signature = headers.get('X-Parallel-Lines-Signature', '')
-            if signature:
+        # === METHOD 1: HMAC Signature (Recommended for Production) ===
+        # Check if Parallel Lines sent an HMAC signature in headers
+        signature = headers.get('X-Parallel-Lines-Signature', '')
+        if signature:
+            try:
+                # Import EncryptedSecret model from admin_secure app
+                from admin_secure.models import EncryptedSecret
+
+                # Retrieve webhook secret from encrypted storage
+                # This uses the admin_secure infrastructure with full audit logging
+                webhook_secret = await sync_to_async(EncryptedSecret.get_secret_value)(
+                    secret_name='parallel_lines_webhook_secret',
+                    requesting_component='perception_service'
+                )
+
                 import json
+                # Compute expected signature using HMAC-SHA256
+                # Payload is sorted to ensure consistent hashing
                 expected_signature = hmac.new(
-                    settings.PARALLEL_LINES_WEBHOOK_SECRET.encode(),
+                    webhook_secret.encode(),
                     json.dumps(payload, sort_keys=True).encode(),
                     hashlib.sha256
                 ).hexdigest()
 
+                # Use constant-time comparison to prevent timing attacks
                 if hmac.compare_digest(signature, expected_signature):
+                    self.logger.info("✅ Webhook authenticated via HMAC signature")
                     return True
                 else:
-                    self.logger.warning("HMAC signature mismatch")
+                    self.logger.warning("⚠️ HMAC signature mismatch - possible tampering detected")
                     return False
 
-        # === METHOD 2: API Key ===
-        if hasattr(settings, 'PARALLEL_LINES_API_KEY'):
-            api_key = headers.get('X-API-Key', '')
-            if api_key == settings.PARALLEL_LINES_API_KEY:
-                return True
+            except Exception as e:
+                # Secret not found in admin_secure - fall through to other auth methods
+                self.logger.debug(f"HMAC auth failed: {e}")
 
-        # === METHOD 3: IP Whitelist ===
-        # TODO: Implement if needed
+        # === METHOD 2: API Key (Alternative Authentication) ===
+        # Check if Parallel Lines sent an API key in headers
+        api_key = headers.get('X-API-Key', '')
+        if api_key:
+            try:
+                # Import EncryptedSecret model from admin_secure app
+                from admin_secure.models import EncryptedSecret
 
-        # === DEVELOPMENT MODE: Allow all (UNSAFE!) ===
+                # Retrieve API key from encrypted storage
+                stored_api_key = await sync_to_async(EncryptedSecret.get_secret_value)(
+                    secret_name='parallel_lines_api_key',
+                    requesting_component='perception_service'
+                )
+
+                # Compare provided API key with stored key
+                if api_key == stored_api_key:
+                    self.logger.info("✅ Webhook authenticated via API key")
+                    return True
+                else:
+                    self.logger.warning("⚠️ API key mismatch")
+                    return False
+
+            except Exception as e:
+                # Secret not found in admin_secure
+                self.logger.debug(f"API key auth failed: {e}")
+
+        # === METHOD 3: IP Whitelist (Optional) ===
+        # TODO: Implement IP-based authentication if needed
+        # This would check if request IP is in allowed list
+
+        # === DEVELOPMENT MODE: Allow all (UNSAFE - ONLY FOR TESTING!) ===
+        # Check if development mode is enabled in settings
         if getattr(settings, 'PARALLEL_LINES_DEV_MODE', False):
-            self.logger.warning("⚠️ Parallel Lines webhook auth DISABLED (dev mode)")
+            self.logger.warning(
+                "⚠️⚠️⚠️ PARALLEL LINES WEBHOOK AUTH DISABLED (DEV MODE) ⚠️⚠️⚠️\n"
+                "This is UNSAFE and should NEVER be enabled in production!"
+            )
             return True
 
+        # === NO VALID AUTHENTICATION FOUND ===
+        self.logger.error(
+            "❌ Webhook authentication failed - no valid credentials provided.\n"
+            "Expected either:\n"
+            "  1. X-Parallel-Lines-Signature header with HMAC signature\n"
+            "  2. X-API-Key header with API key\n"
+            "Both should be configured in admin_secure.EncryptedSecret"
+        )
         return False
 
     def _validate_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:

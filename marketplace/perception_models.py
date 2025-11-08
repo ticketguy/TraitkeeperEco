@@ -36,7 +36,10 @@ class PerceptionSnapshot(models.Model):
     Update Frequency: Real-time via webhook or periodic polling
     """
 
-    # === Entity Tracking (Polymorphic - one of these will be set) ===
+    # === Entity Tracking (Polymorphic - Exactly ONE of these will be set) ===
+    # This implements a polymorphic pattern where a PerceptionSnapshot can belong to
+    # EITHER a collection, OR an NFT, OR a trait value - but NEVER more than one.
+    # This is enforced by a CHECK constraint at the database level.
 
     collection = models.ForeignKey(
         NFTCollection,
@@ -44,7 +47,7 @@ class PerceptionSnapshot(models.Model):
         null=True,
         blank=True,
         related_name='perception_snapshots',
-        help_text="Collection this perception data applies to"
+        help_text="Collection this perception data applies to (e.g., 'DeGods sentiment')"
     )
 
     nft = models.ForeignKey(
@@ -53,7 +56,7 @@ class PerceptionSnapshot(models.Model):
         null=True,
         blank=True,
         related_name='perception_snapshots',
-        help_text="Specific NFT this perception data applies to"
+        help_text="Specific NFT this perception data applies to (e.g., 'DeGods #4321 holder perception')"
     )
 
     trait_value = models.ForeignKey(
@@ -62,7 +65,7 @@ class PerceptionSnapshot(models.Model):
         null=True,
         blank=True,
         related_name='perception_snapshots',
-        help_text="Specific trait this perception data applies to"
+        help_text="Specific trait this perception data applies to (e.g., 'Blue Background trait demand')"
     )
 
     # === Core Perception Metrics ===
@@ -73,55 +76,63 @@ class PerceptionSnapshot(models.Model):
     )
 
     # === Submind Layer Outputs (Raw Subconscious Signals) ===
+    # The Submind layer is the "silent observer" that captures perception signals
+    # below the surface of conscious awareness - hidden patterns, unseen dynamics,
+    # and raw behavioral data that humans might miss.
 
     submind_raw_score = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-        help_text="Raw behavioral score from Submind layer (0-1)"
+        help_text="Raw behavioral score from Submind layer (0-1) - unfiltered subconscious perception"
     )
 
     submind_hidden_sentiment = models.CharField(
         max_length=50,
         null=True,
         blank=True,
-        help_text="Hidden sentiment classification (positive, negative, neutral, mixed)"
+        help_text="Hidden sentiment classification detected by Submind (positive, negative, neutral, mixed)"
     )
 
     manipulation_probability = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-        help_text="Probability of manipulation/gaming detected (0-1, higher = more suspicious)"
+        help_text="Anti-gaming metric: Probability of manipulation detected (0-1, higher = more suspicious). "
+                  "Used to dampen perception scores when gaming is suspected."
     )
 
     behavioral_pattern_flags = models.JSONField(
         default=dict,
         blank=True,
-        help_text="Detected behavioral patterns (bot activity, wash trading, coordinated shilling, etc.)"
+        help_text="Detected behavioral patterns from Submind analysis. "
+                  "Examples: {'bot_activity': true, 'wash_trading_influence': 0.08, 'coordinated_shilling': false}"
     )
 
     # === IntuOne Layer Outputs (Structured Interpretation) ===
+    # The IntuOne layer is the "expressive interpreter" that translates the raw
+    # emotional resonance and language tone captured by Submind into structured,
+    # actionable perception data - creating the Perception Graph.
 
     emotional_resonance = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-        help_text="Emotional resonance score from IntuOne (0-1)"
+        help_text="Emotional resonance score from IntuOne layer (0-1) - how strongly the community feels"
     )
 
     language_tone = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        help_text="Analyzed language tone (enthusiastic, cautious, fearful, euphoric, etc.)"
+        help_text="Analyzed language tone from IntuOne (enthusiastic, cautious, fearful, euphoric, skeptical, etc.)"
     )
 
     community_awareness_score = models.FloatField(
         null=True,
         blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-        help_text="Community awareness/engagement score (0-1)"
+        help_text="Community awareness/engagement score from IntuOne (0-1) - how aware/engaged the community is"
     )
 
     # === Perception Graph Reference ===
@@ -238,17 +249,43 @@ class PerceptionSnapshot(models.Model):
 
     @property
     def anti_gaming_flags(self):
-        """Extract anti-gaming related flags from behavioral patterns."""
+        """
+        Extract anti-gaming related flags from behavioral patterns.
+
+        This property analyzes the Submind layer's behavioral pattern detection
+        and returns human-readable flags for suspicious activity.
+
+        Anti-Gaming Detection Logic:
+        1. High manipulation_probability (> 0.5) triggers WARNING flag
+        2. Bot activity detection from behavioral patterns
+        3. Wash trading influence signals
+        4. Coordinated shilling campaigns
+
+        Returns:
+            list: List of string flags indicating detected gaming attempts
+                  e.g., ['HIGH_MANIPULATION_RISK', 'BOT_ACTIVITY_DETECTED']
+        """
         flags = []
+
+        # Check manipulation probability threshold
+        # Values > 0.5 indicate likely gaming attempts
         if self.manipulation_probability and self.manipulation_probability > 0.5:
             flags.append('HIGH_MANIPULATION_RISK')
+
+        # Parse behavioral pattern flags from Submind layer
         if self.behavioral_pattern_flags:
+            # Bot activity detection (boolean flag)
             if self.behavioral_pattern_flags.get('bot_activity'):
                 flags.append('BOT_ACTIVITY_DETECTED')
+
+            # Wash trading influence (any non-zero value is suspicious)
             if self.behavioral_pattern_flags.get('wash_trading_influence'):
                 flags.append('WASH_TRADING_SIGNALS')
+
+            # Coordinated shilling campaigns (boolean flag)
             if self.behavioral_pattern_flags.get('coordinated_shilling'):
                 flags.append('COORDINATED_SHILLING')
+
         return flags
 
 
