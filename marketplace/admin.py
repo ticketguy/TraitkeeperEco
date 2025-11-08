@@ -618,7 +618,7 @@ class PerceptionSnapshotAdmin(admin.ModelAdmin):
         'source_type'
     )
     list_filter = (
-        'entity_type',
+        
         'source_type',
         'timestamp',
         'submind_hidden_sentiment',

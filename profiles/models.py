@@ -139,6 +139,9 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         except Profile.DoesNotExist:
             # Profile doesn't exist yet, create it
             Profile.objects.create(user=instance)
+    # Use get_or_create to ensure profile always exists
+    # This handles both new users and old users that might not have profiles
+    Profile.objects.get_or_create(user=instance)
 
 
 class WatchlistItem(models.Model):
