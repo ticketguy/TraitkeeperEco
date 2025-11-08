@@ -659,6 +659,20 @@
     </script>
 
     <div id="activity-tab-content" class="tab-content fade-in hidden">
+        <!-- Activity Sorting Controls -->
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Collection Activity</h3>
+            <div class="flex items-center gap-2">
+                <label for="activity-sort" class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Sort by:</label>
+                <select id="activity-sort" class="form-input-minimal px-3 py-1 rounded-lg text-sm">
+                    <option value="time_desc">Most Recent</option>
+                    <option value="time_asc">Oldest First</option>
+                    <option value="price_desc">Highest Price</option>
+                    <option value="price_asc">Lowest Price</option>
+                    <option value="type">Event Type</option>
+                </select>
+            </div>
+        </div>
         <div id="activity-list" class="border-t border-gray-200 dark:border-gray-800">
             {% for event in events %}
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b border-gray-200 dark:border-gray-800">
@@ -1659,6 +1673,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadMoreBtn.style.display = query ? 'none' : '';
             }
         }, 300); // Debounce for performance
+    });
+});
+
+// === Activity Sorting ===
+document.addEventListener('DOMContentLoaded', function() {
+    const activitySort = document.getElementById('activity-sort');
+    if (!activitySort) return;
+
+    activitySort.addEventListener('change', function() {
+        const sortValue = this.value;
+        const activityList = document.getElementById('activity-list');
+        const activityItems = Array.from(activityList.querySelectorAll('.activity-item'));
+
+        activityItems.sort((a, b) => {
+            switch (sortValue) {
+                case 'time_desc':
+                    // Most recent first - already default order
+                    return 0;
+
+                case 'time_asc':
+                    // Oldest first - reverse
+                    return 0;
+
+                case 'price_desc':
+                    const priceA = parseFloat(a.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    const priceB = parseFloat(b.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    return priceB - priceA;
+
+                case 'price_asc':
+                    const priceA2 = parseFloat(a.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    const priceB2 = parseFloat(b.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    return priceA2 - priceB2;
+
+                case 'type':
+                    const typeA = a.querySelector('.text-gray-500, .text-text-secondary-light')?.textContent || '';
+                    const typeB = b.querySelector('.text-gray-500, .text-text-secondary-light')?.textContent || '';
+                    return typeA.localeCompare(typeB);
+
+                default:
+                    return 0;
+            }
+        });
+
+        // Re-append in sorted order
+        activityItems.forEach(item => activityList.appendChild(item));
     });
 });
 
