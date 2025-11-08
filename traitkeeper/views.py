@@ -667,25 +667,27 @@ def collection_detail(request, address):
         nfts_queryset = nfts_queryset.distinct()
     
     # --- 5. Apply Sorting ---
-    
-    # Calculate average trait performance for all NFTs
-    avg_trait_score_subquery = TraitPerformanceScore.objects.filter(
-        trait_value__nfts=OuterRef('pk')
-    ).values('trait_value__nfts').annotate(
-        avg_score=Avg('performance_score')
-    ).values('avg_score')
-    
-    nfts_queryset = nfts_queryset.annotate(
-        avg_trait_performance=Coalesce(
-            Subquery(avg_trait_score_subquery, output_field=FloatField()), 
-            0.0
+    # OPTIMIZATION: Only calculate expensive annotations when needed for sorting
+
+    # For trait performance sorting
+    if sort_by in ['trait_perf_desc', 'trait_perf_asc']:
+        avg_trait_score_subquery = TraitPerformanceScore.objects.filter(
+            trait_value__nfts=OuterRef('pk')
+        ).values('trait_value__nfts').annotate(
+            avg_score=Avg('performance_score')
+        ).values('avg_score')
+
+        nfts_queryset = nfts_queryset.annotate(
+            avg_trait_performance=Coalesce(
+                Subquery(avg_trait_score_subquery, output_field=FloatField()),
+                0.0
+            )
         )
-    )
-    
+
     # For vitality sorting, use select_related (OneToOne relationship)
     if sort_by in ['vitality_desc', 'vitality_asc']:
         nfts_queryset = nfts_queryset.select_related('vitality')
-    
+
     # For rarity sorting, calculate rarity score
     if sort_by in ['rarity_desc', 'rarity_asc']:
         nfts_queryset = nfts_queryset.annotate(
@@ -754,19 +756,19 @@ def collection_detail(request, address):
             'image_url': nft.image_url,
             'buy_price': nft.buy_price,
             'asking_price': nft.asking_price,
-            'performance_score': nft.avg_trait_performance,  # Trait performance
+            'performance_score': getattr(nft, 'avg_trait_performance', 50.0),  # Only set if sorting by performance
         }
-        
+
         # Add vitality score from OneToOne relationship
         try:
             nft_data['vitality_score'] = float(nft.vitality.vitality_score)
         except (AttributeError, NFTVitality.DoesNotExist):
             nft_data['vitality_score'] = 50.0  # Default for NFTs without vitality
-        
+
         # Add rarity score if it was calculated
         if hasattr(nft, 'rarity_score'):
             nft_data['rarity_score'] = nft.rarity_score
-        
+
         nfts_list.append(nft_data)
     
     # --- 8. Get Traits for Filter ---
