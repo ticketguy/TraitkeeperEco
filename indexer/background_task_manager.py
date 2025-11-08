@@ -59,31 +59,27 @@ class BackgroundTaskManager:
     and the site-wide CacheManager.
     """
     def __init__(self):
+        # Initialize essential attributes first (before any early returns)
+        self.task_queues = {p: deque() for p in TaskPriority}
+        self.task_history = deque(maxlen=1000)
+        self.is_running = False
+        self.shutdown_event = threading.Event()
+        self.worker_threads = []
+        self.max_workers = 3
+        self.real_time_enabled = False
+
         # Check if background tasks should run (for microservices deployment)
         self.should_run_background_tasks = os.getenv('RUN_BACKGROUND_TASKS', 'true').lower() == 'true'
 
         if not self.should_run_background_tasks:
             logger.info("⏸️  BackgroundTaskManager disabled (RUN_BACKGROUND_TASKS=false)")
-            self.is_running = False
             return
 
         if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
-            self.is_running = False
             return
 
         self.indexer_service = IndexerService()
         self.cache_manager = cache_manager
-
-        # Real-time processing state
-        self.real_time_enabled = False
-        # Task management structures
-        self.task_queues = {p: deque() for p in TaskPriority}
-        self.task_history = deque(maxlen=1000)
-        # Control flags and threads
-        self.is_running = False
-        self.shutdown_event = threading.Event()
-        self.worker_threads = []
-        self.max_workers = 3
 
         logger.info("✓ BackgroundTaskManager initialized and integrated with core.cache_manager.")
 

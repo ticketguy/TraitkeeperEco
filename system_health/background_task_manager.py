@@ -61,16 +61,17 @@ class SystemHealthTaskManager:
     """Background task manager for system health monitoring and alerts."""
     
     def __init__(self):
-        if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
-            logger.info("Migration detected, skipping background task initialization.")
-            self.is_running = False
-            return
-
+        # Initialize essential attributes first (before any early returns)
         self.task_queues = {p: deque() for p in TaskPriority}
         self.task_history = deque(maxlen=500)
         self.is_running = False
         self.shutdown_event = threading.Event()
         self.worker_thread = None
+
+        if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+            logger.info("Migration detected, skipping background task initialization.")
+            return
+
         logger.info("SystemHealthTaskManager initialized.")
 
     async def start(self):
@@ -180,6 +181,26 @@ class SystemHealthTaskManager:
         """Returns a thread-safe copy of the task history."""
         # Creating a list from the deque creates a copy, preventing race conditions.
         return list(self.task_history)
+
+    def get_status(self) -> dict:
+        """
+        Gathers and returns a snapshot of the manager's current operational status.
+        This data is used to populate the system health dashboard.
+        """
+        # Calculate the total number of tasks waiting in all priority queues.
+        total_pending_tasks = sum(len(queue) for queue in self.task_queues.values())
+
+        return {
+            'is_running': self.is_running,
+            'worker_active': self.worker_thread.is_alive() if self.worker_thread else False,
+            'total_pending_tasks': total_pending_tasks,
+            'task_history_size': len(self.task_history),
+            'task_queues': {
+                # Provide a count of tasks in each priority queue.
+                priority.name: len(queue)
+                for priority, queue in self.task_queues.items()
+            },
+        }
 
     async def _schedule_initial_tasks(self):
         """Schedule all recurring health monitoring tasks."""
