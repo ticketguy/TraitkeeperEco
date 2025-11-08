@@ -206,13 +206,13 @@ class Command(BaseCommand):
 
     # This method doesn't do any I/O, so it can remain synchronous
     def display_component_breakdown(self, vitality):
-        """Display component breakdown for a vitality score."""
+        """Display component breakdown for a vitality score (Anti-Gaming Architecture)."""
         self.stdout.write('\n  Component Breakdown:')
-        self.stdout.write(f'    Market Momentum:     {vitality.market_momentum:.3f} (25%)')
+        self.stdout.write(f'    Perception Index:    {vitality.perception_index:.3f} (20%)')
         self.stdout.write(f'    Trait Performance:   {vitality.trait_performance:.3f} (20%)')
         self.stdout.write(f'    Collection Health:   {vitality.collection_health:.3f} (15%)')
         self.stdout.write(f'    Collection Utility:  {vitality.collection_utility:.3f} (10%)')
+        self.stdout.write(f'    Market Momentum:     {vitality.market_momentum:.3f} (10%)')
         self.stdout.write(f'    Rarity Score:        {vitality.rarity_score:.3f} (10%)')
         self.stdout.write(f'    Holder Quality:      {vitality.holder_quality:.3f} (10%)')
-        self.stdout.write(f'    Sentiment Score:     {vitality.sentiment_score:.3f} (5%)')
         self.stdout.write(f'    Market Influence:    {vitality.market_influence:.3f} (5%)')

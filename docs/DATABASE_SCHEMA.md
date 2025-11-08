@@ -446,45 +446,52 @@ class Meta:
 
 ### 10. NFTVitality (`marketplace.models.vitality_models`)
 
-**Purpose:** Individual NFT health score (0-100)
+**Purpose:** Individual NFT health score (0-100) using Anti-Gaming Architecture
 
 **Fields:**
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
 | `nft` | OneToOneField | CASCADE, PRIMARY KEY | Parent NFT |
-| `vitality_score` | DecimalField(5,2) | Default: 0.00 | Overall vitality (0-100) |
-| `market_momentum` | DecimalField(5,2) | Default: 0.00 | 60-day price velocity (25%) |
-| `trait_performance` | DecimalField(5,2) | Default: 0.00 | Trait market demand (20%) |
-| `collection_health` | DecimalField(5,2) | Default: 0.00 | Collection metrics (15%) |
-| `collection_utility` | DecimalField(5,2) | Default: 0.00 | Real-world value (10%) |
-| `rarity_score` | DecimalField(5,2) | Default: 0.00 | Statistical rarity (10%) |
-| `holder_quality` | DecimalField(5,2) | Default: 0.00 | Holder profile (10%) |
-| `sentiment_score` | DecimalField(5,2) | Default: 0.00 | Community sentiment (5%) |
-| `market_influence` | DecimalField(5,2) | Default: 0.00 | Market impact (5%) |
+| `vitality_score` | DecimalField(5,2) | Default: 50.00 | Overall vitality (0-100) |
+| `market_momentum` | FloatField | Default: 0.5 | 60-day price velocity (10%) - reduced to prevent gaming |
+| `trait_performance` | FloatField | Default: 0.5 | Trait market demand (20%) |
+| `collection_health` | FloatField | Default: 0.5 | Collection metrics (15%) |
+| `collection_utility` | FloatField | Default: 0.5 | Real-world value (10%) |
+| `rarity_score` | FloatField | Default: 0.5 | Statistical rarity (10%) |
+| `holder_quality` | FloatField | Default: 0.5 | Holder profile (10%) |
+| `perception_index` | FloatField | Default: 0.5 | Community perception (20%) - anti-gaming focus |
+| `market_influence` | FloatField | Default: 0.5 | Market impact (5%) |
+| `suggested_price` | DecimalField(20,9) | Nullable | Suggested SOL price (not yet implemented) |
 | `last_calculated` | DateTimeField | Auto-now | Last calculation timestamp |
-| `confidence_score` | DecimalField(5,2) | Default: 100.00 | Data confidence (0-100) |
+| `calculation_source` | CharField(50) | Default: 'system' | What triggered calculation |
+| `has_sufficient_data` | BooleanField | Default: False | True if collection has ≥1 transaction |
+| `updated_at` | DateTimeField | Auto-now | Last update timestamp |
 
-**Vitality Formula:**
+**Component Scores:** All component fields (market_momentum, trait_performance, etc.) use FloatField with 0-1 range for precise calculations. The final vitality_score is DecimalField scaled to 0-100.
+
+**Vitality Formula (Anti-Gaming Architecture v3.0):**
 ```python
 vitality_score = (
-    market_momentum * 0.25 +
-    trait_performance * 0.20 +
-    collection_health * 0.15 +
-    collection_utility * 0.10 +
-    rarity_score * 0.10 +
-    holder_quality * 0.10 +
-    sentiment_score * 0.05 +
-    market_influence * 0.05
-)
+    perception_index * 0.20 +      # 20% - Anti-gaming focus
+    trait_performance * 0.20 +     # 20%
+    collection_health * 0.15 +     # 15%
+    collection_utility * 0.10 +    # 10%
+    market_momentum * 0.10 +       # 10% - Reduced from 25%
+    rarity_score * 0.10 +          # 10%
+    holder_quality * 0.10 +        # 10%
+    market_influence * 0.05        # 5%
+) * 100  # Scale to 0-100
 ```
+
+**Weight Changes:** Market Momentum reduced from 25% to 10%, and Perception Index (formerly Sentiment Score) increased from 5% to 20% to prioritize difficult-to-manipulate metrics.
 
 **Indexes:**
 ```python
 class Meta:
     indexes = [
-        models.Index(fields=['-vitality_score']),
-        models.Index(fields=['nft__collection', '-vitality_score']),
+        models.Index(fields=['vitality_score', '-last_calculated']),
+        models.Index(fields=['has_sufficient_data', 'vitality_score']),
     ]
 ```
 
@@ -492,7 +499,7 @@ class Meta:
 - **Belongs To:** NFT (1:1)
 - **Has Many:** NFTVitalityHistory (1:N)
 
-**Code Reference:** `marketplace/models/vitality_models.py:20-85`
+**Code Reference:** `marketplace/vitality_models.py:19-128`
 
 ---
 
@@ -505,55 +512,138 @@ class Meta:
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
 | `id` | AutoField | PRIMARY KEY | Auto-incrementing ID |
-| `nft_vitality` | ForeignKey | CASCADE, indexed | Parent vitality record |
-| `vitality_score` | DecimalField(5,2) | | Snapshot vitality score |
-| `market_momentum` | DecimalField(5,2) | | Snapshot market momentum |
-| `trait_performance` | DecimalField(5,2) | | Snapshot trait performance |
+| `nft` | ForeignKey | CASCADE, indexed | Parent NFT |
+| `vitality_score` | DecimalField(5,2) | | Snapshot vitality score (0-100) |
+| `market_momentum` | FloatField | | Snapshot market momentum (0-1) |
+| `trait_performance` | FloatField | | Snapshot trait performance (0-1) |
+| `collection_health` | FloatField | | Snapshot collection health (0-1) |
+| `collection_utility` | FloatField | | Snapshot collection utility (0-1) |
+| `rarity_score` | FloatField | | Snapshot rarity score (0-1) |
+| `holder_quality` | FloatField | | Snapshot holder quality (0-1) |
+| `perception_index` | FloatField | | Snapshot perception index (0-1) |
+| `market_influence` | FloatField | | Snapshot market influence (0-1) |
+| `suggested_price` | DecimalField(20,9) | Nullable | Snapshot suggested price |
+| `calculated_at` | DateTimeField | Auto-now-add, indexed | When snapshot was created |
 | `recorded_at` | DateTimeField | Auto-now-add | Snapshot timestamp |
 
-**Retention Policy:** Keep last 90 days of history
+**Retention Policy:** Keep last 90 days for VIP collections, 60 days for ACTIVE, 30 days for INACTIVE
 
 **Indexes:**
 ```python
 class Meta:
     indexes = [
-        models.Index(fields=['nft_vitality', '-recorded_at']),
+        models.Index(fields=['nft', '-calculated_at']),
+        models.Index(fields=['calculated_at', 'vitality_score']),
     ]
+    ordering = ['-calculated_at']
 ```
 
-**Code Reference:** `marketplace/models/vitality_models.py:100-125`
+**Code Reference:** `marketplace/vitality_models.py:130-183`
 
 ---
 
 ### 12. CollectionVitality (`marketplace.models.vitality_models`)
 
-**Purpose:** Collection-level vitality score
+**Purpose:** Collection-level vitality score (aggregated from NFT vitalities)
 
 **Fields:**
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
 | `collection` | OneToOneField | CASCADE, PRIMARY KEY | Parent collection |
-| `vitality_score` | DecimalField(5,2) | Default: 0.00 | Aggregate vitality (0-100) |
-| `average_nft_vitality` | DecimalField(5,2) | Default: 0.00 | Mean of all NFT vitalities |
-| `median_nft_vitality` | DecimalField(5,2) | Default: 0.00 | Median of all NFT vitalities |
-| `top_10_percent_avg` | DecimalField(5,2) | Default: 0.00 | Top 10% NFT vitality avg |
+| `vitality_score` | DecimalField(5,2) | Default: 50.00 | Aggregate vitality (0-100) |
+| `market_momentum` | FloatField | Default: 0.5 | Collection price/volume momentum (0-1) |
+| `avg_trait_performance` | FloatField | Default: 0.5 | Average trait performance across collection (0-1) |
+| `collection_health` | FloatField | Default: 0.5 | Overall market health (0-1) |
+| `collection_utility` | FloatField | Default: 0.5 | Collection utility/use-case value (0-1) |
+| `avg_rarity_score` | FloatField | Default: 0.5 | Average rarity across collection (0-1) |
+| `holder_quality_avg` | FloatField | Default: 0.5 | Average holder quality (0-1) |
+| `perception_index` | FloatField | Default: 0.5 | Collection perception (0-1) |
+| `market_influence` | FloatField | Default: 0.5 | Collection market influence (0-1) |
 | `last_calculated` | DateTimeField | Auto-now | Last calculation timestamp |
+| `has_sufficient_data` | BooleanField | Default: False | True if collection has ≥1 transaction |
+| `updated_at` | DateTimeField | Auto-now | Last update timestamp |
 
 **Calculation:**
+Collection vitality is calculated by:
+1. Aggregating component scores from all NFT vitalities in the collection (using Avg)
+2. For collections without NFT vitalities, using collection-level metrics directly
+3. Applying the same Anti-Gaming Architecture weights as NFT vitality
+
 ```python
-vitality_score = (
-    average_nft_vitality * 0.50 +
-    median_nft_vitality * 0.30 +
-    top_10_percent_avg * 0.20
+# Aggregate from NFT vitalities
+aggregates = NFTVitality.objects.filter(
+    nft__collection=collection,
+    has_sufficient_data=True
+).aggregate(
+    avg_trait_perf=Avg('trait_performance'),
+    avg_rarity=Avg('rarity_score'),
+    avg_holder_quality=Avg('holder_quality')
 )
+
+# Apply same weights as NFT vitality
+vitality_score = (
+    perception_index * 0.20 +
+    avg_trait_performance * 0.20 +
+    collection_health * 0.15 +
+    collection_utility * 0.10 +
+    market_momentum * 0.10 +
+    avg_rarity_score * 0.10 +
+    holder_quality_avg * 0.10 +
+    market_influence * 0.05
+) * 100
 ```
 
-**Code Reference:** `marketplace/models/vitality_models.py:140-170`
+**Indexes:**
+```python
+class Meta:
+    indexes = [
+        models.Index(fields=['vitality_score', '-last_calculated']),
+    ]
+```
+
+**Code Reference:** `marketplace/vitality_models.py:186-265`
 
 ---
 
-### 13. AuctionEvent (`marketplace.models`)
+### 13. CollectionVitalityHistory (`marketplace.models.vitality_models`)
+
+**Purpose:** Historical collection vitality tracking for trend analysis
+
+**Fields:**
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | AutoField | PRIMARY KEY | Auto-incrementing ID |
+| `collection` | ForeignKey | CASCADE, indexed | Parent collection |
+| `vitality_score` | DecimalField(5,2) | | Snapshot collection vitality (0-100) |
+| `market_momentum` | FloatField | | Snapshot market momentum (0-1) |
+| `avg_trait_performance` | FloatField | | Snapshot average trait performance (0-1) |
+| `collection_health` | FloatField | | Snapshot collection health (0-1) |
+| `collection_utility` | FloatField | | Snapshot collection utility (0-1) |
+| `avg_rarity_score` | FloatField | | Snapshot average rarity score (0-1) |
+| `holder_quality_avg` | FloatField | | Snapshot average holder quality (0-1) |
+| `perception_index` | FloatField | | Snapshot perception index (0-1) |
+| `market_influence` | FloatField | | Snapshot market influence (0-1) |
+| `calculated_at` | DateTimeField | Auto-now-add, indexed | When snapshot was created |
+| `recorded_at` | DateTimeField | Auto-now-add | Snapshot timestamp |
+
+**Retention Policy:** Same as NFT vitality history (90/60/30 days based on collection priority)
+
+**Indexes:**
+```python
+class Meta:
+    indexes = [
+        models.Index(fields=['collection', '-calculated_at']),
+    ]
+    ordering = ['-calculated_at']
+```
+
+**Code Reference:** `marketplace/vitality_models.py:306-348`
+
+---
+
+### 15. AuctionEvent (`marketplace.models`)
 
 **Purpose:** Platform auction management
 
@@ -588,7 +678,7 @@ class Meta:
 
 ## Advanced Analytics Models (axplorer app)
 
-### 14. MarketRegime (`axplorer.models`)
+### 16. MarketRegime (`axplorer.models`)
 
 **Purpose:** Classifies current market conditions
 
@@ -620,7 +710,7 @@ else:
 
 ---
 
-### 15. AdvancedCrossMarketplaceAnalysis (`axplorer.models`)
+### 17. AdvancedCrossMarketplaceAnalysis (`axplorer.models`)
 
 **Purpose:** Multi-platform price and volume analysis
 
@@ -652,7 +742,7 @@ arbitrage_opportunity_score = min(
 
 ---
 
-### 16. PredictionRecord (`axplorer.models`)
+### 18. PredictionRecord (`axplorer.models`)
 
 **Purpose:** ML prediction tracking and validation
 
@@ -685,7 +775,7 @@ accuracy_score = max(100 - (error / actual_value * 100), 0)
 
 ## User & Authentication Models
 
-### 17. CustomUser (`wallet.models`)
+### 19. CustomUser (`wallet.models`)
 
 **Purpose:** Custom user model extending Django's AbstractUser
 
@@ -725,7 +815,7 @@ class Meta:
 
 ---
 
-### 18. WalletProfile (`wallet.models`)
+### 20. WalletProfile (`wallet.models`)
 
 **Purpose:** Links Solana wallets to CustomUser accounts
 
@@ -755,7 +845,7 @@ def clean_public_key(self):
 
 ---
 
-### 19. PasswordResetCode (`wallet.models`)
+### 21. PasswordResetCode (`wallet.models`)
 
 **Purpose:** Temporary password reset tokens
 
@@ -786,7 +876,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ## Administrative Models
 
-### 20. AdminUser (`admin_panel.models`)
+### 22. AdminUser (`admin_panel.models`)
 
 **Purpose:** Separate admin authentication (not using Django's built-in User)
 
@@ -818,7 +908,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ---
 
-### 21. AdminLoginAttempt (`admin_panel.models`)
+### 23. AdminLoginAttempt (`admin_panel.models`)
 
 **Purpose:** Admin login audit trail
 
@@ -844,7 +934,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ---
 
-### 22. PrimaryProviderSetting (`admin_panel.models`)
+### 24. PrimaryProviderSetting (`admin_panel.models`)
 
 **Purpose:** RPC provider configuration
 
@@ -879,7 +969,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ## Support Models
 
-### 23. Notification (`notifications.models`)
+### 25. Notification (`notifications.models`)
 
 **Purpose:** User notification system
 
@@ -908,7 +998,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ---
 
-### 24. HeroSlide (`advertisement.models`)
+### 26. HeroSlide (`advertisement.models`)
 
 **Purpose:** Homepage hero carousel management
 
@@ -930,7 +1020,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ---
 
-### 25. Course (`learn.models`)
+### 27. Course (`learn.models`)
 
 **Purpose:** Educational course management
 
@@ -950,7 +1040,7 @@ expires_at = timezone.now() + timedelta(hours=24)
 
 ---
 
-### 26. NFTBurn (`nftmemories.models`)
+### 28. NFTBurn (`nftmemories.models`)
 
 **Purpose:** NFT burn history with community commentary
 
@@ -1057,4 +1147,5 @@ class Meta:
 
 **Last Updated:** January 2025
 **Database Version:** PostgreSQL 15
-**Schema Version:** 1.0.0
+**Schema Version:** 2.0.0
+**Vitality Algorithm Version:** v3.0 (Anti-Gaming Architecture)

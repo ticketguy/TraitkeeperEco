@@ -1,5 +1,95 @@
 # nft_data/models.py
 
+"""
+TraitKeeper NFT Data Foundation Models - Production Core Schema
+
+This module contains the foundational data models for the entire TraitKeeper platform.
+All other apps (indexer, analytics, marketplace) build upon these core models.
+
+## Model Hierarchy:
+
+```
+Creator
+   │
+   └──> NFTCollection (1:N)
+           ├──> NFT (1:N)
+           │     ├──> TraitValue (M2M)
+           │     ├──> NFTVitality (1:1, marketplace app)
+           │     └──> NFTEvent (1:N, indexer app)
+           │
+           ├──> TraitType (1:N)
+           │     └──> TraitValue (1:N)
+           │
+           ├──> CollectionVitality (1:1, marketplace app)
+           ├──> AggregatedCollectionStats (1:1, analytics app)
+           └──> CollectionMarketStats (1:N, indexer app)
+```
+
+## Key Features:
+
+### Automatic Name Cleaning:
+Collection names are automatically cleaned on save using regex patterns:
+- Removes # numbers (e.g., "Mad Lads #5678" → "Mad Lads")
+- Removes common suffixes (Official, Collection, etc.)
+- Generates URL-friendly slugs
+
+### Priority Tiers:
+Collections are categorized into tiers for update scheduling:
+- **VIP**: High-volume collections, updated every 15 minutes
+- **ACTIVE**: Medium activity, updated hourly
+- **INACTIVE**: Low activity, updated every 4 hours
+
+### Trait System:
+Traits are structured as type-value pairs:
+- TraitType: Category (e.g., "Hat", "Background")
+- TraitValue: Specific value (e.g., "Crown", "Blue")
+- Rarity automatically calculated as (count / total_supply) * 100
+
+## Usage Examples:
+
+### Creating a Collection:
+```python
+collection = NFTCollection.objects.create(
+    address="collection_mint_address",
+    name="My Cool NFTs #1234 (Official)",  # Auto-cleaned to "My Cool NFTs"
+    creator_address="creator_wallet",
+    source="submission",
+    priority_tier="ACTIVE"
+)
+# Automatically generates:
+# - display_name: "My Cool NFTs"
+# - slug: "my-cool-nfts"
+```
+
+### Querying NFTs by Trait:
+```python
+# Find all NFTs with "Crown" hat
+crown_nfts = NFT.objects.filter(
+    collection=collection,
+    trait_values__value="Crown"
+)
+```
+
+### Calculating Trait Rarity:
+```python
+trait_value = TraitValue.objects.get(trait_type__name="Hat", value="Crown")
+trait_value.rarity = (trait_value.count / collection.nfts.count()) * 100
+trait_value.save()
+```
+
+## Integration Points:
+
+- **indexer**: Populates NFT metadata and events
+- **analytics**: Reads collections/traits for performance scoring
+- **marketplace**: Links vitality scores to NFTs
+- **admin_panel**: Collection approval and management
+
+**Author**: TraitKeeper Development Team
+**Last Updated**: January 2025
+**Version**: 2.0.0 (Production Schema)
+**Database**: PostgreSQL 15
+"""
+
 from django.db import models
 from django.utils import timezone
 from model_utils.models import TimeStampedModel

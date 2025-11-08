@@ -1,4 +1,78 @@
 # core/cache_manager.py
+
+"""
+TraitKeeper Cache Management System - Production-Ready Priority-Based Caching
+
+This module provides a unified caching strategy that coordinates between Django's
+local cache and Redis for optimal performance across the TraitKeeper platform.
+
+## Architecture
+
+The CacheManager implements a priority-based tiered caching system where different
+types of data receive different TTLs (Time-To-Live) based on collection priority:
+
+### Collection Priority Tiers:
+- **VIP**: High-activity collections (e.g., Mad Lads, Degods) - Shortest TTLs
+- **ACTIVE**: Medium-activity collections - Medium TTLs
+- **INACTIVE**: Low-activity collections - Longest TTLs
+
+### Cache Types:
+- **STATS**: Collection statistics (floor price, volume, etc.)
+- **PROVIDER**: External API responses (Magic Eden, Tensor)
+- **METRICS**: Calculated analytics (trait performance, wallet prominence)
+- **GLOBAL**: Site-wide data (trending collections, featured items)
+- **RATE_LIMIT**: API rate limiting counters
+
+## Example TTL Configuration (from settings.py):
+
+```python
+VIP Collections:
+- Stats: 5 minutes
+- Provider data: 10 minutes
+- Metrics: 15 minutes
+
+ACTIVE Collections:
+- Stats: 30 minutes
+- Provider data: 1 hour
+- Metrics: 2 hours
+
+INACTIVE Collections:
+- Stats: 4 hours
+- Provider data: 6 hours
+- Metrics: 24 hours
+```
+
+## Usage:
+
+```python
+from core.cache_manager import CacheManager
+
+cache = CacheManager()
+
+# Store collection stats with VIP priority
+await cache.set('collection_stats', collection_address, stats_data, priority='VIP')
+
+# Retrieve cached data
+stats = await cache.get('collection_stats', collection_address)
+```
+
+## Error Handling:
+
+The CacheManager is designed to degrade gracefully:
+- If Redis is unavailable, falls back to Django's local cache
+- All cache failures are logged but don't break the application
+- Returns None on cache miss instead of raising exceptions
+
+## Configuration:
+
+All configuration is in `settings.py` under `CACHE_MANAGER` and `CACHE_MANAGER_REDIS`.
+See settings.py for full configuration options.
+
+**Author**: TraitKeeper Development Team
+**Last Updated**: January 2025
+**Version**: 2.0.0 (Production-Ready)
+"""
+
 import logging
 import json
 from typing import Optional, Any, Dict

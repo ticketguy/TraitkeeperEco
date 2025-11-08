@@ -75,10 +75,10 @@ class NFTVitality(models.Model):
         help_text="Current holder's wallet quality (0-1)"
     )
 
-    # Sentiment Score (5% weight)
-    sentiment_score = models.FloatField( # FIXED: Changed to FloatField
+    # Perception Index (20% weight) - Anti-gaming metric
+    perception_index = models.FloatField( # FIXED: Changed to FloatField
         default=0.5,
-        help_text="Community sentiment (0-1) - TODO: Not yet implemented"
+        help_text="Community perception (0-1) - TODO: Not yet implemented"
     )
 
     # Market Influence (5% weight)
@@ -153,7 +153,7 @@ class NFTVitalityHistory(models.Model):
     collection_utility = models.FloatField() # FIXED: Changed to FloatField
     rarity_score = models.FloatField() # FIXED: Changed to FloatField
     holder_quality = models.FloatField() # FIXED: Changed to FloatField
-    sentiment_score = models.FloatField() # FIXED: Changed to FloatField
+    perception_index = models.FloatField() # FIXED: Changed to FloatField
     market_influence = models.FloatField() # FIXED: Changed to FloatField
 
     suggested_price = models.DecimalField(
@@ -236,9 +236,9 @@ class CollectionVitality(models.Model):
         help_text="Average holder quality (0-1)"
     )
 
-    sentiment_score = models.FloatField(
+    perception_index = models.FloatField(
         default=0.5,
-        help_text="Collection sentiment (0-1) - TODO: Not yet implemented"
+        help_text="Collection perception (0-1) - TODO: Not yet implemented"
     )
 
     market_influence = models.FloatField(
@@ -328,7 +328,7 @@ class CollectionVitalityHistory(models.Model):
     collection_utility = models.FloatField()
     avg_rarity_score = models.FloatField()
     holder_quality_avg = models.FloatField()
-    sentiment_score = models.FloatField()
+    perception_index = models.FloatField()
     market_influence = models.FloatField()
 
     calculated_at = models.DateTimeField(

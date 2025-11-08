@@ -11,9 +11,9 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#9333ea',
-                        'primary-dark': '#7e22ce',
-                        'primary-light': '#a855f7',
+                        primary: '#800080',
+                        'primary-dark': '#660066',
+                        'primary-light': '#9933cc',
                     }
                 }
             }
@@ -37,16 +37,37 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-gray-100 min-h-screen">
+<body class="bg-gray-900 text-gray-100 min-h-screen">
     <div class="min-h-screen">
+        <!-- Alert Notification Bar (Sticky) -->
+        <div id="alert-notification-bar" class="hidden sticky top-0 z-50 bg-red-900 border-b-2 border-red-500 backdrop-blur-sm shadow-lg cursor-pointer transition-all duration-300 hover:bg-red-800" onclick="scrollToAlerts()">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl animate-pulse">🚨</span>
+                        <div>
+                            <p class="font-bold text-white" id="alert-bar-title">System Alerts Active</p>
+                            <p class="text-sm text-red-100" id="alert-bar-message">Click to view details</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="alert-bar-count" class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-bold">0</span>
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Header -->
-        <header class="bg-gradient-to-r from-purple-900/30 via-purple-800/20 to-purple-900/30 border-b border-purple-500/30 backdrop-blur-sm">
+        <header class="bg-[#800080]/20 border-b border-[#800080]/30 backdrop-blur-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">🏥 System Health Dashboard</h1>
+                    <h1 class="text-2xl font-bold text-[#800080]">🏥 System Health Dashboard</h1>
                     <div class="flex items-center space-x-4">
-                        <span id="last-updated" class="text-sm text-purple-300">Loading...</span>
-                        <button onclick="refreshData()" class="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-purple-800 rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-primary/30">
+                        <span id="last-updated" class="text-sm text-[#9933cc]">Loading...</span>
+                        <button onclick="refreshData()" class="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-primary/30">
                             🔄 Refresh
                         </button>
                     </div>
@@ -56,11 +77,11 @@
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Overall Status -->
-            <div id="overall-status" class="mb-8 p-6 bg-gradient-to-br from-gray-800/80 via-purple-900/20 to-gray-800/80 rounded-lg border-l-4 border-primary shadow-lg shadow-primary/20 backdrop-blur-sm">
+            <div id="overall-status" class="mb-8 p-6 bg-gray-800/80 rounded-lg border-l-4 border-primary shadow-lg shadow-primary/20 backdrop-blur-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-semibold mb-2 text-purple-200">Ecosystem Status</h2>
-                        <p id="status-message" class="text-purple-300">Checking system health...</p>
+                        <h2 class="text-xl font-semibold mb-2 text-[#9933cc]">Ecosystem Status</h2>
+                        <p id="status-message" class="text-[#9933cc]/80">Checking system health...</p>
                     </div>
                     <div id="status-indicator" class="w-16 h-16 rounded-full shadow-lg"></div>
                 </div>
@@ -69,61 +90,61 @@
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- CPU -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-purple-300">CPU Usage</h3>
+                        <h3 class="text-sm font-medium text-[#9933cc]">CPU Usage</h3>
                         <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💻</span>
                     </div>
-                    <p id="cpu-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
+                    <p id="cpu-value" class="text-3xl font-bold text-[#800080]">--</p>
                     <div id="cpu-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="cpu-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
+                        <div id="cpu-fill" class="h-full transition-all duration-500 bg-primary"></div>
                     </div>
                 </div>
 
                 <!-- Memory -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-purple-300">Memory Usage</h3>
+                        <h3 class="text-sm font-medium text-[#9933cc]">Memory Usage</h3>
                         <span class="text-2xl group-hover:scale-110 transition-transform duration-300">🧠</span>
                     </div>
-                    <p id="memory-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
+                    <p id="memory-value" class="text-3xl font-bold text-[#800080]">--</p>
                     <div id="memory-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="memory-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
+                        <div id="memory-fill" class="h-full transition-all duration-500 bg-primary"></div>
                     </div>
                 </div>
 
                 <!-- Disk -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-purple-300">Disk Usage</h3>
+                        <h3 class="text-sm font-medium text-[#9933cc]">Disk Usage</h3>
                         <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💾</span>
                     </div>
-                    <p id="disk-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
+                    <p id="disk-value" class="text-3xl font-bold text-[#800080]">--</p>
                     <div id="disk-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="disk-fill" class="h-full transition-all duration-500 bg-gradient-to-r from-primary to-purple-600"></div>
+                        <div id="disk-fill" class="h-full transition-all duration-500 bg-primary"></div>
                     </div>
                 </div>
 
                 <!-- Active Tasks -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-purple-300">Active Tasks</h3>
+                        <h3 class="text-sm font-medium text-[#9933cc]">Active Tasks</h3>
                         <span class="text-2xl group-hover:scale-110 transition-transform duration-300">⚙️</span>
                     </div>
-                    <p id="tasks-value" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">--</p>
-                    <p id="tasks-failed" class="text-sm text-purple-300 mt-2">Failed (24h): --</p>
+                    <p id="tasks-value" class="text-3xl font-bold text-[#800080]">--</p>
+                    <p id="tasks-failed" class="text-sm text-[#9933cc] mt-2">Failed (24h): --</p>
                 </div>
             </div>
 
             <!-- Docker Services Status -->
-            <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 mb-8">
+            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-purple-200">🐳 Docker Services</h2>
-                    <span id="services-summary" class="text-sm text-purple-300">Loading...</span>
+                    <h2 class="text-xl font-semibold text-[#9933cc]">🐳 Docker Services</h2>
+                    <span id="services-summary" class="text-sm text-[#9933cc]/80">Loading...</span>
                 </div>
                 <div id="docker-services-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Services will be populated by JavaScript -->
-                    <div class="flex items-center justify-center p-8 text-purple-400 col-span-full">
+                    <div class="flex items-center justify-center p-8 text-[#9933cc] col-span-full">
                         Loading services...
                     </div>
                 </div>
@@ -132,47 +153,121 @@
             <!-- Transaction Health & Marketplace -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Transaction Health (NEW) -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
-                    <h2 class="text-xl font-semibold mb-4 text-purple-200">⚡ Transaction Health</h2>
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-[#9933cc]">⚡ Transaction Health</h2>
                     <div class="space-y-3">
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Stuck Transactions</span>
-                            <span id="tx-stuck" class="font-semibold text-purple-100">--</span>
+                            <span class="text-[#9933cc]/80">Stuck Transactions</span>
+                            <span id="tx-stuck" class="font-semibold text-gray-100">--</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Failure Rate (24h)</span>
-                            <span id="tx-failure-rate" class="font-semibold text-purple-100">--%</span>
+                            <span class="text-[#9933cc]/80">Failure Rate (24h)</span>
+                            <span id="tx-failure-rate" class="font-semibold text-gray-100">--%</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Avg Confirmation</span>
-                            <span id="tx-avg-time" class="font-semibold text-purple-100">--ms</span>
+                            <span class="text-[#9933cc]/80">Avg Confirmation</span>
+                            <span id="tx-avg-time" class="font-semibold text-gray-100">--ms</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Status</span>
+                            <span class="text-[#9933cc]/80">Status</span>
                             <span id="tx-status" class="font-semibold text-green-400">--</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Marketplace Stats -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
-                    <h2 class="text-xl font-semibold mb-4 text-purple-200">📊 Marketplace (24h)</h2>
+                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-[#9933cc]">📊 Marketplace (24h)</h2>
                     <div class="space-y-3">
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Sales</span>
-                            <span id="marketplace-sales" class="font-semibold text-purple-100">--</span>
+                            <span class="text-[#9933cc]/80">Sales</span>
+                            <span id="marketplace-sales" class="font-semibold text-gray-100">--</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Volume</span>
-                            <span id="marketplace-volume" class="font-semibold text-purple-100">-- SOL</span>
+                            <span class="text-[#9933cc]/80">Volume</span>
+                            <span id="marketplace-volume" class="font-semibold text-gray-100">-- SOL</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-purple-300">Active Listings</span>
-                            <span id="marketplace-listings" class="font-semibold text-purple-100">--</span>
+                            <span class="text-[#9933cc]/80">Active Listings</span>
+                            <span id="marketplace-listings" class="font-semibold text-gray-100">--</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Unique Traders</span>
                             <span id="marketplace-traders" class="font-semibold">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vitality Calculation System -->
+            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-[#9933cc]">🧮 Vitality Calculation System</h2>
+                    <span id="vitality-status-badge" class="px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium">
+                        Active
+                    </span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- NFT Vitality Calculations -->
+                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-[#9933cc]/80">NFT Calculations (24h)</h3>
+                            <span class="text-xl">📈</span>
+                        </div>
+                        <p id="vitality-nft-count" class="text-2xl font-bold text-gray-100">--</p>
+                        <p id="vitality-nft-avg-time" class="text-xs text-gray-400 mt-1">Avg: --ms</p>
+                    </div>
+
+                    <!-- Collection Vitality Calculations -->
+                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-[#9933cc]/80">Collection Calculations (24h)</h3>
+                            <span class="text-xl">📊</span>
+                        </div>
+                        <p id="vitality-collection-count" class="text-2xl font-bold text-gray-100">--</p>
+                        <p id="vitality-collection-avg-time" class="text-xs text-gray-400 mt-1">Avg: --ms</p>
+                    </div>
+
+                    <!-- Failed Calculations -->
+                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-[#9933cc]/80">Failed Calculations (24h)</h3>
+                            <span class="text-xl">❌</span>
+                        </div>
+                        <p id="vitality-failed-count" class="text-2xl font-bold text-gray-100">--</p>
+                        <p id="vitality-failure-rate" class="text-xs text-gray-400 mt-1">Rate: --%</p>
+                    </div>
+
+                    <!-- System Load -->
+                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-[#9933cc]/80">Calculation Queue</h3>
+                            <span class="text-xl">⏳</span>
+                        </div>
+                        <p id="vitality-queue-size" class="text-2xl font-bold text-gray-100">--</p>
+                        <p id="vitality-queue-status" class="text-xs text-gray-400 mt-1">Status: --</p>
+                    </div>
+                </div>
+
+                <!-- Recent Calculation Activity -->
+                <div class="mt-6 bg-gray-900/30 rounded-lg p-4 border border-[#800080]/10">
+                    <h3 class="text-sm font-semibold text-[#9933cc] mb-3">Recent Calculation Activity</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <p class="text-xs text-gray-400">Perception Index</p>
+                            <p id="calc-perception" class="text-lg font-semibold text-gray-100">--</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Trait Performance</p>
+                            <p id="calc-trait" class="text-lg font-semibold text-gray-100">--</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Market Momentum</p>
+                            <p id="calc-momentum" class="text-lg font-semibold text-gray-100">--</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Collection Health</p>
+                            <p id="calc-health" class="text-lg font-semibold text-gray-100">--</p>
                         </div>
                     </div>
                 </div>
@@ -206,38 +301,38 @@
             </div>
 
             <!-- Active Alerts - Redesigned -->
-            <div class="bg-gradient-to-br from-gray-800/90 via-purple-900/20 to-gray-800/90 rounded-lg p-6 border border-purple-500/30 shadow-lg shadow-primary/10 mb-8">
+            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-purple-200">🚨 Active System Alerts</h2>
-                    <div id="alert-count-badge" class="px-3 py-1 bg-purple-900/50 text-purple-200 rounded-full text-sm font-medium">
+                    <h2 class="text-xl font-semibold text-[#9933cc]">🚨 Active System Alerts</h2>
+                    <div id="alert-count-badge" class="px-3 py-1 bg-[#800080]/50 text-[#9933cc] rounded-full text-sm font-medium">
                         Loading...
                     </div>
                 </div>
                 <div id="alerts-container" class="space-y-3">
-                    <div class="flex items-center justify-center p-8 text-purple-400">
-                        <div class="animate-pulse">Loading alerts...</div>
-                    </div>
+                    <!-- Placeholder will be replaced by JavaScript -->
                 </div>
             </div>
 
-            <!-- Recent Error Logs -->
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <!-- Error Logs Link Card -->
+            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold">📋 Recent Error Logs</h2>
-                    <div class="flex items-center space-x-2">
-                        <select id="error-logs-hours" class="bg-gray-900 text-sm rounded px-3 py-1 border border-gray-700">
-                            <option value="1">Last Hour</option>
-                            <option value="6">Last 6 Hours</option>
-                            <option value="24" selected>Last 24 Hours</option>
-                            <option value="168">Last 7 Days</option>
-                        </select>
-                        <button onclick="fetchErrorLogs()" class="bg-gray-900 hover:bg-gray-700 text-sm rounded px-3 py-1 border border-gray-700">
-                            Refresh
-                        </button>
+                    <div>
+                        <h2 class="text-xl font-semibold text-[#9933cc] mb-2">📋 System Error Logs</h2>
+                        <p class="text-sm text-gray-400">View detailed error logs and system warnings</p>
+                    </div>
+                    <div class="bg-[#800080]/10 p-4 rounded-full">
+                        <svg class="w-8 h-8 text-[#800080]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
                     </div>
                 </div>
-                <div id="error-logs-container" class="space-y-2 max-h-96 overflow-y-auto">
-                    <p class="text-gray-400">Loading error logs...</p>
+                <div class="mt-4">
+                    <a href="{% url 'system_health:error_logs' %}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-all duration-300 shadow-lg shadow-primary/30">
+                        <span>View Full Error Logs</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </main>
@@ -323,6 +418,61 @@
             }
         }
 
+        // Fetch and display vitality calculation metrics
+        async function fetchVitalityMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/vitality-metrics/`);
+                const data = await response.json();
+
+                // Update vitality calculation counts
+                document.getElementById('vitality-nft-count').textContent = data.nft_calculations_24h || 0;
+                document.getElementById('vitality-collection-count').textContent = data.collection_calculations_24h || 0;
+                document.getElementById('vitality-failed-count').textContent = data.failed_calculations_24h || 0;
+                document.getElementById('vitality-queue-size').textContent = data.queue_size || 0;
+
+                // Update average times
+                document.getElementById('vitality-nft-avg-time').textContent = data.nft_avg_time_ms
+                    ? `Avg: ${Math.round(data.nft_avg_time_ms)}ms`
+                    : 'Avg: N/A';
+                document.getElementById('vitality-collection-avg-time').textContent = data.collection_avg_time_ms
+                    ? `Avg: ${Math.round(data.collection_avg_time_ms)}ms`
+                    : 'Avg: N/A';
+
+                // Update failure rate
+                const failureRate = data.failure_rate_24h || 0;
+                document.getElementById('vitality-failure-rate').textContent = `Rate: ${failureRate.toFixed(1)}%`;
+
+                // Update queue status
+                const queueStatus = data.queue_status || 'idle';
+                document.getElementById('vitality-queue-status').textContent = `Status: ${queueStatus}`;
+
+                // Update recent calculation activity
+                document.getElementById('calc-perception').textContent = data.recent_calculations?.perception_index || '--';
+                document.getElementById('calc-trait').textContent = data.recent_calculations?.trait_performance || '--';
+                document.getElementById('calc-momentum').textContent = data.recent_calculations?.market_momentum || '--';
+                document.getElementById('calc-health').textContent = data.recent_calculations?.collection_health || '--';
+
+                // Update status badge
+                const badge = document.getElementById('vitality-status-badge');
+                if (failureRate > 10) {
+                    badge.textContent = 'Degraded';
+                    badge.className = 'px-3 py-1 bg-yellow-900/50 text-yellow-200 rounded-full text-sm font-medium';
+                } else if (failureRate > 25) {
+                    badge.textContent = 'Critical';
+                    badge.className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium animate-pulse';
+                } else {
+                    badge.textContent = 'Active';
+                    badge.className = 'px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium';
+                }
+
+            } catch (error) {
+                console.error('Error fetching vitality metrics:', error);
+                // Set error state
+                document.getElementById('vitality-status-badge').textContent = 'Error';
+                document.getElementById('vitality-status-badge').className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium';
+            }
+        }
+
         // Fetch and display active alerts
         async function fetchActiveAlerts() {
             try {
@@ -392,11 +542,40 @@
                         `;
                     }).join('');
                 }
+
+                // Update notification bar
+                const notificationBar = document.getElementById('alert-notification-bar');
+                const barCount = document.getElementById('alert-bar-count');
+                const barTitle = document.getElementById('alert-bar-title');
+                const barMessage = document.getElementById('alert-bar-message');
+
+                if (data.count > 0) {
+                    notificationBar.classList.remove('hidden');
+                    barCount.textContent = data.count;
+
+                    const hasCritical = data.alerts.some(a => a.alert_level === 'CRITICAL');
+                    if (hasCritical) {
+                        barTitle.textContent = '🚨 Critical System Alerts!';
+                        barMessage.textContent = `${data.count} alert${data.count > 1 ? 's' : ''} require immediate attention - Click to view`;
+                    } else {
+                        barTitle.textContent = 'System Alerts Active';
+                        barMessage.textContent = `${data.count} active alert${data.count > 1 ? 's' : ''} - Click to view details`;
+                    }
+                } else {
+                    notificationBar.classList.add('hidden');
+                }
+
             } catch (error) {
                 console.error('Error fetching alerts:', error);
                 document.getElementById('alert-count-badge').textContent = 'Error';
                 document.getElementById('alert-count-badge').className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium';
             }
+        }
+
+        // Scroll to alerts section
+        function scrollToAlerts() {
+            const alertsSection = document.querySelector('#alerts-container').parentElement;
+            alertsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // Update overall status
@@ -514,61 +693,6 @@
             }
         }
 
-        // Fetch and display error logs
-        async function fetchErrorLogs() {
-            try {
-                const hours = document.getElementById('error-logs-hours').value;
-                const response = await fetch(`${API_BASE}/error-logs/?hours=${hours}`);
-                const data = await response.json();
-
-                const container = document.getElementById('error-logs-container');
-
-                if (data.count === 0) {
-                    container.innerHTML = '<p class="text-green-400">✅ No errors or warnings in the selected time period!</p>';
-                } else {
-                    container.innerHTML = data.logs.map(log => {
-                        const levelColors = {
-                            'WARNING': 'bg-yellow-900/30 border-yellow-600 text-yellow-200',
-                            'ERROR': 'bg-orange-900/30 border-orange-600 text-orange-200',
-                            'CRITICAL': 'bg-red-900/30 border-red-600 text-red-200'
-                        };
-                        const colorClass = levelColors[log.level] || 'bg-gray-700 border-gray-500';
-
-                        const timestamp = new Date(log.timestamp);
-                        const timeStr = timestamp.toLocaleString();
-
-                        const resolvedBadge = log.resolved
-                            ? '<span class="text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded">Resolved</span>'
-                            : '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-0.5 rounded">Active</span>';
-
-                        return `
-                            <div class="${colorClass} border-l-4 p-3 rounded text-sm">
-                                <div class="flex items-start justify-between mb-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-bold text-xs">${log.level}</span>
-                                        <span class="text-xs opacity-75">${log.category}</span>
-                                        ${resolvedBadge}
-                                    </div>
-                                    <span class="text-xs opacity-75">${timeStr}</span>
-                                </div>
-                                <p class="font-medium mb-1">${log.title}</p>
-                                <p class="text-xs opacity-90 mb-1">${log.message}</p>
-                                <div class="flex items-center justify-between text-xs opacity-75">
-                                    <span>Source: ${log.source}</span>
-                                    ${log.duration ? `<span>Duration: ${formatDuration(log.duration)}</span>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('Error fetching error logs:', error);
-                document.getElementById('error-logs-container').innerHTML = `
-                    <p class="text-red-400">Failed to load error logs: ${error.message}</p>
-                `;
-            }
-        }
-
         // Update service status (legacy function for old services display)
         function updateService(service, isHealthy) {
             const el = document.getElementById(`service-${service}`);
@@ -596,19 +720,11 @@
             await Promise.all([
                 fetchEcosystemHealth(),
                 fetchTransactionHealth(),
+                fetchVitalityMetrics(),
                 fetchActiveAlerts(),
-                fetchDockerServices(),
-                fetchErrorLogs()
+                fetchDockerServices()
             ]);
         }
-
-        // Listen for time range changes on error logs
-        document.addEventListener('DOMContentLoaded', function() {
-            const errorLogsSelect = document.getElementById('error-logs-hours');
-            if (errorLogsSelect) {
-                errorLogsSelect.addEventListener('change', fetchErrorLogs);
-            }
-        });
 
         // Initial load
         refreshData();

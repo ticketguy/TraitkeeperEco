@@ -3,16 +3,13 @@ URL patterns for the TraitKeeper admin panel, mapping routes to views for authen
 NFT data management, statistics, and API endpoints for dashboard charts.
 """
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 from traitkeeper.admin_site import admin_site
 
 app_name = 'admin_panel'
 
 urlpatterns = [
-    # Admin site URLs
-    path('', admin_site.urls, name='index'),
-
     # Authentication URLs
     path('login/', views.login_view, name='login'),
     path('logout/', views.admin_logout, name='logout'),
@@ -42,7 +39,7 @@ urlpatterns = [
     path('api/user-stats/', views.user_stats_data, name='user_stats_data'),
     path('api/signup-activity/', views.signup_activity_data, name='signup_activity_data'),
 
-        # New task management endpoints
+    # New task management endpoints
     path('task-dashboard/', views.task_dashboard, name='task-dashboard'),
 
     path('task-manager/status/', views.task_manager_status, name='task-manager-status'),
