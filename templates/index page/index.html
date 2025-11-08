@@ -1016,46 +1016,66 @@
 </section>
 
 <!-- NFT Preview Modal (Reused for Collections) -->
-<div id="nft-modal"
-    class="fixed inset-0 bg-black bg-opacity-75 z-[1002] hidden flex items-center justify-center transition-opacity duration-300">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 max-w-[300px] xs:max-w-md w-11/12 max-h-[90vh] overflow-y-auto relative">
-        <button id="close-nft-modal"
-            class="absolute top-1 xs:top-2 right-1 xs:right-2 text-text-light dark:text-text-dark text-lg xs:text-xl"
+<!-- Enhanced Collection Modal -->
+<div id="collection-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1002] hidden flex items-center justify-center transition-opacity duration-300">
+    <div class="bg-gradient-to-br from-background-light to-accent-light dark:from-accent-dark dark:to-background-dark rounded-2xl p-4 xs:p-6 max-w-lg w-11/12 max-h-[90vh] overflow-y-auto relative border border-primary/20 shadow-2xl">
+        <button id="close-collection-modal"
+            class="absolute top-2 right-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary text-2xl transition-colors"
             aria-label="Close modal">×</button>
-        <div class="flex items-start mb-3 xs:mb-4">
-            <img id="nft-modal-image" src="" alt="Collection Image"
-                class="w-16 xs:w-20 h-16 xs:h-20 object-cover rounded-lg mr-3 xs:mr-4">
+
+        <!-- Collection Header -->
+        <div class="flex items-start mb-5">
+            <img id="collection-modal-image" src="" alt="Collection Image"
+                class="w-20 h-20 object-cover rounded-xl mr-4 ring-2 ring-primary/30">
             <div class="flex-1">
-                <a id="nft-modal-link" href=""
-                    class="text-base xs:text-lg sm:text-xl font-semibold text-primary hover:underline">
-                    <h3 id="nft-modal-name" class="inline"></h3>
+                <a id="collection-modal-link" href=""
+                    class="text-xl font-bold text-primary hover:underline flex items-center gap-2">
+                    <h3 id="collection-modal-name" class="inline"></h3>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </a>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Click to explore collection</p>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-2 xs:gap-3">
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Holders:</span>
-                <span id="nft-modal-holders"></span>
+
+        <!-- Collection Stats Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Floor Price</span>
+                <span id="collection-modal-floor" class="block text-lg font-bold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Supply/Listed:</span>
-                <span id="nft-modal-supply-listed"></span>
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">24h Change</span>
+                <span id="collection-modal-price-change" class="block text-lg font-bold">--%</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Volume:</span>
-                <span id="nft-modal-volume"></span> SOL
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Volume (24h)</span>
+                <span id="collection-modal-volume" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Market Cap:</span>
-                <span id="nft-modal-market-cap"></span> SOL
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Market Cap</span>
+                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">24h Change:</span>
-                <span id="nft-modal-price-change"></span>%
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Holders</span>
+                <span id="collection-modal-holders" class="block text-base font-semibold text-text-light dark:text-text-dark">--</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Performance:</span>
-                <span id="nft-modal-performance"></span>
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Supply / Listed</span>
+                <span id="collection-modal-supply-listed" class="block text-base font-semibold text-text-light dark:text-text-dark">--</span>
+            </div>
+        </div>
+
+        <!-- Performance Indicator -->
+        <div class="bg-gradient-to-r from-primary/10 to-accent-light/10 dark:from-primary/20 dark:to-accent-dark/20 rounded-lg p-3 border border-primary/30">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-text-light dark:text-text-dark">Performance Score</span>
+                <span id="collection-modal-performance" class="text-2xl font-bold text-primary">--</span>
+            </div>
+            <div class="mt-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div id="collection-modal-performance-bar" class="h-full bg-gradient-to-r from-primary to-accent-light transition-all duration-500" style="width: 0%"></div>
             </div>
         </div>
     </div>
@@ -1097,18 +1117,20 @@
             retina_detect: true
         });
 
-        // NFT Modal Elements
-        const nftModal = document.getElementById('nft-modal');
-        const closeNftModal = document.getElementById('close-nft-modal');
-        const nftModalImage = document.getElementById('nft-modal-image');
-        const nftModalName = document.getElementById('nft-modal-name');
-        const nftModalLink = document.getElementById('nft-modal-link');
-        const nftModalHolders = document.getElementById('nft-modal-holders');
-        const nftModalSupplyListed = document.getElementById('nft-modal-supply-listed');
-        const nftModalVolume = document.getElementById('nft-modal-volume');
-        const nftModalMarketCap = document.getElementById('nft-modal-market-cap');
-        const nftModalPriceChange = document.getElementById('nft-modal-price-change');
-        const nftModalPerformance = document.getElementById('nft-modal-performance');
+        // Collection Modal Elements
+        const collectionModal = document.getElementById('collection-modal');
+        const closeCollectionModal = document.getElementById('close-collection-modal');
+        const collectionModalImage = document.getElementById('collection-modal-image');
+        const collectionModalName = document.getElementById('collection-modal-name');
+        const collectionModalLink = document.getElementById('collection-modal-link');
+        const collectionModalHolders = document.getElementById('collection-modal-holders');
+        const collectionModalSupplyListed = document.getElementById('collection-modal-supply-listed');
+        const collectionModalVolume = document.getElementById('collection-modal-volume');
+        const collectionModalMarketCap = document.getElementById('collection-modal-market-cap');
+        const collectionModalPriceChange = document.getElementById('collection-modal-price-change');
+        const collectionModalPerformance = document.getElementById('collection-modal-performance');
+        const collectionModalPerformanceBar = document.getElementById('collection-modal-performance-bar');
+        const collectionModalFloor = document.getElementById('collection-modal-floor');
 
         // Hero Carousel
         const heroSection = document.getElementById('hero');
@@ -1141,62 +1163,67 @@
         // Auto-rotate hero slides every 5 seconds
         setInterval(updateHeroCarousel, 5000);
 
-        // Collection Modal with Event Delegation
+        // Enhanced Collection Modal Handler
         document.addEventListener('click', (e) => {
             const card = e.target.closest('[data-collection-modal]');
             if (card) {
-                nftModalImage.src = card.getAttribute('data-collection-image');
-                nftModalName.textContent = card.getAttribute('data-collection-name');
-                nftModalLink.href = `/collection/${card.getAttribute('data-collection-address')}/`;
-                nftModalHolders.textContent = card.getAttribute('data-collection-holders');
-                nftModalSupplyListed.textContent = card.getAttribute('data-collection-supply-listed');
-                nftModalVolume.textContent = card.getAttribute('data-collection-volume');
-                nftModalMarketCap.textContent = card.getAttribute('data-collection-market-cap');
-                nftModalPriceChange.textContent = card.getAttribute('data-collection-price-change');
-                nftModalPerformance.textContent = card.getAttribute('data-collection-performance');
+                const image = card.getAttribute('data-collection-image');
+                const name = decodeURIComponent(card.getAttribute('data-collection-name') || '');
+                const address = card.getAttribute('data-collection-address');
+                const holders = card.getAttribute('data-collection-holders') || '0';
+                const supplyListed = card.getAttribute('data-collection-supply-listed') || '0/0';
+                const volume = parseFloat(card.getAttribute('data-collection-volume') || '0');
+                const marketCap = parseFloat(card.getAttribute('data-collection-market-cap') || '0');
+                const priceChange = parseFloat(card.getAttribute('data-collection-price-change') || '0');
+                const performance = parseFloat(card.getAttribute('data-collection-performance') || '50');
 
-                nftModal.classList.remove('hidden');
+                // Populate modal
+                collectionModalImage.src = image;
+                collectionModalName.textContent = name;
+                collectionModalLink.href = `/collection/${address}/`;
+                collectionModalHolders.textContent = holders;
+                collectionModalSupplyListed.textContent = supplyListed;
+                collectionModalVolume.textContent = volume.toFixed(2);
+                collectionModalMarketCap.textContent = marketCap.toFixed(2);
+                collectionModalFloor.textContent = `${(marketCap / parseInt(supplyListed.split('/')[0] || 1)).toFixed(2)}`;
+
+                // Price change with color
+                collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;
+                collectionModalPriceChange.className = `block text-lg font-bold ${
+                    priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-yellow-500'
+                }`;
+
+                // Performance with color and bar
+                collectionModalPerformance.textContent = performance.toFixed(1);
+                collectionModalPerformanceBar.style.width = `${performance}%`;
+
+                collectionModal.classList.remove('hidden');
                 setTimeout(() => {
-                    nftModal.classList.add('opacity-100');
+                    collectionModal.classList.add('opacity-100');
                 }, 10);
             }
         });
 
-        // NFT Modal with Event Delegation
-        document.addEventListener('click', (e) => {
-            const card = e.target.closest('[data-nft-modal]');
-            if (card) {
-                nftModalImage.src = card.getAttribute('data-nft-image');
-                nftModalName.textContent = card.getAttribute('data-nft-name');
-                nftModalLink.href = '#';
-                nftModalHolders.textContent = '';
-                nftModalSupplyListed.textContent = '';
-                nftModalVolume.textContent = '';
-                nftModalMarketCap.textContent = '';
-                nftModalPriceChange.textContent = '';
-                nftModalPerformance.textContent = '';
-                nftModal.classList.remove('hidden');
+        // Close Collection Modal
+        if (closeCollectionModal) {
+            closeCollectionModal.addEventListener('click', () => {
+                collectionModal.classList.remove('opacity-100');
                 setTimeout(() => {
-                    nftModal.classList.add('opacity-100');
-                }, 10);
-            }
-        });
-
-        closeNftModal.addEventListener('click', () => {
-            nftModal.classList.remove('opacity-100');
-            setTimeout(() => {
-                nftModal.classList.add('hidden');
-            }, 300);
-        });
-
-        nftModal.addEventListener('click', (e) => {
-            if (e.target === nftModal) {
-                nftModal.classList.remove('opacity-100');
-                setTimeout(() => {
-                    nftModal.classList.add('hidden');
+                    collectionModal.classList.add('hidden');
                 }, 300);
-            }
-        });
+            });
+        }
+
+        if (collectionModal) {
+            collectionModal.addEventListener('click', (e) => {
+                if (e.target === collectionModal) {
+                    collectionModal.classList.remove('opacity-100');
+                    setTimeout(() => {
+                        collectionModal.classList.add('hidden');
+                    }, 300);
+                }
+            });
+        }
 
         // Simulate live activity updates
         setInterval(() => {
