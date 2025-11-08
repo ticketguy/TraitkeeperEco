@@ -1041,6 +1041,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- NFT Detail Modal ---
+    function closeNftModal() {
+        if (nftModal) {
+            nftModal.classList.add('hidden');
+        }
+        // CRITICAL: Always restore scroll when closing modal
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+    }
+
     async function openNftModal(nftCardElement) {
         const nftId = nftCardElement.dataset.nftId;
         if (!nftId || !nftModal) return;
@@ -1051,8 +1060,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (typeof window.populateAndShowNftModal !== 'function') {
             console.error('populateAndShowNftModal function not found.');
             alert('Error displaying NFT details.');
-            nftModal.classList.add('hidden');
-            document.body.style.overflow = '';
+            closeNftModal();
             return;
         }
 
@@ -1066,10 +1074,32 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("Error loading NFT:", error);
             alert(`Could not load NFT details: ${error.message}`);
-            nftModal.classList.add('hidden');
-            document.body.style.overflow = '';
+            closeNftModal();
         }
     }
+
+    // Attach close button handler
+    const closeNftModalBtn = document.getElementById('close-nft-modal');
+    if (closeNftModalBtn) {
+        closeNftModalBtn.addEventListener('click', closeNftModal);
+    }
+
+    // Close modal when clicking backdrop
+    if (nftModal) {
+        nftModal.addEventListener('click', (e) => {
+            // Only close if clicking the backdrop (not the modal content)
+            if (e.target === nftModal) {
+                closeNftModal();
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && nftModal && !nftModal.classList.contains('hidden')) {
+            closeNftModal();
+        }
+    });
 
     // --- Grid Click Listener ---
     if (nftsGrid) {
