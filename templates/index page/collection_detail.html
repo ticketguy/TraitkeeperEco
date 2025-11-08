@@ -152,7 +152,7 @@
         /* Anime-style Mobile Bottom Bar */
         #mobile-bottom-bar {
             position: fixed;
-            bottom: 0;
+            bottom: 65px; /* Raised up to avoid footer overlap */
             left: 0;
             right: 0;
             z-index: 50;
@@ -221,7 +221,12 @@
             grid-template-columns: repeat(3, 1fr) !important;
             gap: 0.5rem !important;
             padding: 0.5rem !important;
-            padding-bottom: 5rem !important; /* Space for bottom bar */
+            padding-bottom: 10rem !important; /* Space for bottom bar and footer */
+        }
+
+        /* Load More Button - Mobile spacing */
+        #load-more-nfts {
+            margin-bottom: 8rem !important; /* Push up to avoid bottom bar */
         }
 
         .nft-card {
