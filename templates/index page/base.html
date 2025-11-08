@@ -450,43 +450,51 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <div class="wallet-container flex items-center space-x-3 flex-shrink-0">
                     {% if user.is_authenticated %}
                     <div class="relative">
-                        <a href="{% url 'notifications:list' %}"
+                        <button id="notification-toggle" type="button"
                             class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block">
                             <i class="fas fa-bell text-xl"></i>
                             {% if unread_notifications_count > 0 %}
-                            <span
+                            <span id="notification-badge"
                                 class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">{{
                                 unread_notifications_count }}</span>
                             {% endif %}
-                        </a>
+                        </button>
                         <div id="notification-dropdown"
-                            class="hidden absolute right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 z-50 animate-scale-in">
+                            class="hidden absolute right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark shadow-xl rounded-lg p-2 z-50 animate-scale-in border border-border-light dark:border-border-dark">
                             <div
                                 class="flex justify-between items-center border-b border-accent-light dark:border-accent-dark pb-2 mb-2">
                                 <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Notifications</h3>
-                                <button id="notification-settings-toggle"
-                                    class="text-primary text-sm hover:underline faint-glow-hover">Settings</button>
+                                <button id="mark-all-read" type="button"
+                                    class="text-primary text-sm hover:underline faint-glow-hover">Mark All Read</button>
                             </div>
                             <div id="notification-list" class="max-h-64 overflow-y-auto">
                                 {% for notification in notifications %}
-                                <div class="notification-item p-2 border-b border-accent-light dark:border-accent-dark {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
-                                    data-notification-id="{{ notification.id }}">
-                                    <p class="text-sm text-text-light dark:text-text-dark">{{ notification.message }}
-                                    </p>
-                                    <p
-                                        class="text-xs text-text-secondary-light dark:text-text-secondary-dark time-since">
-                                        {{ notification.created_at|timesince }} ago</p>
+                                <div class="notification-item group p-2 border-b border-accent-light dark:border-accent-dark {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
+                                    data-notification-id="{{ notification.id }}"
+                                    data-is-read="{{ notification.is_read|yesno:'true,false' }}">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex-1">
+                                            <p class="text-sm text-text-light dark:text-text-dark">{{ notification.message }}</p>
+                                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark time-since mt-1">
+                                                {{ notification.created_at|timesince }} ago</p>
+                                        </div>
+                                        {% if not notification.is_read %}
+                                        <button type="button" class="mark-read-btn opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary-dark text-xs"
+                                                data-notification-id="{{ notification.id }}">
+                                            ✓
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 {% empty %}
-                                <p
-                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in">
+                                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in text-center py-4">
                                     No notifications</p>
                                 {% endfor %}
                             </div>
-                            <div class="mt-2">
-                                <button id="mark-all-read"
-                                    class="w-full text-center text-primary hover:underline text-sm faint-glow-hover">Mark
-                                    All as Read</button>
+                            <div class="mt-2 pt-2 border-t border-accent-light dark:border-accent-dark">
+                                <a href="{% url 'notifications:list' %}"
+                                    class="block w-full text-center text-primary hover:underline text-sm faint-glow-hover font-medium">
+                                    View All Notifications</a>
                             </div>
                         </div>
                     </div>
@@ -1525,6 +1533,80 @@ if (header) {
                         }
                     });
                 }
+
+                // Mark All Notifications as Read
+                function markAllNotificationsRead() {
+                    fetch('/notifications/mark-all-read/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.classList.remove('bg-accent-light', 'dark:bg-gray-700');
+                                item.dataset.isRead = 'true';
+                                // Remove mark as read button
+                                const markBtn = item.querySelector('.mark-read-btn');
+                                if (markBtn) markBtn.remove();
+                            });
+
+                            // Update badge
+                            const badge = document.getElementById('notification-badge');
+                            if (badge) badge.remove();
+                        }
+                    })
+                    .catch(error => console.error('Error marking all as read:', error));
+                }
+
+                if (markAllRead) {
+                    markAllRead.addEventListener('click', markAllNotificationsRead);
+                }
+                if (markAllReadMobile) {
+                    markAllReadMobile.addEventListener('click', markAllNotificationsRead);
+                }
+
+                // Mark Individual Notification as Read
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('mark-read-btn')) {
+                        const notificationId = e.target.dataset.notificationId;
+                        const notificationItem = e.target.closest('.notification-item');
+
+                        fetch('/notifications/mark-read/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ notification_id: notificationId })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update UI
+                                notificationItem.classList.remove('bg-accent-light', 'dark:bg-gray-700');
+                                notificationItem.dataset.isRead = 'true';
+                                e.target.remove(); // Remove the button
+
+                                // Update badge count
+                                const badge = document.getElementById('notification-badge');
+                                if (badge) {
+                                    const currentCount = parseInt(badge.textContent);
+                                    if (currentCount > 1) {
+                                        badge.textContent = currentCount - 1;
+                                    } else {
+                                        badge.remove();
+                                    }
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Error marking as read:', error));
+                    }
+                });
 
                 // User Profile Dropdown Toggle (Desktop and Mobile)
                 const profileLinks = document.querySelectorAll('.profile-link');
