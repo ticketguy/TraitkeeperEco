@@ -143,24 +143,126 @@
         #collection-stats-bar, #tabs-and-filters-bar { display: none; }
         #mobile-bottom-bar, .mobile-modal-container { display: block; }
 
+        /* Anime-style Mobile Bottom Bar */
         #mobile-bottom-bar {
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 50;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 1rem;
-            padding: 1rem;
-            background-color: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px);
-            border-top: 1px solid var(--border-color-light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 2px solid rgba(153, 69, 255, 0.3);
+            box-shadow: 0 -4px 20px rgba(153, 69, 255, 0.1);
+            animation: slideUpFade 0.5s ease-out;
         }
         .dark #mobile-bottom-bar {
-            background-color: rgba(17, 24, 39, 0.7);
-            border-top-color: var(--border-color-dark);
+            background: linear-gradient(to top, rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.85));
+            border-top-color: rgba(153, 69, 255, 0.5);
+        }
+
+        /* Anime-style button effects */
+        #mobile-bottom-bar button {
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #mobile-bottom-bar button:active {
+            transform: translateY(2px) scale(0.95);
+        }
+
+        #mobile-bottom-bar button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        #mobile-bottom-bar button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Anime-style floating animation */
+        @keyframes slideUpFade {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile NFT Grid - Anime style */
+        #nfts-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 1rem !important;
+            padding-bottom: 5rem; /* Space for bottom bar */
+        }
+
+        .nft-card {
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .nft-card:active {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        /* Mobile Stats Cards - Anime style */
+        .mobile-stat-card {
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(153, 69, 255, 0.05));
+            border: 1px solid rgba(153, 69, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: backwards;
+        }
+
+        .mobile-stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .mobile-stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .mobile-stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .mobile-stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Pulse animation for important elements */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(153, 69, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(153, 69, 255, 0);
+            }
+        }
+
+        .mobile-highlight {
+            animation: pulse 2s infinite;
         }
         #mobile-bottom-bar button {
             flex: 1; 
@@ -220,22 +322,59 @@
         }
         .mobile-modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
 
+        /* Mobile Stats Grid - Anime Enhanced */
         #mobile-stats-grid {
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 1rem; 
-            padding: 0.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding: 1rem;
         }
         #mobile-stats-grid .stat-item {
-            background-color: #f9fafb; 
-            padding: 0.75rem; 
-            border-radius: 0.75rem; 
-            text-align: left;
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.08), rgba(153, 69, 255, 0.02));
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(153, 69, 255, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: backwards;
         }
-        .dark #mobile-stats-grid .stat-item { background-color: #374151; }
-        #mobile-stats-grid strong { font-size: 1.25rem; }
-        #mobile-stats-grid span { font-size: 0.875rem; color: #6b7280; }
+        .dark #mobile-stats-grid .stat-item {
+            background: linear-gradient(135deg, rgba(153, 69, 255, 0.15), rgba(153, 69, 255, 0.05));
+            border-color: rgba(153, 69, 255, 0.25);
+        }
+        #mobile-stats-grid .stat-item:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(153, 69, 255, 0.2);
+        }
+        #mobile-stats-grid strong {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9945FF, #14F195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        #mobile-stats-grid span {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
         .dark #mobile-stats-grid span { color: #9ca3af; }
+
+        /* Staggered animation */
+        #mobile-stats-grid .stat-item:nth-child(1) { animation-delay: 0.1s; }
+        #mobile-stats-grid .stat-item:nth-child(2) { animation-delay: 0.15s; }
+        #mobile-stats-grid .stat-item:nth-child(3) { animation-delay: 0.2s; }
+        #mobile-stats-grid .stat-item:nth-child(4) { animation-delay: 0.25s; }
+        #mobile-stats-grid .stat-item:nth-child(5) { animation-delay: 0.3s; }
+        #mobile-stats-grid .stat-item:nth-child(6) { animation-delay: 0.35s; }
         
         #mobile-filters-modal form { space-y: 1.5rem; }
         #mobile-filters-modal .form-input-minimal {
@@ -659,12 +798,37 @@
     </script>
 
     <div id="activity-tab-content" class="tab-content fade-in hidden">
+        <!-- Activity Sorting Controls -->
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Collection Activity</h3>
+            <div class="flex items-center gap-2">
+                <label for="activity-sort" class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Sort by:</label>
+                <select id="activity-sort" class="form-input-minimal px-3 py-1 rounded-lg text-sm">
+                    <option value="time_desc">Most Recent</option>
+                    <option value="time_asc">Oldest First</option>
+                    <option value="price_desc">Highest Price</option>
+                    <option value="price_asc">Lowest Price</option>
+                    <option value="type">Event Type</option>
+                </select>
+            </div>
+        </div>
         <div id="activity-list" class="border-t border-gray-200 dark:border-gray-800">
             {% for event in events %}
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b border-gray-200 dark:border-gray-800">
                 <div class="col-span-2 flex items-center space-x-4">
                     <img src="{{ event.nft_image_url|default:'/static/img/nft-default.png' }}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
-                    <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
+                    <div class="flex flex-col">
+                        <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
+                        {% if event.nft_mint %}
+                        <a href="https://solscan.io/token/{{ event.nft_mint }}" target="_blank" rel="noopener"
+                           class="text-xs text-primary hover:underline flex items-center gap-1">
+                            View on Solscan
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="text-text-secondary-light">{{ event.event_type|title }}</div>
                 <div class="font-medium">{{ event.amount|floatformat:2|default:"--" }} SOL</div>
@@ -1286,12 +1450,24 @@ document.addEventListener("DOMContentLoaded", function () {
             const eventType = (event.event_type || 'Event').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const amount = event.amount ? `${parseFloat(event.amount).toFixed(2)} SOL` : '--';
             const time = event.timestamp ? new Date(event.timestamp).toLocaleString() : '';
+            const nftMint = event.nft_mint || '';
+            const nftName = event.nft_name || (nftMint ? nftMint.slice(0, 8) : 'Unknown');
+            const solscanLink = nftMint ? `<a href="https://solscan.io/token/${nftMint}" target="_blank" rel="noopener"
+                class="text-xs text-primary hover:underline flex items-center gap-1">
+                View on Solscan
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+            </a>` : '';
 
             return `
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b dark:border-gray-800 fade-in">
                 <div class="col-span-2 flex items-center space-x-4">
                     <img src="${event.nft_image_url || '/static/img/nft-default.png'}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
-                    <span class="font-medium truncate">${event.nft_name || (event.nft_mint ? event.nft_mint.slice(0, 8) : 'Unknown')}</span>
+                    <div class="flex flex-col">
+                        <span class="font-medium truncate">${nftName}</span>
+                        ${solscanLink}
+                    </div>
                 </div>
                 <div class="text-gray-500 text-sm">${eventType}</div>
                 <div class="font-medium text-sm">${amount}</div>
@@ -1639,25 +1815,78 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// === Activity Sorting ===
+document.addEventListener('DOMContentLoaded', function() {
+    const activitySort = document.getElementById('activity-sort');
+    if (!activitySort) return;
+
+    activitySort.addEventListener('change', function() {
+        const sortValue = this.value;
+        const activityList = document.getElementById('activity-list');
+        const activityItems = Array.from(activityList.querySelectorAll('.activity-item'));
+
+        activityItems.sort((a, b) => {
+            switch (sortValue) {
+                case 'time_desc':
+                    // Most recent first - already default order
+                    return 0;
+
+                case 'time_asc':
+                    // Oldest first - reverse
+                    return 0;
+
+                case 'price_desc':
+                    const priceA = parseFloat(a.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    const priceB = parseFloat(b.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    return priceB - priceA;
+
+                case 'price_asc':
+                    const priceA2 = parseFloat(a.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    const priceB2 = parseFloat(b.querySelector('.font-medium').textContent.replace(/[^\d.]/g, '')) || 0;
+                    return priceA2 - priceB2;
+
+                case 'type':
+                    const typeA = a.querySelector('.text-gray-500, .text-text-secondary-light')?.textContent || '';
+                    const typeB = b.querySelector('.text-gray-500, .text-text-secondary-light')?.textContent || '';
+                    return typeA.localeCompare(typeB);
+
+                default:
+                    return 0;
+            }
+        });
+
+        // Re-append in sorted order
+        activityItems.forEach(item => activityList.appendChild(item));
+    });
+});
+
 // === Sticky Stats Bar Blur Effect ===
 document.addEventListener('DOMContentLoaded', function() {
     const statsBar = document.getElementById('collection-stats-bar');
     if (!statsBar) return;
 
-    // Create an Intersection Observer to detect when stats bar becomes sticky
-    const observer = new IntersectionObserver(
-        ([e]) => {
-            // When the element is NOT intersecting its container, it's stuck
-            if (e.intersectionRatio < 1) {
-                statsBar.classList.add('is-stuck');
-            } else {
-                statsBar.classList.remove('is-stuck');
-            }
-        },
-        { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
-    );
+    // Get the initial position of stats bar
+    const statsBarTop = statsBar.offsetTop;
 
-    observer.observe(statsBar);
+    // Use scroll event for more reliable detection
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                // If scrolled past the stats bar's original position, it's stuck
+                if (scrollTop > statsBarTop - 80) { // 80 is approximate header height
+                    statsBar.classList.add('is-stuck');
+                } else {
+                    statsBar.classList.remove('is-stuck');
+                }
+
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
 });
 
 // === Load More NFTs Handler ===
