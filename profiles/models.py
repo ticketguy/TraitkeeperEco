@@ -129,11 +129,9 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     """
     Automatically create or update the user profile when a User object is saved.
     """
-    if created:
-        Profile.objects.create(user=instance)
-    # Ensure the profile is saved even on user update, 
-    # in case fields need syncing (though typically not needed here)
-    instance.profile.save()
+    # Use get_or_create to ensure profile always exists
+    # This handles both new users and old users that might not have profiles
+    Profile.objects.get_or_create(user=instance)
 
 
 class WatchlistItem(models.Model):
