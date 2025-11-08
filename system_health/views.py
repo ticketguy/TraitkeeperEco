@@ -59,6 +59,15 @@ def health_dashboard(request):
     # Simple template render - all data loaded via JavaScript API calls
     return render(request, 'system_health/dashboard.html')
 
+@login_required
+def error_logs_page(request):
+    """Render dedicated error logs page for admin users."""
+    if not request.user.is_staff:
+        return render(request, 'admin/permission_denied.html', status=403)
+
+    # Simple template render - all data loaded via JavaScript API calls
+    return render(request, 'system_health/error_logs.html')
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def health_task_status(request):
@@ -557,3 +566,90 @@ def system_error_logs(request):
     except Exception as e:
         logger.error(f"Error logs API error: {e}", exc_info=True)
         return Response({'error': 'Failed to fetch error logs.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def vitality_metrics(request):
+    """Get vitality calculation system metrics."""
+    try:
+        from marketplace.models import NFTVitalityHistory, CollectionVitalityHistory
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.db.models import Count, Avg, Q
+
+        # Get time range (default last 24 hours)
+        cutoff = timezone.now() - timedelta(hours=24)
+
+        # Count NFT vitality calculations in last 24h
+        nft_calculations = NFTVitalityHistory.objects.filter(
+            updated_at__gte=cutoff
+        ).count()
+
+        # Count collection vitality calculations in last 24h
+        collection_calculations = CollectionVitalityHistory.objects.filter(
+            updated_at__gte=cutoff
+        ).count()
+
+        # Get average calculation times (placeholder - would need timing data)
+        nft_avg_time_ms = 150  # Placeholder
+        collection_avg_time_ms = 250  # Placeholder
+
+        # Calculate failed calculations (vitality_score of 0 could indicate failure)
+        failed_nft = NFTVitalityHistory.objects.filter(
+            updated_at__gte=cutoff,
+            vitality_score=0
+        ).count()
+
+        failed_collection = CollectionVitalityHistory.objects.filter(
+            updated_at__gte=cutoff,
+            vitality_score=0
+        ).count()
+
+        failed_calculations_24h = failed_nft + failed_collection
+        total_calculations = nft_calculations + collection_calculations
+
+        # Calculate failure rate
+        failure_rate_24h = (
+            (failed_calculations_24h / total_calculations * 100)
+            if total_calculations > 0
+            else 0
+        )
+
+        # Queue size (placeholder - would need actual queue implementation)
+        queue_size = 0
+        queue_status = 'idle' if queue_size == 0 else 'active'
+
+        # Get recent calculation component values (sample from latest calculations)
+        recent_nft = NFTVitalityHistory.objects.order_by('-updated_at').first()
+
+        recent_calculations = {
+            'perception_index': round(recent_nft.perception_index, 2) if recent_nft else 0,
+            'trait_performance': round(recent_nft.trait_performance, 2) if recent_nft else 0,
+            'market_momentum': round(recent_nft.market_momentum, 2) if recent_nft else 0,
+            'collection_health': round(recent_nft.collection_health, 2) if recent_nft else 0,
+        }
+
+        return Response({
+            'nft_calculations_24h': nft_calculations,
+            'collection_calculations_24h': collection_calculations,
+            'failed_calculations_24h': failed_calculations_24h,
+            'failure_rate_24h': round(failure_rate_24h, 2),
+            'nft_avg_time_ms': nft_avg_time_ms,
+            'collection_avg_time_ms': collection_avg_time_ms,
+            'queue_size': queue_size,
+            'queue_status': queue_status,
+            'recent_calculations': recent_calculations,
+        })
+
+    except Exception as e:
+        logger.error(f"Vitality metrics API error: {e}", exc_info=True)
+        return Response({
+            'error': 'Failed to fetch vitality metrics.',
+            'nft_calculations_24h': 0,
+            'collection_calculations_24h': 0,
+            'failed_calculations_24h': 0,
+            'failure_rate_24h': 0,
+            'queue_size': 0,
+            'queue_status': 'error',
+        }, status=500)

@@ -5,8 +5,9 @@ from . import views
 app_name = 'system_health'
 
 urlpatterns = [
-    # Standard Django view for the dashboard
+    # Standard Django views
     path('dashboard/', views.health_dashboard, name='dashboard'),
+    path('error-logs/', views.error_logs_page, name='error_logs'),
 
     # --- API Endpoints ---
 
@@ -40,6 +41,9 @@ urlpatterns = [
     # Error Logs API endpoint
     path('api/error-logs/', views.system_error_logs, name='api_error_logs'),
 
-    # Transaction Health API endpoint (NEW)
+    # Transaction Health API endpoint
     path('api/transaction-health/', views.transaction_health, name='api_transaction_health'),
+
+    # Vitality Calculation Metrics API endpoint
+    path('api/vitality-metrics/', views.vitality_metrics, name='api_vitality_metrics'),
 ]
