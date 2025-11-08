@@ -489,7 +489,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         <div class="profile-link flex items-center space-x-2 cursor-pointer">
                             <div id="wallet-profile-image"
                                 class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
-                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}{% static 'img/smileyy.jpg' %}{% endif %}"
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239945FF'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E{% endif %}"
                                     alt="user_pfp" class="w-full h-full object-cover">
                             </div>
                             <div class="flex flex-col">
@@ -558,7 +558,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         <div class="profile-link flex items-center space-x-2 cursor-pointer">
                             <div id="wallet-profile-image-mobile"
                                 class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
-                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}{% static 'img/smileyy.jpg' %}{% endif %}"
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239945FF'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E{% endif %}"
                                     alt="user_pfp" class="w-full h-full object-cover">
                             </div>
                         </div>
@@ -1660,31 +1660,30 @@ if (header) {
                 if (timeSinceElements.length === 0) return;
 
                 {% if user.is_authenticated and notifications %}
-                const notifications = {{ notifications| safe
-            }
-        };
-        timeSinceElements.forEach(element => {
-            const notificationId = element.closest('.notification-item').getAttribute('data-notification-id');
-            const notification = notifications.find(n => n.id == notificationId);
-            if (notification) {
-                const createdAt = new Date(notification.created_at);
-                const now = new Date();
-                const diff = Math.floor((now - createdAt) / 1000);
+                const notifications = {{ notifications|safe }};
 
-                let timeText;
-                if (diff < 60) {
-                    timeText = `${diff} seconds ago`;
-                } else if (diff < 3600) {
-                    timeText = `${Math.floor(diff / 60)} minutes ago`;
-                } else if (diff < 86400) {
-                    timeText = `${Math.floor(diff / 3600)} hours ago`;
-                } else {
-                    timeText = `${Math.floor(diff / 86400)} days ago`;
-                }
-                element.textContent = timeText;
-            }
-        });
-        {% endif %}
+                timeSinceElements.forEach(element => {
+                    const notificationId = element.closest('.notification-item').getAttribute('data-notification-id');
+                    const notification = notifications.find(n => n.id == notificationId);
+                    if (notification) {
+                        const createdAt = new Date(notification.created_at);
+                        const now = new Date();
+                        const diff = Math.floor((now - createdAt) / 1000);
+
+                        let timeText;
+                        if (diff < 60) {
+                            timeText = `${diff} seconds ago`;
+                        } else if (diff < 3600) {
+                            timeText = `${Math.floor(diff / 60)} minutes ago`;
+                        } else if (diff < 86400) {
+                            timeText = `${Math.floor(diff / 3600)} hours ago`;
+                        } else {
+                            timeText = `${Math.floor(diff / 86400)} days ago`;
+                        }
+                        element.textContent = timeText;
+                    }
+                });
+                {% endif %}
         }
 
         setInterval(updateTimestamps, 30000);
