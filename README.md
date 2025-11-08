@@ -1,4 +1,5 @@
 ### 🧬 TraitKeeper
+
 Shape. Reflect. Evolve. Because Every Trait Tells a Story!
 
 With TraitKeeper, there are No Isolated Realities in a Digital World.
@@ -65,7 +66,8 @@ Encrypted dashboard for managing NFTs, viewing private bids, and controlling tra
 TraitKeeper is not a platform — it’s a continuum of connected systems shaping ownership, perception, and participation.
 
 # 🧩 Ecosystem Extensions
-#### EchoSafe by TraitKeeper
+
+## EchoSafe by TraitKeeper
 
 Immutable Proof of Ownership. Always Recoverable.
 A permanent, non-transferable certificate system proving NFT authenticity and ownership.
