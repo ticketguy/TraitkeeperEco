@@ -664,7 +664,18 @@
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b border-gray-200 dark:border-gray-800">
                 <div class="col-span-2 flex items-center space-x-4">
                     <img src="{{ event.nft_image_url|default:'/static/img/nft-default.png' }}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
-                    <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
+                    <div class="flex flex-col">
+                        <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
+                        {% if event.nft_mint %}
+                        <a href="https://solscan.io/token/{{ event.nft_mint }}" target="_blank" rel="noopener"
+                           class="text-xs text-primary hover:underline flex items-center gap-1">
+                            View on Solscan
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="text-text-secondary-light">{{ event.event_type|title }}</div>
                 <div class="font-medium">{{ event.amount|floatformat:2|default:"--" }} SOL</div>
@@ -1286,12 +1297,24 @@ document.addEventListener("DOMContentLoaded", function () {
             const eventType = (event.event_type || 'Event').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const amount = event.amount ? `${parseFloat(event.amount).toFixed(2)} SOL` : '--';
             const time = event.timestamp ? new Date(event.timestamp).toLocaleString() : '';
+            const nftMint = event.nft_mint || '';
+            const nftName = event.nft_name || (nftMint ? nftMint.slice(0, 8) : 'Unknown');
+            const solscanLink = nftMint ? `<a href="https://solscan.io/token/${nftMint}" target="_blank" rel="noopener"
+                class="text-xs text-primary hover:underline flex items-center gap-1">
+                View on Solscan
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+            </a>` : '';
 
             return `
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b dark:border-gray-800 fade-in">
                 <div class="col-span-2 flex items-center space-x-4">
                     <img src="${event.nft_image_url || '/static/img/nft-default.png'}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
-                    <span class="font-medium truncate">${event.nft_name || (event.nft_mint ? event.nft_mint.slice(0, 8) : 'Unknown')}</span>
+                    <div class="flex flex-col">
+                        <span class="font-medium truncate">${nftName}</span>
+                        ${solscanLink}
+                    </div>
                 </div>
                 <div class="text-gray-500 text-sm">${eventType}</div>
                 <div class="font-medium text-sm">${amount}</div>

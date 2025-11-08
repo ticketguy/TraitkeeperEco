@@ -732,10 +732,10 @@ def collection_detail(request, address):
     nfts_queryset = nfts_queryset.prefetch_related(
         Prefetch('trait_values', queryset=TraitValue.objects.select_related('trait_type'))
     )
-    
+
     # --- 6. Pagination ---
-    # Use 48 NFTs per page for optimal performance
-    paginator = Paginator(nfts_queryset, 48)
+    # Use 50 NFTs per page for optimal performance with Load More button
+    paginator = Paginator(nfts_queryset, 50)
     page_number = request.GET.get('page')
     
     try:
@@ -841,6 +841,7 @@ def collection_detail(request, address):
         'collection': collection,
         'collection_stats': collection_stats_data,
         'nfts': nfts_list,
+        'nfts_page': nfts_page,  # For pagination/Load More button
         'traits': traits_list_for_template,
         'events': events_list,
         'search_query': search_query,
