@@ -30,8 +30,11 @@ urlpatterns = [
 
     # --- Auction Actions ---
     path('api/auction/create/', views.api_create_auction, name='api_create_auction'),
-    path('api/auction/bid/', views.api_place_auction_bid, name='api_place_auction_bid'), 
+    path('api/auction/bid/', views.api_place_auction_bid, name='api_place_auction_bid'),
     path('api/auction/cancel/', views.api_cancel_auction, name='api_cancel_auction'),
     path('api/auction/finalize/', views.api_finalize_auction, name='api_finalize_auction'),
+
+    # --- Parallel Lines Integration (World Perception Engine) ---
+    path('api/perception/webhook', views.api_parallel_lines_webhook, name='api_parallel_lines_webhook'),
 
 ]
