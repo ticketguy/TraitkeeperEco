@@ -165,7 +165,7 @@ class NFTVitalityAdmin(admin.ModelAdmin):
     readonly_fields = (
         'nft', 'vitality_score', 'market_momentum', 'trait_performance',
         'collection_health', 'collection_utility', 'rarity_score',
-        'holder_quality', 'sentiment_score', 'market_influence',
+        'holder_quality', 'perception_index', 'market_influence',
         'suggested_price', 'has_sufficient_data', 'updated_at'
     )
 
@@ -181,7 +181,7 @@ class NFTVitalityAdmin(admin.ModelAdmin):
                 'collection_utility',
                 'rarity_score',
                 'holder_quality',
-                'sentiment_score',
+                'perception_index',
                 'market_influence'
             ),
             'description': 'Individual component scores that contribute to the overall vitality score.'
@@ -264,7 +264,7 @@ class CollectionVitalityAdmin(admin.ModelAdmin):
         'avg_trait_performance',
         'collection_health', 'collection_utility',
         'holder_quality_avg',
-        'sentiment_score', 'market_influence',
+        'perception_index', 'market_influence',
         'suggested_floor_price', 'updated_at'
     )
 
@@ -283,7 +283,7 @@ class CollectionVitalityAdmin(admin.ModelAdmin):
                 'collection_health',
                 'collection_utility',
                 'holder_quality_avg',
-                'sentiment_score',
+                'perception_index',
                 'market_influence'
             )
         }),

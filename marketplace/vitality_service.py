@@ -6,14 +6,14 @@ NFT Vitality Calculation Service - REFACTORED
 This service calculates NFT Vitality scores - TraitKeeper's proprietary value metric
 that replaces floor price as the primary indicator of NFT value in the marketplace.
 
-Component Weights (User-Specified - Final):
-- Market Momentum: 25% (60-day lookback period)
+Component Weights (Anti-Gaming Architecture):
+- Perception Index: 20% (Community perception - anti-gaming focus)
 - Trait Performance: 20%
 - Collection Health: 15%
 - Collection Utility: 10%
+- Market Momentum: 10% (60-day lookback period - reduced to prevent gaming)
 - Rarity Score: 10%
 - Holder Quality: 10%
-- Sentiment Score: 5% (TODO: Not yet implemented, returns 0.5)
 - Market Influence: 5%
 
 Total: 100%
@@ -65,15 +65,15 @@ class VitalityCalculationService:
     pre-calculated analytics data from analytics services.
     """
 
-    # === COMPONENT WEIGHTS (User-Specified - Final) ===
+    # === COMPONENT WEIGHTS (Anti-Gaming Architecture) ===
     WEIGHTS = {
-        'market_momentum': Decimal('0.25'),      # 25%
+        'perception_index': Decimal('0.20'),     # 20% - Anti-gaming focus
         'trait_performance': Decimal('0.20'),    # 20%
         'collection_health': Decimal('0.15'),    # 15%
         'collection_utility': Decimal('0.10'),   # 10%
+        'market_momentum': Decimal('0.10'),      # 10% - Reduced to prevent gaming
         'rarity_score': Decimal('0.10'),         # 10%
         'holder_quality': Decimal('0.10'),       # 10%
-        'sentiment_score': Decimal('0.05'),      # 5% - TODO
         'market_influence': Decimal('0.05'),     # 5%
     }
 
@@ -135,7 +135,7 @@ class VitalityCalculationService:
                     'collection_utility': Decimal(str(components['collection_utility'])),
                     'rarity_score': Decimal(str(components['rarity_score'])),
                     'holder_quality': Decimal(str(components['holder_quality'])),
-                    'sentiment_score': Decimal(str(components['sentiment_score'])),
+                    'perception_index': Decimal(str(components['perception_index'])),
                     'market_influence': Decimal(str(components['market_influence'])),
                     'has_sufficient_data': True,
                     'last_calculated': timezone.now()
@@ -153,7 +153,7 @@ class VitalityCalculationService:
                     collection_utility=Decimal(str(components['collection_utility'])),
                     rarity_score=Decimal(str(components['rarity_score'])),
                     holder_quality=Decimal(str(components['holder_quality'])),
-                    sentiment_score=Decimal(str(components['sentiment_score'])),
+                    perception_index=Decimal(str(components['perception_index'])),
                     market_influence=Decimal(str(components['market_influence']))
                 )
 
@@ -183,7 +183,7 @@ class VitalityCalculationService:
             'collection_utility': await self._calculate_collection_utility(nft.collection),
             'rarity_score': await self._calculate_rarity_score(nft),
             'holder_quality': await self._calculate_holder_quality(nft),
-            'sentiment_score': await self._calculate_sentiment_score(nft),
+            'perception_index': await self._calculate_perception_index(nft),
             'market_influence': await self._calculate_market_influence(nft),
         }
 
@@ -511,24 +511,28 @@ class VitalityCalculationService:
 
         return holder_quality
 
-    async def _calculate_sentiment_score(self, nft: NFT) -> float:
+    async def _calculate_perception_index(self, nft: NFT) -> float:
         """
-        Calculate sentiment component (5% weight).
+        Calculate perception index component (20% weight - anti-gaming focus).
 
-        TODO: Implement sentiment analysis from social media/community.
+        TODO: Implement perception analysis from social media/community.
+        This metric is designed to be difficult to game and focuses on genuine
+        community engagement and perception rather than easily manipulable metrics.
+
         Future data sources:
         - Twitter API for collection mentions and sentiment
         - Discord API for community activity and sentiment
         - TraitKeeper user reviews/ratings for collections
         - Sentiment analysis of collection description/metadata
         - NFT influencer mentions and opinions
+        - Anti-gaming heuristics (detect bot activity, wash trading influence)
 
         For now, returns neutral (0.5) as specified by user.
 
         Returns:
-            Score from 0-1 (0 = negative sentiment, 1 = positive sentiment)
+            Score from 0-1 (0 = negative perception, 1 = positive perception)
         """
-        # TODO: Implement sentiment analysis
+        # TODO: Implement perception analysis
         # Placeholder for future implementation
         return 0.5  # Neutral until implemented
 
@@ -655,7 +659,7 @@ class VitalityCalculationService:
                     'collection_utility': await self._calculate_collection_utility(collection),
                     'avg_rarity_score': aggregates['avg_rarity'] or 0.5,
                     'holder_quality_avg': aggregates['avg_holder_quality'] or 0.5,
-                    'sentiment_score': 0.5,  # TODO: Implement
+                    'perception_index': 0.5,  # TODO: Implement
                     'market_influence': await self._calculate_market_influence_collection(collection),
                 }
 
@@ -668,7 +672,7 @@ class VitalityCalculationService:
                 'collection_utility': components['collection_utility'],
                 'rarity_score': components['avg_rarity_score'],
                 'holder_quality': components['holder_quality_avg'],
-                'sentiment_score': components['sentiment_score'],
+                'perception_index': components['perception_index'],
                 'market_influence': components['market_influence'],
             }
 
@@ -685,7 +689,7 @@ class VitalityCalculationService:
                     'collection_utility': Decimal(str(components['collection_utility'])),
                     'avg_rarity_score': Decimal(str(components['avg_rarity_score'])),
                     'holder_quality_avg': Decimal(str(components['holder_quality_avg'])),
-                    'sentiment_score': Decimal(str(components['sentiment_score'])),
+                    'perception_index': Decimal(str(components['perception_index'])),
                     'market_influence': Decimal(str(components['market_influence'])),
                     'has_sufficient_data': True,
                     'last_calculated': timezone.now()
@@ -703,7 +707,7 @@ class VitalityCalculationService:
                     collection_utility=Decimal(str(components['collection_utility'])),
                     avg_rarity_score=Decimal(str(components['avg_rarity_score'])),
                     holder_quality_avg=Decimal(str(components['holder_quality_avg'])),
-                    sentiment_score=Decimal(str(components['sentiment_score'])),
+                    perception_index=Decimal(str(components['perception_index'])),
                     market_influence=Decimal(str(components['market_influence']))
                 )
 
@@ -794,7 +798,7 @@ class VitalityCalculationService:
             'collection_utility': await self._calculate_collection_utility(collection),
             'avg_rarity_score': 0.5,  # Neutral until NFTs calculated
             'holder_quality_avg': 0.5,  # Neutral until NFTs calculated
-            'sentiment_score': 0.5,  # TODO
+            'perception_index': 0.5,  # TODO
             'market_influence': await self._calculate_market_influence_collection(collection),
         }
 
