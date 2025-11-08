@@ -605,7 +605,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
                 Voyager
             </a>
-            <a href="#}"
+            <a href="#"
                 class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
                 Learn
             </a>
@@ -798,34 +798,35 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
             <!-- Mobile Footer -->
             <div class="flex sm:hidden justify-between items-center py-1">
-                <!-- Left: TPS -->
-                <span class="flex items-center space-x-1">
-                    <span class="text-text-secondary-light dark:text-text-secondary-dark text-[10px]">TPS:</span>
-                    <span class="solana-tps text-green-400 font-semibold text-[10px]"
-                        style="display: inline;">Loading...</span>
-                </span>
+                <!-- Left: TPS and Solana Price -->
+                <div class="flex items-center space-x-3">
+                    <span class="flex items-center space-x-1">
+                        <span class="text-text-secondary-light dark:text-text-secondary-dark text-[10px]">TPS:</span>
+                        <span class="solana-tps text-green-400 font-semibold text-[10px]"
+                            style="display: inline;">Loading...</span>
+                    </span>
 
-                <!-- Center: Solana Price -->
-                <span class="solana-price flex items-center space-x-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" width="12" height="12">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M6.67546 16.6449C6.73454 16.5811 6.80593 16.5299 6.88535 16.4942C6.96477 16.4586 7.05058 16.4394 7.13766 16.4376H21.66C21.7215 16.4384 21.7813 16.457 21.8324 16.491C21.8836 16.5249 21.9238 16.5729 21.9482 16.6291C21.9727 16.6853 21.9803 16.7474 21.9701 16.8078C21.96 16.8682 21.9326 16.9244 21.8912 16.9696L18.8129 20.3762C18.7538 20.4399 18.6824 20.4912 18.603 20.5268C18.5236 20.5624 18.4378 20.5817 18.3507 20.5834H3.81905C3.75761 20.5826 3.69772 20.564 3.64659 20.5301C3.59547 20.4961 3.55528 20.4481 3.53087 20.3919C3.50646 20.3357 3.49886 20.2737 3.50898 20.2133C3.51911 20.1528 3.54653 20.0966 3.58795 20.0514L6.67546 16.6449ZM21.9051 13.8211C21.9465 13.8663 21.9739 13.9225 21.9839 13.9829C21.9942 14.0434 21.9865 14.1054 21.9621 14.1616C21.9377 14.2178 21.8974 14.2658 21.8463 14.2998C21.7952 14.3337 21.7354 14.3523 21.6739 14.3531L7.1469 14.3647C7.05984 14.3629 6.97401 14.3436 6.89459 14.308C6.81517 14.2724 6.74378 14.2211 6.68471 14.1574L3.58333 10.7624C3.54191 10.7171 3.51449 10.6609 3.50436 10.6005C3.49423 10.5401 3.50183 10.4781 3.52625 10.4219C3.55066 10.3656 3.59085 10.3177 3.64197 10.2837C3.6931 10.2497 3.75298 10.2312 3.81443 10.2303L18.3414 10.2188C18.4285 10.2206 18.5143 10.2398 18.5938 10.2755C18.6732 10.3111 18.7446 10.3623 18.8036 10.4261L21.9051 13.8211ZM6.67546 4.2073C6.73454 4.14353 6.80593 4.0923 6.88535 4.05668C6.96477 4.02106 7.05058 4.00178 7.13766 4.00001L21.6693 4.01152C21.7307 4.01239 21.7907 4.03092 21.8418 4.0649C21.8929 4.09889 21.9331 4.14686 21.9574 4.20307C21.9819 4.25927 21.9895 4.32131 21.9794 4.38172C21.9692 4.44213 21.9418 4.49833 21.9004 4.54358L18.8129 7.93857C18.7538 8.00235 18.6824 8.05359 18.603 8.08921C18.5236 8.12483 18.4378 8.14409 18.3507 8.14587H3.81905C3.75761 8.145 3.69772 8.12647 3.64659 8.09249C3.59547 8.05851 3.55528 8.01052 3.53087 7.95433C3.50646 7.89812 3.49886 7.83609 3.50898 7.77568C3.51911 7.71527 3.54653 7.65906 3.58795 7.61382L6.67546 4.2073Z"
-                            fill="url(#me-:r8-mobile:)"></path>
-                        <defs>
-                            <linearGradient id="me-:r8-mobile:" x1="4.06171" y1="20.9451" x2="21.3683" y2="3.58022"
-                                gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#9945FF"></stop>
-                                <stop offset="0.14" stop-color="#8A53F4"></stop>
-                                <stop offset="0.42" stop-color="#6377D6"></stop>
-                                <stop offset="0.79" stop-color="#24B0A7"></stop>
-                                <stop offset="0.99" stop-color="#00D18C"></stop>
-                                <stop offset="1" stop-color="#00D18C"></stop>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span class="price-value text-text-light dark:text-text-dark text-[10px]"
-                        style="display: inline;">Loading...</span>
-                </span>
+                    <span class="solana-price flex items-center space-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" width="12" height="12">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M6.67546 16.6449C6.73454 16.5811 6.80593 16.5299 6.88535 16.4942C6.96477 16.4586 7.05058 16.4394 7.13766 16.4376H21.66C21.7215 16.4384 21.7813 16.457 21.8324 16.491C21.8836 16.5249 21.9238 16.5729 21.9482 16.6291C21.9727 16.6853 21.9803 16.7474 21.9701 16.8078C21.96 16.8682 21.9326 16.9244 21.8912 16.9696L18.8129 20.3762C18.7538 20.4399 18.6824 20.4912 18.603 20.5268C18.5236 20.5624 18.4378 20.5817 18.3507 20.5834H3.81905C3.75761 20.5826 3.69772 20.564 3.64659 20.5301C3.59547 20.4961 3.55528 20.4481 3.53087 20.3919C3.50646 20.3357 3.49886 20.2737 3.50898 20.2133C3.51911 20.1528 3.54653 20.0966 3.58795 20.0514L6.67546 16.6449ZM21.9051 13.8211C21.9465 13.8663 21.9739 13.9225 21.9839 13.9829C21.9942 14.0434 21.9865 14.1054 21.9621 14.1616C21.9377 14.2178 21.8974 14.2658 21.8463 14.2998C21.7952 14.3337 21.7354 14.3523 21.6739 14.3531L7.1469 14.3647C7.05984 14.3629 6.97401 14.3436 6.89459 14.308C6.81517 14.2724 6.74378 14.2211 6.68471 14.1574L3.58333 10.7624C3.54191 10.7171 3.51449 10.6609 3.50436 10.6005C3.49423 10.5401 3.50183 10.4781 3.52625 10.4219C3.55066 10.3656 3.59085 10.3177 3.64197 10.2837C3.6931 10.2497 3.75298 10.2312 3.81443 10.2303L18.3414 10.2188C18.4285 10.2206 18.5143 10.2398 18.5938 10.2755C18.6732 10.3111 18.7446 10.3623 18.8036 10.4261L21.9051 13.8211ZM6.67546 4.2073C6.73454 4.14353 6.80593 4.0923 6.88535 4.05668C6.96477 4.02106 7.05058 4.00178 7.13766 4.00001L21.6693 4.01152C21.7307 4.01239 21.7907 4.03092 21.8418 4.0649C21.8929 4.09889 21.9331 4.14686 21.9574 4.20307C21.9819 4.25927 21.9895 4.32131 21.9794 4.38172C21.9692 4.44213 21.9418 4.49833 21.9004 4.54358L18.8129 7.93857C18.7538 8.00235 18.6824 8.05359 18.603 8.08921C18.5236 8.12483 18.4378 8.14409 18.3507 8.14587H3.81905C3.75761 8.145 3.69772 8.12647 3.64659 8.09249C3.59547 8.05851 3.55528 8.01052 3.53087 7.95433C3.50646 7.89812 3.49886 7.83609 3.50898 7.77568C3.51911 7.71527 3.54653 7.65906 3.58795 7.61382L6.67546 4.2073Z"
+                                fill="url(#me-:r8-mobile:)"></path>
+                            <defs>
+                                <linearGradient id="me-:r8-mobile:" x1="4.06171" y1="20.9451" x2="21.3683" y2="3.58022"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#9945FF"></stop>
+                                    <stop offset="0.14" stop-color="#8A53F4"></stop>
+                                    <stop offset="0.42" stop-color="#6377D6"></stop>
+                                    <stop offset="0.79" stop-color="#24B0A7"></stop>
+                                    <stop offset="0.99" stop-color="#00D18C"></stop>
+                                    <stop offset="1" stop-color="#00D18C"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="price-value text-text-light dark:text-text-dark text-[10px]"
+                            style="display: inline;">Loading...</span>
+                    </span>
+                </div>
 
                 <!-- Right: Theme Toggle -->
                 <button id="theme-toggle-mobile" aria-label="Toggle dark mode"
@@ -1752,23 +1753,42 @@ if (header) {
             const desktopResults = document.getElementById('desktop-search-results');
             const mobileResults = document.getElementById('mobile-search-results');
 
+            console.log('Collection Search Initialized:', {
+                desktopInput: !!desktopInput,
+                mobileInput: !!mobileInput,
+                desktopResults: !!desktopResults,
+                mobileResults: !!mobileResults
+            });
+
             let searchTimeout;
             const SEARCH_DELAY = 300; // milliseconds
 
             function performSearch(query, resultsContainer) {
+                console.log('performSearch called:', { query, hasContainer: !!resultsContainer });
+
                 if (query.length < 2) {
                     resultsContainer.classList.add('hidden');
+                    console.log('Query too short, hiding results');
                     return;
                 }
 
                 // Show loading state
+                console.log('Showing loading state');
                 resultsContainer.innerHTML = '<div class="p-4 text-center"><div class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div><span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Searching...</span></div>';
                 resultsContainer.classList.remove('hidden');
+                console.log('Results container visible:', !resultsContainer.classList.contains('hidden'));
 
                 // Fetch search results
-                fetch(`/api/search-collections/?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
+                const searchUrl = `/api/search-collections/?q=${encodeURIComponent(query)}`;
+                console.log('Fetching from:', searchUrl);
+
+                fetch(searchUrl)
+                    .then(response => {
+                        console.log('Search response status:', response.status);
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Search results:', data);
                         if (data.results && data.results.length > 0) {
                             const html = data.results.map(collection => `
                                 <a href="/collection/${collection.slug || collection.address}/"
@@ -1788,8 +1808,10 @@ if (header) {
                                 </a>
                             `).join('');
                             resultsContainer.innerHTML = html;
+                            console.log('Results rendered:', data.results.length, 'collections');
                         } else {
                             resultsContainer.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">No collections found</div>';
+                            console.log('No results found');
                         }
                     })
                     .catch(error => {
@@ -1799,11 +1821,17 @@ if (header) {
             }
 
             function setupSearchInput(input, results) {
-                if (!input || !results) return;
+                if (!input || !results) {
+                    console.warn('setupSearchInput called with missing elements:', { input: !!input, results: !!results });
+                    return;
+                }
+
+                console.log('Setting up search input:', { inputId: input.id, resultsId: results.id });
 
                 input.addEventListener('input', (e) => {
                     clearTimeout(searchTimeout);
                     const query = e.target.value.trim();
+                    console.log('Input event triggered:', query);
 
                     if (query.length < 2) {
                         results.classList.add('hidden');
@@ -1817,6 +1845,7 @@ if (header) {
 
                 input.addEventListener('focus', (e) => {
                     const query = e.target.value.trim();
+                    console.log('Focus event triggered:', query);
                     if (query.length >= 2 && !results.classList.contains('hidden')) {
                         performSearch(query, results);
                     }
@@ -1825,6 +1854,7 @@ if (header) {
                 // Close results when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!input.contains(e.target) && !results.contains(e.target)) {
+                        console.log('Click outside search, hiding results');
                         results.classList.add('hidden');
                     }
                 });
@@ -1832,13 +1862,16 @@ if (header) {
                 // Handle keyboard navigation
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
+                        console.log('Escape key pressed, hiding results');
                         results.classList.add('hidden');
                         input.blur();
                     }
                 });
             }
 
+            console.log('Setting up desktop search...');
             setupSearchInput(desktopInput, desktopResults);
+            console.log('Setting up mobile search...');
             setupSearchInput(mobileInput, mobileResults);
     });
 
