@@ -89,7 +89,7 @@ def profile_view(request, username):
         bids_placed = Bid.objects.filter(
             bidder__in=wallet_addresses,
             status='ACTIVE'
-        ).select_related('nft', 'nft__collection').order_by('-bid_placed_at')[:20]
+        ).select_related('nft', 'nft__collection').order_by('-placed_at')[:20]
 
     # Fetch marketplace data - Bids Received (on user's NFTs)
     bids_received = []
@@ -152,7 +152,7 @@ def profile_view(request, username):
         'most_interacted_memories': most_interacted_memories,
         'stats': stats,
     }
-    return render(request, 'profiles/user_profile.html', context)
+    return render(request, 'profile/user_profile.html', context)
 
 # --- Settings Views ---
 
@@ -198,7 +198,7 @@ def settings_profile_view(request):
         'active_tab': 'profile',
         'form': form, # Pass the form to the template
     }
-    return render(request, 'profiles/settings.html', context)
+    return render(request, 'profile/settings.html', context)
 
 @login_required
 def settings_wallets_view(request):
@@ -212,7 +212,7 @@ def settings_wallets_view(request):
         'active_tab': 'wallets',
         'user_wallets': user_wallets,
     }
-    return render(request, 'profiles/settings.html', context)
+    return render(request, 'profile/settings.html', context)
 
 
 @login_required
@@ -350,7 +350,7 @@ def settings_notifications_view(request):
         # Pass the choices for the loop in the template if not using the context dict approach
         'NOTIFICATION_TYPES': NotificationPreference.NOTIFICATION_TYPES
     }
-    return render(request, 'profiles/settings.html', context)
+    return render(request, 'profile/settings.html', context)
 
 
 @login_required
@@ -371,7 +371,7 @@ def settings_visibility_view(request):
         # Pass profile object to check current state in template
         'profile': profile
     }
-    return render(request, 'profiles/settings.html', context)
+    return render(request, 'profile/settings.html', context)
 
 @login_required
 def settings_account_view(request):
@@ -385,7 +385,7 @@ def settings_account_view(request):
         'active_tab': 'account',
         'account_management_enabled': account_management_enabled,
     }
-    return render(request, 'profiles/settings.html', context)
+    return render(request, 'profile/settings.html', context)
 
 @login_required
 def delete_account_view(request):
@@ -592,7 +592,7 @@ def quests_page_view(request):
         'quest_progress_dict': quest_progress_dict,
         'claimed_quest_ids': claimed_quest_ids,
     }
-    return render(request, 'profiles/quests.html', context)
+    return render(request, 'profile/quests.html', context)
 
 
 @login_required
