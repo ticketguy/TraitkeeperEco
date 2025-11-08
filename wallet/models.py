@@ -64,8 +64,10 @@ class CustomUser(AbstractUser):
         return self.username
 
     def get_identifier(self):
-        if hasattr(self, 'wallet_profile') and self.wallet_profile.public_key:
-            return self.wallet_profile.short_public_key
+        # Use 'wallets' related_name (changed from 'wallet_profile' for multiple wallet support)
+        primary_wallet = self.wallets.filter(is_primary=True).first() if hasattr(self, 'wallets') else None
+        if primary_wallet and primary_wallet.public_key:
+            return primary_wallet.short_public_key
         return self.username or self.email or self.secondary_identifier
 
     def set_password_for_user(self, password):
