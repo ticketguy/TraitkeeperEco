@@ -446,15 +446,15 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <div class="wallet-container flex items-center space-x-3 flex-shrink-0">
                     {% if user.is_authenticated %}
                     <div class="relative">
-                        <button id="notification-toggle"
-                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover">
+                        <a href="{% url 'notifications:list' %}"
+                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block">
                             <i class="fas fa-bell text-xl"></i>
                             {% if unread_notifications_count > 0 %}
                             <span
                                 class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">{{
                                 unread_notifications_count }}</span>
                             {% endif %}
-                        </button>
+                        </a>
                         <div id="notification-dropdown"
                             class="hidden absolute right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark shadow-lg rounded-lg p-2 z-50 animate-scale-in">
                             <div
@@ -544,15 +544,15 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <div class="mobile-header-right flex items-center space-x-1 xs:space-x-2">
                     {% if user.is_authenticated %}
                     <div class="relative">
-                        <button id="notification-toggle-mobile"
-                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover">
+                        <a href="{% url 'notifications:list' %}"
+                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block">
                             <i class="fas fa-bell text-base xs:text-lg"></i>
                             {% if unread_notifications_count > 0 %}
                             <span
                                 class="absolute top-0 right-0 bg-red-500 text-white text-[10px] xs:text-xs rounded-full w-4 xs:w-5 h-4 xs:h-5 flex items-center justify-center animate-pulse">{{
                                 unread_notifications_count }}</span>
                             {% endif %}
-                        </button>
+                        </a>
                     </div>
                     <!-- Updated User Profile Display for Mobile -->
                     <div class="user-profile relative flex items-center space-x-2 animate-slide-up">
@@ -841,12 +841,12 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 </div>
                 <!-- Tab Content Container -->
                 <div
-                    class="tab-content-container relative bg-background-light dark:bg-background-dark rounded-lg p-3 sm:p-4 flex-grow animate-scale-in">
+                    class="tab-content-container relative bg-background-light dark:bg-background-dark rounded-lg p-3 sm:p-4 flex-grow animate-scale-in min-h-[260px]">
                     <!-- Wallet Error Display -->
                     <p id="wallet-error-display" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in text-center"></p>
 
                     <!-- Wallet Tab Content -->
-                    <div id="wallet-tab-content" class="tab-content transition-opacity duration-500 opacity-100">
+                    <div id="wallet-tab-content" class="tab-content absolute inset-0 p-3 sm:p-4 transition-opacity duration-300 opacity-100">
                         <div class="wallet-chains flex justify-center mb-3">
                             <button
                                 class="bg-black text-text-light dark:text-text-dark px-3 py-1 rounded-lg cursor-not-allowed text-xs font-roboto font-medium flex items-center space-x-2 border border-primary/30 hover:border-primary transition-all duration-300 faint-glow-hover"
@@ -910,36 +910,36 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         </div>
                     </div>
 <!-- Username Tab Content -->
-<div id="login-tab-content" class="tab-content transition-opacity duration-500 opacity-0 absolute inset-0 hidden">
-    <form id="email-login-form" method="POST" action="{% url 'wallet:email_login' %}">
+<div id="login-tab-content" class="tab-content absolute inset-0 p-3 sm:p-4 transition-opacity duration-300 opacity-0 hidden">
+    <form id="email-login-form" method="POST" action="{% url 'wallet:email_login' %}" class="space-y-3">
         {% csrf_token %}
-        <div class="mb-2">
-
+        <div class="mb-3">
+            <label for="username_or_email" class="block text-xs font-roboto font-medium text-text-light dark:text-text-dark mb-1.5">Username or Email</label>
             <div class="relative">
-                <input type="text" id="username_or_email" name="username_or_email"
-                    class="w-full px-2 py-1 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50"
+                <input type="text" id="username_or_email" name="username_or_email" placeholder="Enter your username or email"
+                    class="w-full px-3 py-2 pr-8 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     required>
-                <i class="fas fa-user absolute right-2 top-1/2 transform -translate-y-1/2 text-primary text-sm"></i>
+                <i class="fas fa-user absolute right-3 top-1/2 transform -translate-y-1/2 text-primary/60 text-xs"></i>
             </div>
-            <p id="username-or-email-error" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in"></p>
+            <p id="username-or-email-error" class="text-red-500 text-xs mt-1 hidden font-roboto"></p>
         </div>
-        <div class="mb-2">
-            <label for="password"
-                class="block text-xs font-roboto font-medium text-text-light dark:text-text-dark mb-1 transition-transform duration-300 transform translate-x-[-20px] opacity-0 animate-slide-in-delayed">Password</label>
+        <div class="mb-3">
+            <label for="password" class="block text-xs font-roboto font-medium text-text-light dark:text-text-dark mb-1.5">Password</label>
             <div class="relative">
-                <input type="password" id="password" name="password"
-                    class="w-full px-2 py-1 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50"
+                <input type="password" id="password" name="password" placeholder="Enter your password"
+                    class="w-full px-3 py-2 pr-8 border border-primary/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-text-light dark:text-text-dark text-xs transition-all duration-300 hover:border-primary/50 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     required>
-                <i class="fas fa-lock absolute right-2 top-1/2 transform -translate-y-1/2 text-primary text-sm"></i>
+                <i class="fas fa-lock absolute right-3 top-1/2 transform -translate-y-1/2 text-primary/60 text-xs"></i>
             </div>
-            <p id="password-error" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in"></p>
+            <p id="password-error" class="text-red-500 text-xs mt-1 hidden font-roboto"></p>
         </div>
         <button type="submit"
-            class="w-full bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold text-xs font-roboto faint-glow-hover">Login</button>
-        <p id="login-error-display" class="text-red-500 text-xs mt-1 hidden font-roboto animate-fade-in text-center">
-        </p>
-        <p class="text-center text-xs mt-1">
-            <a href="#" class="text-primary hover:underline" id="forgot-password-link">Forgot Password?</a>
+            class="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-all duration-300 font-semibold text-sm font-roboto faint-glow-hover shadow-lg shadow-primary/30">
+            Sign In
+        </button>
+        <p id="login-error-display" class="text-red-500 text-xs mt-2 hidden font-roboto text-center"></p>
+        <p class="text-center text-xs mt-2">
+            <a href="#" class="text-primary hover:text-primary-dark hover:underline transition-colors" id="forgot-password-link">Forgot Password?</a>
         </p>
     </form>
                         <!-- Divider with "Or" -->
