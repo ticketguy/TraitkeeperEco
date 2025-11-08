@@ -596,7 +596,7 @@ def collection_detail(request, address):
                 'floor_price': 0.0, 'floor_change_24h': 0.0, 'volume_24h': 0.0,
                 'velocity_24h': 0.0, 'total_volume': 0.0, 'market_cap': 0.0,
                 'owners': 0, 'owners_change_24h': 0.0, 'listed_count': 0,
-                'total_supply': NFT.objects.filter(collection=collection, is_burned=False).count(), # Calculate supply if stats missing
+                'total_supply': collection.total_supply or 0, # Use cached total_supply from collection model
                 # Add any other default values needed
             }
 
@@ -734,8 +734,8 @@ def collection_detail(request, address):
     )
     
     # --- 6. Pagination ---
-    # Increased from 24 to 500 to show all NFTs until proper pagination UI is added
-    paginator = Paginator(nfts_queryset, 500)
+    # Use 48 NFTs per page for optimal performance
+    paginator = Paginator(nfts_queryset, 48)
     page_number = request.GET.get('page')
     
     try:

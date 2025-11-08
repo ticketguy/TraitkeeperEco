@@ -279,7 +279,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store sessions in the 
 SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', '1209600'))  # Session duration: 2 weeks in seconds
 SESSION_COOKIE_SECURE = str_to_bool(os.getenv('SESSION_COOKIE_SECURE', 'False'))  # Set to True in production to ensure cookies are sent over HTTPS
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookies
-SESSION_EXPIRE_AT_BROWSER_CLOSE = str_to_bool(os.getenv('SESSION_EXPIRE_AT_BROWSER_CLOSE', 'True'))  # Expire session when browser closes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = str_to_bool(os.getenv('SESSION_EXPIRE_AT_BROWSER_CLOSE', 'False'))  # Keep sessions for SESSION_COOKIE_AGE duration (2 weeks)
 CSRF_COOKIE_SECURE = str_to_bool(os.getenv('CSRF_COOKIE_SECURE', 'False'))  # Set to True in production for secure CSRF cookies
 
 # -----------------------------------------------------------------------------
