@@ -44,9 +44,19 @@
         padding-bottom: 0.5rem;
         border-bottom: 1px solid var(--border-color-light);
         margin-top: -60px;
+        transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+    }
+    #collection-stats-bar.is-stuck {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     .dark #collection-stats-bar {
         border-bottom-color: var(--border-color-dark);
+    }
+    .dark #collection-stats-bar.is-stuck {
+        background-color: rgba(17, 24, 39, 0.8);
     }
 
     /* Stats Flex Layout */
@@ -352,7 +362,7 @@
             </nav>
         <form method="GET" action="{% url 'collection_detail' address=collection.address %}" id="collection-filter" class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
             <div class="flex-grow min-w-[200px]">
-                <input type="text" name="q" value="{{ search_query }}" placeholder="Search by name or token address..." class="form-input-minimal w-full">
+                <input type="text" id="nft-search-input" name="q" value="{{ search_query }}" placeholder="Search by name, trait, or #number..." class="form-input-minimal w-full">
             </div>
             
             <div class="flex items-center gap-x-4 gap-y-2 flex-wrap">
@@ -496,6 +506,27 @@
                 <p class="col-span-full text-center text-text-secondary-light py-10">No NFTs found for the current filters.</p>
             {% endfor %}
         </div>
+
+        <!-- Load More Button -->
+        {% if nfts_page.has_next %}
+        <div class="flex justify-center mt-8">
+            <button id="load-more-nfts"
+                    data-next-page="{{ nfts_page.next_page_number }}"
+                    data-collection-address="{{ collection.address }}"
+                    class="px-8 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <span class="flex items-center gap-2">
+                    <span class="load-more-text">Load More NFTs</span>
+                    <svg class="load-more-icon w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <svg class="load-more-spinner w-5 h-5 animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+        {% endif %}
     </div>
 
     <div id="traits-tab-content" class="tab-content fade-in hidden p-4 sm:p-6 lg:p-8 bg-accent-light dark:bg-gray-950 min-h-screen">
@@ -1517,6 +1548,166 @@ function handleOfferSubmit(event, nftMintAddress) {
 
     return false;
 }
+
+// === Live NFT Search ===
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('nft-search-input');
+    if (!searchInput) return;
+
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            const query = this.value.toLowerCase().trim();
+            const nftCards = document.querySelectorAll('.nft-card-wrapper');
+            let visibleCount = 0;
+
+            nftCards.forEach(card => {
+                const nftCard = card.querySelector('.nft-card');
+                if (!nftCard) return;
+
+                // Get NFT data
+                const nftName = nftCard.querySelector('h3')?.textContent.toLowerCase() || '';
+                const nftId = nftCard.getAttribute('data-nft-id') || '';
+
+                // Check if matches
+                const matches = !query ||
+                                nftName.includes(query) ||
+                                nftId.toLowerCase().includes(query) ||
+                                nftName.match(new RegExp(`#?${query}`, 'i')); // Match #numbers
+
+                if (matches) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show "no results" message
+            const grid = document.getElementById('nfts-grid');
+            let noResultsMsg = grid.querySelector('.no-search-results');
+
+            if (visibleCount === 0 && query) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('p');
+                    noResultsMsg.className = 'no-search-results col-span-full text-center text-text-secondary-light py-10';
+                    noResultsMsg.textContent = `No NFTs found matching "${query}"`;
+                    grid.appendChild(noResultsMsg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+
+            // Hide/show Load More button during search
+            const loadMoreBtn = document.getElementById('load-more-nfts');
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = query ? 'none' : '';
+            }
+        }, 300); // Debounce for performance
+    });
+});
+
+// === Sticky Stats Bar Blur Effect ===
+document.addEventListener('DOMContentLoaded', function() {
+    const statsBar = document.getElementById('collection-stats-bar');
+    if (!statsBar) return;
+
+    // Create an Intersection Observer to detect when stats bar becomes sticky
+    const observer = new IntersectionObserver(
+        ([e]) => {
+            // When the element is NOT intersecting its container, it's stuck
+            if (e.intersectionRatio < 1) {
+                statsBar.classList.add('is-stuck');
+            } else {
+                statsBar.classList.remove('is-stuck');
+            }
+        },
+        { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+    );
+
+    observer.observe(statsBar);
+});
+
+// === Load More NFTs Handler ===
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('load-more-nfts');
+    if (!loadMoreBtn) return;
+
+    loadMoreBtn.addEventListener('click', async function() {
+        const nextPage = this.dataset.nextPage;
+        const collectionAddress = this.dataset.collectionAddress;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('page', nextPage);
+
+        // Show loading state
+        const loadMoreText = this.querySelector('.load-more-text');
+        const loadMoreIcon = this.querySelector('.load-more-icon');
+        const loadMoreSpinner = this.querySelector('.load-more-spinner');
+
+        loadMoreText.textContent = 'Loading...';
+        loadMoreIcon.classList.add('hidden');
+        loadMoreSpinner.classList.remove('hidden');
+        this.disabled = true;
+
+        try {
+            const response = await fetch(currentUrl.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to load more NFTs');
+
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Extract new NFTs
+            const newNFTs = doc.querySelectorAll('#nfts-grid > .nft-card-wrapper');
+            const grid = document.getElementById('nfts-grid');
+
+            // Append new NFTs to grid
+            newNFTs.forEach(nft => {
+                grid.appendChild(nft.cloneNode(true));
+            });
+
+            // Re-attach event listeners for new offer buttons
+            grid.querySelectorAll('.make-offer-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const wrapper = this.closest('.nft-card-wrapper');
+                    const offerForm = wrapper.querySelector('.offer-form-inline');
+                    document.querySelectorAll('.offer-form-inline').forEach(form => {
+                        if (form !== offerForm) form.classList.add('hidden');
+                    });
+                    if (offerForm) offerForm.classList.toggle('hidden');
+                });
+            });
+
+            // Update button or remove it
+            const hasNextPage = doc.querySelector('#load-more-nfts');
+            if (hasNextPage) {
+                this.dataset.nextPage = hasNextPage.dataset.nextPage;
+                loadMoreText.textContent = 'Load More NFTs';
+                loadMoreIcon.classList.remove('hidden');
+                loadMoreSpinner.classList.add('hidden');
+                this.disabled = false;
+            } else {
+                this.remove(); // No more pages
+            }
+
+        } catch (error) {
+            console.error('Error loading more NFTs:', error);
+            loadMoreText.textContent = 'Error - Try Again';
+            loadMoreIcon.classList.remove('hidden');
+            loadMoreSpinner.classList.add('hidden');
+            this.disabled = false;
+        }
+    });
+});
 </script>
 
 <script id="initial-page-data" type="application/json">
