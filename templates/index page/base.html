@@ -363,10 +363,11 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
     /* --- Footer Positioning & Mobile Adjustments (Existing + Cleanup) --- */
     footer.bottom-bar {
-        position: fixed; bottom: 0; left: 0; width: 100%; z-index: 40; /* width: 100% */
+        position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; /* Increased from 40 to 50 to be above header */
         /* background/border handled by variables */
         background-color: var(--background-color-light);
         border-top: 1px solid var(--border-color-light);
+        pointer-events: auto; /* Ensure footer accepts pointer events */
     }
     html.dark footer.bottom-bar {
         background-color: var(--background-color-dark);
@@ -381,6 +382,11 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
             padding-right: 0.75rem;
         }
         /* Mobile footer uses flexbox - no absolute positioning needed */
+        /* Ensure mobile footer is fully interactive */
+        footer.bottom-bar {
+            z-index: 50 !important;
+            pointer-events: auto !important;
+        }
     }
 
 </style>
@@ -832,12 +838,12 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
                 <!-- RIGHT SIDE: Theme toggle with flex-shrink-0 to prevent squashing -->
                 <button id="theme-toggle-mobile" aria-label="Toggle dark mode" type="button"
-                    class="flex-shrink-0 ml-2 p-2 relative z-50 text-text-light dark:text-text-dark hover:text-primary transition cursor-pointer faint-glow-hover"
-                    style="pointer-events: auto; touch-action: manipulation;">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="pointer-events-none">
+                    class="flex-shrink-0 ml-2 p-2 text-text-light dark:text-text-dark hover:text-primary transition cursor-pointer faint-glow-hover"
+                    style="pointer-events: auto !important; touch-action: manipulation; position: relative; z-index: 9999;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="pointer-events: none;">
                         <path
                             d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"
-                            class="pointer-events-none" />
+                            style="pointer-events: none;" />
                     </svg>
                 </button>
             </div>
