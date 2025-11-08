@@ -4,48 +4,145 @@
 {% block extrahead %}
 <!-- Load custom admin CSS -->
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-<!-- Particles.js for subtle background effects, deferred -->
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
 <!-- Inline critical CSS for immediate rendering -->
 <style>
-    .section-card {
+    /* Sidebar Styles */
+    .sidebar {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        height: calc(100vh - 64px);
+        width: 250px;
+        background: linear-gradient(180deg, #800080 0%, #660066 100%);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 40;
+        overflow-y: auto;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 64px);
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 35;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    @media (min-width: 1024px) {
+        .sidebar {
+            transform: translateX(0);
+        }
+        .main-content {
+            margin-left: 250px;
+        }
+        .sidebar-overlay {
+            display: none !important;
+        }
+    }
+
+    .sidebar-link {
+        transition: all 0.2s ease;
+    }
+
+    .sidebar-link:hover {
         background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        transform: translateX(5px);
     }
-    .section-card:hover {
-        box-shadow: 0 2px 4px rgba(128, 0, 128, 0.1); /* Subtle shadow on hover */
+
+    .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.15);
+        border-left: 4px solid #fff;
     }
-    .glow-button {
-        background: linear-gradient(45deg, #800080, #660066);
-        transition: box-shadow 0.2s ease; /* Adjusted to only affect shadow */
+
+    /* Modern Card Styles */
+    .modern-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(128, 0, 128, 0.1);
+        transition: all 0.3s ease;
     }
-    .glow-button:hover {
-        box-shadow: 0 0 4px rgba(128, 0, 128, 0.3); /* Reduced shadow effect */
+
+    .dark .modern-card {
+        background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(30, 30, 30, 0.9) 100%);
+        border: 1px solid rgba(128, 0, 128, 0.2);
     }
-    .section-header {
-        font-family: 'Space Mono', monospace;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        background: linear-gradient(45deg, #800080, #660066);
+
+    .modern-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(128, 0, 128, 0.15);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+        background: linear-gradient(135deg, #800080 0%, #660066 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
-    /* Simplified fade for toggling sections */
-    .fade-in {
-        animation: fadeIn 0.2s ease-out;
+
+    /* Stat Cards */
+    .stat-card {
+        position: relative;
+        overflow: hidden;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(128, 0, 128, 0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
     }
-    /* Ensure hidden class is defined */
-    .hidden {
-        display: none;
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
     }
-   
-    /* Dynamic background */
+
+    /* Quick Access Cards */
+    .quick-access-card {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .quick-access-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, transparent 0%, rgba(128, 0, 128, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .quick-access-card:hover::before {
+        opacity: 1;
+    }
+
+    .quick-access-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(128, 0, 128, 0.25);
+    }
+
+    /* Animated Background */
     body::before {
         content: '';
         position: fixed;
@@ -53,990 +150,432 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(45deg, #800080, #660066, #800080);
-        background-size: 200% 200%;
-        animation: gradientShift 20s ease infinite;
-        opacity: 0.05;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(128, 0, 128, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(102, 0, 102, 0.03) 0%, transparent 50%);
         z-index: -1;
+        animation: backgroundShift 15s ease-in-out infinite;
     }
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+
+    @keyframes backgroundShift {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
     }
 </style>
 {% endblock %}
 
 {% block admin_inner_content %}
-<!-- Particle background container -->
-<div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+<!-- Sidebar -->
+<aside id="admin-sidebar" class="sidebar">
+    <div class="p-6">
+        <h3 class="text-white font-bold text-lg mb-4 flex items-center">
+            <i class="fas fa-compass mr-2"></i>
+            Quick Navigation
+        </h3>
+        <nav class="space-y-2">
+            <a href="{% url 'admin:index' %}" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-home mr-3"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'system_health:dashboard' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-heartbeat mr-3"></i>
+                System Health
+            </a>
+            <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-tasks mr-3"></i>
+                Task Manager
+            </a>
+            <a href="{% url 'admin_panel:secrets-management' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-lock mr-3"></i>
+                Secrets
+            </a>
+            <a href="{% url 'admin_panel:pending_collections' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-list-alt mr-3"></i>
+                Pending Collections
+            </a>
+            <a href="{% url 'admin_panel:statistics' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-chart-bar mr-3"></i>
+                Statistics
+            </a>
+            <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-link flex items-center px-4 py-3 text-white rounded-lg">
+                <i class="fas fa-history mr-3"></i>
+                Activity Logs
+            </a>
+        </nav>
 
-<div class="space-y-8">
-    <!-- Dashboard Overview -->
-    <div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
-        <h2 class="section-header text-xl sm:text-2xl mb-4 flex items-center">
-            <i class="fas fa-tachometer-alt text-primary mr-2"></i>
-            Dashboard Overview
-        </h2>
-        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto">Welcome to the TraitKeeper Admin Panel. Select an application to manage its data.</p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {% for app in app_list %}
-                {% if app.app_label %}
-                <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
-                    <h3 class="font-bold text-base sm:text-lg mb-2 flex items-center text-brand-black dark:text-brand-white font-roboto">
-                        <i class="fas fa-folder text-primary mr-2"></i>
-                        {{ app.name }}
-                    </h3>
-                    <p class="text-brand-black/70 dark:text-brand-white/70 mb-3 font-roboto text-sm">{{ app.detailed_models|length }} models available</p>
-                    <a href="{% url 'admin:app_list' app_label=app.app_label %}" class="glow-button text-white inline-flex items-center px-3 py-1.5 rounded-lg shadow-sm text-sm">
-                        <span>Manage {{ app.name }}</span>
-                        <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                </div>
-                {% endif %}
-            {% endfor %}
+        <div class="mt-8 pt-6 border-t border-white/20">
+            <h4 class="text-white/80 font-semibold text-sm mb-3">Data Management</h4>
+            <nav class="space-y-2">
+                <a href="{% url 'admin:nft_data_nftcollection_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
+                    <i class="fas fa-folder mr-3"></i>
+                    NFT Collections
+                </a>
+                <a href="{% url 'admin:nft_data_nft_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
+                    <i class="fas fa-image mr-3"></i>
+                    NFTs
+                </a>
+                <a href="{% url 'admin:marketplace_nftlisting_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
+                    <i class="fas fa-shopping-cart mr-3"></i>
+                    Listings
+                </a>
+                <a href="{% url 'admin:wallet_customuser_changelist' %}" class="sidebar-link flex items-center px-4 py-2 text-white/90 text-sm rounded-lg">
+                    <i class="fas fa-users mr-3"></i>
+                    Users
+                </a>
+            </nav>
         </div>
     </div>
+</aside>
 
-    <!-- Quick Stats Section -->
-    <div class="section-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
+<!-- Sidebar Overlay for Mobile -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Main Content -->
+<div class="main-content transition-all duration-300 pt-4">
+    <!-- Sidebar Toggle Button -->
+    <button onclick="toggleSidebar()" class="lg:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <!-- Dashboard Header -->
+        <div class="modern-card rounded-2xl p-8 shadow-lg">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Users</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.total_users|default_if_none:'0' }}</p>
+                    <h1 class="text-3xl font-bold gradient-text mb-2">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Admin Dashboard
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">Welcome back! Here's your platform overview.</p>
                 </div>
-                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
-                    <i class="fas fa-users text-primary text-xl sm:text-2xl"></i>
-                </div>
-            </div>
-            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Total platform users</p>
-        </div>
-        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Active Users</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.active_users|default_if_none:'0' }}</p>
-                </div>
-                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
-                    <i class="fas fa-user-check text-primary text-xl sm:text-2xl"></i>
-                </div>
-            </div>
-            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Users active in last 30 days</p>
-        </div>
-        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Wallet Connections</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ user_stats.wallet_connections|default_if_none:'0' }}</p>
-                </div>
-                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
-                    <i class="fas fa-wallet text-primary text-xl sm:text-2xl"></i>
-                </div>
-            </div>
-            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">Connected wallets</p>
-        </div>
-        <div class="admin-card bg-background-light dark:bg-background-dark p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-glass-600">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-base sm:text-lg text-brand-black dark:text-brand-white font-roboto">Admin Users</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-primary">{{ admin_user_count|default_if_none:'0' }}</p>
-                </div>
-                <div class="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full">
-                    <i class="fas fa-user-shield text-primary text-xl sm:text-2xl"></i>
-                </div>
-            </div>
-            <p class="text-brand-black/70 dark:text-brand-white/70 mt-4 font-roboto text-sm">View Admin Users</p>
-        </div>
-    </div>
-
-    <!-- Quick Access Links -->
-    <div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
-        <h2 class="section-header text-xl sm:text-2xl mb-4 flex items-center">
-            <i class="fas fa-bolt text-primary mr-2"></i>
-            Quick Access
-        </h2>
-        <p class="text-brand-black dark:text-brand-white mb-4 font-roboto">Essential administrative tools and system monitoring.</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <!-- System Health -->
-            <a href="{% url 'system_health:dashboard' %}" class="admin-card bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-5 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="bg-green-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-heartbeat text-green-600 text-2xl"></i>
+                <div class="hidden md:block">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Last Login</p>
+                        <p class="text-lg font-semibold text-purple-600">{{ user.last_login|date:"M d, H:i" }}</p>
                     </div>
-                    <i class="fas fa-arrow-right text-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
                 </div>
-                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">System Health</h3>
-                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Monitor system status and alerts</p>
-            </a>
-
-            <!-- Task Manager -->
-            <a href="{% url 'admin_panel:task-dashboard' %}" class="admin-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="bg-blue-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-tasks text-blue-600 text-2xl"></i>
-                    </div>
-                    <i class="fas fa-arrow-right text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-                </div>
-                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Task Manager</h3>
-                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Background task monitoring</p>
-            </a>
-
-            <!-- Secrets Management -->
-            <a href="{% url 'admin_panel:secrets-management' %}" class="admin-card bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-5 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="bg-purple-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-lock text-purple-600 text-2xl"></i>
-                    </div>
-                    <i class="fas fa-arrow-right text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-                </div>
-                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Secrets Management</h3>
-                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Manage encrypted credentials</p>
-            </a>
-
-            <!-- Pending Collections -->
-            <a href="{% url 'admin_panel:pending_collections' %}" class="admin-card bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-5 rounded-lg border border-yellow-200 dark:border-yellow-700 hover:shadow-lg transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="bg-yellow-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-list-alt text-yellow-600 text-2xl"></i>
-                    </div>
-                    <i class="fas fa-arrow-right text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-                </div>
-                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Pending Collections</h3>
-                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">Review NFT submissions</p>
-            </a>
-
-            <!-- Statistics -->
-            <a href="{% url 'admin_panel:statistics' %}" class="admin-card bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-5 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="bg-orange-500 bg-opacity-10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-chart-bar text-orange-600 text-2xl"></i>
-                    </div>
-                    <i class="fas fa-arrow-right text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-                </div>
-                <h3 class="font-bold text-lg text-brand-black dark:text-brand-white font-roboto">Statistics</h3>
-                <p class="text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto text-sm">View detailed analytics</p>
-            </a>
-        </div>
-    </div>
-
-<!-- Statistics Overview -->
-<div class="section-card bg-background-light dark:bg-background-dark rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-glass-600">
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="section-header text-xl sm:text-2xl flex items-center">
-            <i class="fas fa-chart-line text-primary mr-2"></i>
-            Statistics Overview
-        </h2>
-        <button id="toggle-stats" class="glow-button text-white text-sm inline-flex items-center px-3 py-1.5 rounded-lg" aria-expanded="false" aria-controls="additional-stats">
-            <span>View Full Statistics</span>
-            <i class="fas fa-chevron-down ml-1 rotate-down"></i>
-        </button>
-    </div>
-    <p class="text-brand-black dark:text-brand-white mb-4 font-roboto text-sm">Key metrics and trends for platform activity.</p>
-    <div id="stats-section" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <!-- Admin User Activity Chart (Always Visible) -->
-        <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
-            <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Admin User Activity (Last 7 Days)</h3>
-            <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
-                <canvas id="userActivityChart"></canvas>
             </div>
         </div>
-        <!-- Additional Charts (Hidden by Default) -->
-        <div id="additional-stats" class="hidden grid grid-cols-1 gap-4 sm:gap-6">
-            <!-- User Signup Activity Chart -->
-            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
-                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">User Signups (Last 7 Days)</h3>
-                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
-                    <canvas id="signupActivityChart"></canvas>
-                </div>
-            </div>
-            <!-- NFT Statistics Chart -->
-            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
-                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">NFT Statistics</h3>
-                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
-                    <canvas id="nftStatsChart"></canvas>
-                </div>
-            </div>
-            <!-- Platform Metrics Chart -->
-            <div class="admin-card bg-background-light dark:bg-background-dark p-4 rounded-lg border border-gray-200 dark:border-glass-600">
-                <h3 class="text-base sm:text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Platform Metrics</h3>
-                <div class="relative w-full chart-container" style="aspect-ratio: 4/3;">
-                    <canvas id="platformMetricsChart"></canvas>
-                </div>
-                <p class="text-sm text-brand-black/70 dark:text-brand-white/70 mt-2 font-roboto">
-                    Retention Rate: <span id="retentionRate">{{ user_stats.retention_rate|floatformat:1 }}%</span>
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="mt-4">
-        <a href="{% url 'admin_panel:export_statistics' %}" class="glow-button text-white px-3 py-1.5 rounded-lg inline-flex items-center text-sm">
-            <i class="fas fa-download mr-1"></i>Export CSV
-        </a>
-    </div>
-</div>
 
-<!-- Recent Actions -->
-    <div class="section-card bg-background-light dark:bg-background-dark rounded-xl overflow-hidden border border-gray-200 dark:border-glass-600 shadow-sm">
-        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4">
-            <h2 class="section-header text-lg sm:text-xl text-white flex items-center">
-                <i class="fas fa-history mr-2"></i>
-                Recent Actions
-            </h2>
-        </div>
-        <div class="p-4 sm:p-6">
-            {% if admin_log %}
-            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-glass-600">
-                <table class="min-w-full font-roboto">
-                    <thead>
-                        <tr class="bg-gradient-to-r from-purple-600 to-purple-800 text-white text-sm">
-                            <th class="w-1/6 py-3 px-4 text-left font-semibold">Time</th>
-                            <th class="w-1/6 py-3 px-4 text-left font-semibold">User</th>
-                            <th class="w-1/6 py-3 px-4 text-left font-semibold">App</th>
-                            <th class="w-1/2 py-3 px-4 text-left font-semibold">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in admin_log %}
-                        <tr class="border-b border-gray-200 dark:border-glass-600 last:border-none hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-300">
-                            <td class="text-brand-black/70 dark:text-brand-white/70 py-3 px-4 text-sm font-medium">{{ entry.action_time|date:"M d, H:i" }}</td>
-                            <td class="text-brand-black/70 dark:text-brand-white/70 py-3 px-4 text-sm font-medium">{{ entry.user.username }}</td>
-                            <td class="py-3 px-4 text-sm">
-                                {% if entry.content_type %}
-                                    {% with app_label=entry.content_type.app_label %}
-                                        {% if app_label in allowed_apps %}
-                                            {% url 'admin:app_list' app_label=app_label as app_url %}
-                                            {% if app_url %}
-                                                <a href="{{ app_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white font-medium underline underline-offset-2 transition-colors duration-200" title="View {{ app_label|capfirst }} app">
-                                                    {{ app_label|capfirst }}
-                                                </a>
-                                            {% else %}
-                                                <span class="text-brand-black/70 dark:text-brand-white/70">{{ app_label|capfirst }}</span>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="text-brand-black/70 dark:text-brand-white/70">{{ app_label|capfirst }}</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                {% else %}
-                                    <span class="text-gray-500 italic">Unknown</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4 text-sm">
-                                <div class="flex items-center space-x-2">
-                                    {% if entry.action_flag == 1 %}
-                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                                            <i class="fas fa-plus-circle mr-1"></i> Added
-                                        </span>
-                                    {% elif entry.action_flag == 2 %}
-                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                                            <i class="fas fa-edit mr-1"></i> Modified
-                                        </span>
-                                    {% elif entry.action_flag == 3 %}
-                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                                            <i class="fas fa-trash mr-1"></i> Deleted
-                                        </span>
-                                    {% endif %}
-                                    {% if entry.content_type %}
-                                        {% url 'admin:'|add:entry.content_type.app_label|add:'_'|add:entry.content_type.model|add:'_change' entry.object_id as change_url %}
-                                        {% if change_url %}
-                                            <a href="{{ change_url }}" class="text-primary hover:text-brand-black dark:hover:text-brand-white font-medium underline underline-offset-2 transition-colors duration-200" title="View details of this action">
-                                                {{ entry.object_repr }}
-                                            </a>
-                                        {% else %}
-                                            <span class="text-brand-black/70 dark:text-brand-white/70">{{ entry.object_repr }}</span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-brand-black/70 dark:text-brand-white/70">{{ entry.object_repr }}</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- Quick Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Total Users -->
+            <div class="modern-card stat-card rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-3 rounded-xl">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-green-500 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                        <i class="fas fa-arrow-up mr-1"></i>12%
+                    </span>
+                </div>
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Users</h3>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ user_stats.total_users|default_if_none:'0' }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">All registered users</p>
             </div>
-            <div class="mt-4 flex justify-center">
-                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="glow-button text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
-                    <i class="fas fa-eye mr-2"></i>
-                    <span>View All Actions</span>
+
+            <!-- Active Users -->
+            <div class="modern-card stat-card rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-700 p-3 rounded-xl">
+                        <i class="fas fa-user-check text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-green-500 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                        <i class="fas fa-arrow-up mr-1"></i>8%
+                    </span>
+                </div>
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Active Users</h3>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ user_stats.active_users|default_if_none:'0' }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Last 30 days</p>
+            </div>
+
+            <!-- Wallet Connections -->
+            <div class="modern-card stat-card rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-700 p-3 rounded-xl">
+                        <i class="fas fa-wallet text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-green-500 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                        <i class="fas fa-arrow-up mr-1"></i>15%
+                    </span>
+                </div>
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Wallets Connected</h3>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ user_stats.wallet_connections|default_if_none:'0' }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Total connections</p>
+            </div>
+
+            <!-- Admin Users -->
+            <div class="modern-card stat-card rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-br from-orange-500 to-red-700 p-3 rounded-xl">
+                        <i class="fas fa-user-shield text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                        Stable
+                    </span>
+                </div>
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Admin Users</h3>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ admin_user_count|default_if_none:'0' }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Platform administrators</p>
+            </div>
+        </div>
+
+        <!-- Quick Access Section -->
+        <div class="modern-card rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold gradient-text flex items-center">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Quick Access
+                </h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Essential tools at your fingertips</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- System Health -->
+                <a href="{% url 'system_health:dashboard' %}" class="quick-access-card group bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-green-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-heartbeat text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-green-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">System Health</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Monitor system status, alerts, and vitality calculations</p>
+                    <div class="mt-4 flex items-center text-green-600 font-semibold text-sm">
+                        <span>View Dashboard</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
+                </a>
+
+                <!-- Task Manager -->
+                <a href="{% url 'admin_panel:task-dashboard' %}" class="quick-access-card group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border-2 border-blue-200 dark:border-blue-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-blue-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-tasks text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Task Manager</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Monitor background tasks and indexing operations</p>
+                    <div class="mt-4 flex items-center text-blue-600 font-semibold text-sm">
+                        <span>View Tasks</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
+                </a>
+
+                <!-- Secrets Management -->
+                <a href="{% url 'admin_panel:secrets-management' %}" class="quick-access-card group bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border-2 border-purple-200 dark:border-purple-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-purple-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-lock text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-purple-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Secrets Management</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Manage encrypted credentials and API keys</p>
+                    <div class="mt-4 flex items-center text-purple-600 font-semibold text-sm">
+                        <span>Manage Secrets</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
+                </a>
+
+                <!-- Pending Collections -->
+                <a href="{% url 'admin_panel:pending_collections' %}" class="quick-access-card group bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 border-2 border-amber-200 dark:border-amber-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-amber-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-list-alt text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-amber-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Pending Collections</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Review and approve NFT collection submissions</p>
+                    <div class="mt-4 flex items-center text-amber-600 font-semibold text-sm">
+                        <span>Review Submissions</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
+                </a>
+
+                <!-- Statistics -->
+                <a href="{% url 'admin_panel:statistics' %}" class="quick-access-card group bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-900/20 dark:to-red-900/20 rounded-xl p-6 border-2 border-rose-200 dark:border-rose-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-rose-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-chart-bar text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-rose-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Statistics</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">View detailed analytics and platform metrics</p>
+                    <div class="mt-4 flex items-center text-rose-600 font-semibold text-sm">
+                        <span>View Analytics</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
+                </a>
+
+                <!-- Activity Logs -->
+                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="quick-access-card group bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700 shadow-md">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-gray-500 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-history text-white text-3xl"></i>
+                        </div>
+                        <i class="fas fa-arrow-right text-gray-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Activity Logs</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Track all administrative actions and changes</p>
+                    <div class="mt-4 flex items-center text-gray-600 font-semibold text-sm">
+                        <span>View Logs</span>
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </div>
                 </a>
             </div>
-            {% else %}
-            <p class="text-center text-brand-black/50 dark:text-brand-white/50 py-4 font-roboto text-sm">No recent actions.</p>
-            {% endif %}
         </div>
-    </div>
 
-<!-- Pending Collections Summary -->
-    <div class="section-card bg-background-light dark:bg-background-dark rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-glass-600 shadow-sm">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="section-header text-xl sm:text-2xl flex items-center">
-                <i class="fas fa-list-alt text-primary mr-2"></i>
-                Pending Collections Summary
-            </h2>
-            <a href="{% url 'admin_panel:pending_collections' %}" class="glow-button text-white text-sm inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-300 hover:bg-opacity-90">
-                <span class="font-roboto">View All</span>
-                <i class="fas fa-arrow-right ml-2"></i>
-            </a>
-        </div>
-        <p class="text-brand-black dark:text-brand-white mb-6 font-roboto text-sm opacity-80">Quick overview of pending NFT collection submissions.</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Total Pending -->
-            <div class="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-6 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="bg-yellow-500 bg-opacity-10 p-3 rounded-full">
-                        <i class="fas fa-clock text-yellow-600 text-2xl"></i>
-                    </div>
+        <!-- Pending Collections Summary -->
+        <div class="modern-card rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold gradient-text flex items-center">
+                        <i class="fas fa-list-alt mr-2"></i>
+                        Pending Collections Overview
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quick overview of pending NFT submissions</p>
                 </div>
-                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">Total Pending</h3>
-                <p class="text-4xl font-bold text-yellow-600 mt-2">{{ page_obj.paginator.count }}</p>
+                <a href="{% url 'admin_panel:pending_collections' %}" class="hidden md:flex items-center bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
+                    <span>View All</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Pending -->
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white/20 p-3 rounded-lg">
+                            <i class="fas fa-clock text-3xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold">{{ page_obj.paginator.count }}</span>
+                    </div>
+                    <h3 class="text-sm font-medium opacity-90">Total Pending</h3>
+                    <p class="text-xs opacity-75 mt-1">Awaiting review</p>
+                </div>
+
+                <!-- This Week -->
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white/20 p-3 rounded-lg">
+                            <i class="fas fa-upload text-3xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold">{{ page_obj|length }}</span>
+                    </div>
+                    <h3 class="text-sm font-medium opacity-90">This Week</h3>
+                    <p class="text-xs opacity-75 mt-1">New submissions</p>
+                </div>
+
+                <!-- Needs Review -->
+                <div class="bg-gradient-to-br from-red-500 to-rose-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white/20 p-3 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-3xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold">{{ page_obj.paginator.count }}</span>
+                    </div>
+                    <h3 class="text-sm font-medium opacity-90">Needs Review</h3>
+                    <p class="text-xs opacity-75 mt-1">Urgent attention</p>
+                </div>
             </div>
 
             <!-- Recent Submissions -->
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="bg-blue-500 bg-opacity-10 p-3 rounded-full">
-                        <i class="fas fa-upload text-blue-600 text-2xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">This Week</h3>
-                <p class="text-4xl font-bold text-blue-600 mt-2">{{ page_obj|length }}</p>
-            </div>
-
-            <!-- Action Required -->
-            <div class="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 p-6 rounded-lg border border-red-200 dark:border-red-700">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="bg-red-500 bg-opacity-10 p-3 rounded-full">
-                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-sm font-medium text-brand-black/70 dark:text-brand-white/70 font-roboto">Needs Review</h3>
-                <p class="text-4xl font-bold text-red-600 mt-2">{{ page_obj.paginator.count }}</p>
-            </div>
-        </div>
-
-        <!-- Recent Items Preview -->
-        {% if page_obj %}
-        <div class="mt-8">
-            <h3 class="text-lg font-semibold text-brand-black dark:text-brand-white mb-4 font-roboto">Recent Submissions</h3>
+            {% if page_obj %}
             <div class="space-y-3">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Submissions</h3>
                 {% for collection in page_obj|slice:":5" %}
-                <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-glass-600 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between p-5 bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300">
                     <div class="flex-1">
-                        <p class="font-semibold text-brand-black dark:text-brand-white font-roboto">{{ collection.name|default:"Unnamed Collection" }}</p>
-                        <p class="text-sm text-brand-black/70 dark:text-brand-white/70 font-mono">{{ collection.mint_address|truncatechars:20 }}</p>
+                        <p class="font-semibold text-gray-900 dark:text-white text-lg">{{ collection.name|default:"Unnamed Collection" }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mt-1">{{ collection.mint_address|truncatechars:30 }}</p>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {% if collection.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300{% endif %}">
+                    <div class="flex items-center space-x-4">
+                        <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold {% if collection.status == 'pending' %}bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300{% elif collection.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300{% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300{% endif %}">
                             {{ collection.status|capfirst }}
                         </span>
-                        <span class="text-sm text-brand-black/60 dark:text-brand-white/60">{{ collection.submitted_at|date:"M d" }}</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ collection.submitted_at|date:"M d, H:i" }}</span>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-        </div>
-        {% else %}
-        <div class="mt-8 text-center p-8 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-            <i class="fas fa-check-circle text-green-600 text-4xl mb-3"></i>
-            <p class="text-lg font-semibold text-green-800 dark:text-green-300 font-roboto">All caught up!</p>
-            <p class="text-sm text-green-600 dark:text-green-400 mt-2">No pending collections to review.</p>
-        </div>
-        {% endif %}
+            {% else %}
+            <div class="text-center p-12 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-700">
+                <i class="fas fa-check-circle text-green-600 text-5xl mb-4"></i>
+                <p class="text-xl font-bold text-green-800 dark:text-green-300">All caught up!</p>
+                <p class="text-sm text-green-600 dark:text-green-400 mt-2">No pending collections to review at this time.</p>
+            </div>
+            {% endif %}
 
-        <div class="mt-6 text-center">
-            <a href="{% url 'admin_panel:pending_collections' %}" class="glow-button text-white px-6 py-3 rounded-lg inline-flex items-center text-sm font-roboto shadow-sm hover:bg-opacity-90 transition-all duration-300">
-                <i class="fas fa-th-list mr-2"></i>
-                <span>Manage All Pending Collections</span>
-                <i class="fas fa-arrow-right ml-2"></i>
-            </a>
+            <div class="mt-6 text-center md:hidden">
+                <a href="{% url 'admin_panel:pending_collections' %}" class="inline-flex items-center bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
+                    <span>View All Collections</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Platform Applications Grid -->
+        <div class="modern-card rounded-2xl p-8 shadow-lg">
+            <h2 class="text-2xl font-bold gradient-text mb-6 flex items-center">
+                <i class="fas fa-folder mr-2"></i>
+                Platform Applications
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Manage data across all platform modules</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for app in app_list %}
+                    {% if app.app_label %}
+                    <a href="{% url 'admin:app_list' app_label=app.app_label %}" class="group flex items-center justify-between p-5 bg-white dark:bg-gray-800/50 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg group-hover:bg-purple-600 group-hover:scale-110 transition-all duration-300">
+                                <i class="fas fa-folder text-purple-600 group-hover:text-white text-xl transition-colors duration-300"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-bold text-gray-900 dark:text-white">{{ app.name }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ app.detailed_models|length }} models</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300"></i>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
+</div>
 
-<!-- Chart.js and JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer></script>
-
+<!-- Sidebar Toggle Script -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize particles.js with subtle settings (if present in your original code)
-    if (typeof particlesJS !== 'undefined') {
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 30, density: { enable: true, value_area: 1000 } },
-                color: { value: '#800080' },
-                shape: { type: 'circle' },
-                opacity: { value: 0.3, random: true },
-                size: { value: 2, random: true },
-                move: { enable: true, speed: 0.5, direction: 'none', random: true }
-            },
-            interactivity: {
-                events: { onhover: { enable: false }, onclick: { enable: false } }
-            }
+function toggleSidebar() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+// Close sidebar when clicking on links (mobile only)
+if (window.innerWidth < 1024) {
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            toggleSidebar();
         });
+    });
+}
+
+// Close sidebar on window resize to desktop
+window.addEventListener('resize', () => {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (window.innerWidth >= 1024) {
+        sidebar.classList.add('open');
+        overlay.classList.remove('active');
     } else {
-        console.warn('particlesJS not loaded. Skipping particle animation.');
-    }
-
-    // Select All Checkbox for Pending Collections (if present in your original code)
-    const selectAll = document.querySelector('#select-all');
-    const checkboxes = document.querySelectorAll('.collection-checkbox');
-
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            console.log('Select All checkbox changed:', this.checked);
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    } else {
-        console.error('Select All checkbox not found');
-    }
-
-    if (checkboxes) {
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                console.log('Collection checkbox changed:', this.value, this.checked);
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                const someChecked = Array.from(checkboxes).some(cb => cb.checked);
-                if (selectAll) {
-                    selectAll.checked = allChecked;
-                    selectAll.indeterminate = someChecked && !allChecked;
-                }
-            });
-        });
-    } else {
-        console.error('Collection checkboxes not found');
-    }
-
-    // Toggle Statistics Section (if present in your original code)
-    const toggleStatsBtn = document.querySelector('#toggle-stats');
-    const additionalStats = document.querySelector('#additional-stats');
-
-    if (toggleStatsBtn && additionalStats) {
-        console.log('Stats toggle elements found:', { toggleStatsBtn, additionalStats });
-        const statsChevron = toggleStatsBtn.querySelector('i');
-        
-        toggleStatsBtn.addEventListener('click', function() {
-            console.log('Stats toggle button clicked');
-            const isExpanded = toggleStatsBtn.getAttribute('aria-expanded') === 'true';
-            
-            if (!isExpanded) {
-                additionalStats.classList.remove('hidden');
-                additionalStats.classList.add('fade-in');
-                toggleStatsBtn.querySelector('span').textContent = 'Hide Full Statistics';
-                if (statsChevron) {
-                    statsChevron.classList.remove('rotate-down');
-                    statsChevron.classList.add('rotate-up');
-                }
-                toggleStatsBtn.setAttribute('aria-expanded', 'true');
-                
-                if (typeof signupActivityChart === 'undefined' || !signupActivityChart) {
-                    console.log('Initializing additional charts on toggle');
-                    initializeAdditionalCharts();
-                }
-            } else {
-                additionalStats.classList.add('hidden');
-                additionalStats.classList.remove('fade-in');
-                toggleStatsBtn.querySelector('span').textContent = 'View Full Statistics';
-                if (statsChevron) {
-                    statsChevron.classList.remove('rotate-up');
-                    statsChevron.classList.add('rotate-down');
-                }
-                toggleStatsBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-    } else {
-        console.error('Stats toggle elements not found:', { toggleStatsBtn, additionalStats });
-    }
-
-    // Toggle Pending Collections Section (if present in your original code)
-    const togglePendingBtn = document.querySelector('#toggle-pending');
-    const pendingSection = document.querySelector('#pending-section');
-
-    if (togglePendingBtn && pendingSection) {
-        console.log('Pending toggle elements found:', { togglePendingBtn, pendingSection });
-        const pendingChevron = togglePendingBtn.querySelector('i');
-
-        togglePendingBtn.addEventListener('click', function(event) {
-            event.preventDefault();
-            console.log('Pending toggle button clicked');
-            const isExpanded = togglePendingBtn.getAttribute('aria-expanded') === 'true';
-
-            if (!isExpanded) {
-                pendingSection.classList.remove('hidden');
-                pendingSection.classList.add('fade-in');
-                togglePendingBtn.querySelector('span').textContent = 'Hide Pending Collections';
-                if (pendingChevron) {
-                    pendingChevron.classList.remove('rotate-down');
-                    pendingChevron.classList.add('rotate-up');
-                }
-                togglePendingBtn.setAttribute('aria-expanded', 'true');
-            } else {
-                pendingSection.classList.add('hidden');
-                pendingSection.classList.remove('fade-in');
-                togglePendingBtn.querySelector('span').textContent = 'View Pending Collections';
-                if (pendingChevron) {
-                    pendingChevron.classList.remove('rotate-up');
-                    pendingChevron.classList.add('rotate-down');
-                }
-                togglePendingBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-    } else {
-        console.error('Pending toggle elements not found:', { togglePendingBtn, pendingSection });
-    }
-
-    // Helper function to create gradients for charts
-    function createGradient(ctx, startColor, endColor) {
-        if (!ctx) {
-            console.warn('Chart context not provided for gradient. Using fallback color:', startColor);
-            return startColor;
-        }
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, startColor);
-        gradient.addColorStop(1, endColor);
-        return gradient;
-    }
-
-    // Chart contexts and instances
-    let userActivityChart, signupActivityChart, nftStatsChart, platformMetricsChart;
-
-    // User Activity Chart (Always Loaded)
-    try {
-        const userActivityCtx = document.querySelector('#userActivityChart')?.getContext('2d');
-        if (userActivityCtx) {
-            console.log('User Activity Chart canvas found');
-            let labels, data;
-            try {
-                labels = JSON.parse('{{ login_activity_labels|safe }}');
-                data = JSON.parse('{{ login_activity_data|safe }}');
-            } catch (e) {
-                console.error('Error parsing login activity data:', e);
-                labels = [];
-                data = [];
-            }
-            console.log('Initial User Activity Labels:', labels);
-            console.log('Initial User Activity Data:', data);
-            if (typeof Chart !== 'undefined') {
-                userActivityChart = new Chart(userActivityCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Successful Admin Logins',
-                            data: data,
-                            borderColor: '#800080',
-                            backgroundColor: (ctx) => createGradient(userActivityCtx, 'rgba(128, 0, 128, 0.2)', 'rgba(128, 0, 128, 0)'),
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: '#800080',
-                            pointBorderColor: '#FFFFFF',
-                            pointHoverRadius: 6,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: {
-                            x: {
-                                title: { display: true, text: 'Date', color: '#800080' },
-                                ticks: { color: '#800080' },
-                                grid: { color: 'rgba(128, 0, 128, 0.1)' }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Number of Logins', color: '#800080' },
-                                ticks: { color: '#800080', stepSize: 1 },
-                                grid: { color: 'rgba(128, 0, 128, 0.1)' }
-                            }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#800080' } },
-                            tooltip: {
-                                enabled: true,
-                                mode: 'index',
-                                intersect: false,
-                                backgroundColor: 'rgba(128, 0, 128, 0.8)',
-                                titleFont: { size: 14 },
-                                bodyFont: { size: 12 },
-                                padding: 10,
-                            }
-                        },
-                        animation: {
-                            duration: 800,
-                            easing: 'easeOutQuart'
-                        }
-                    }
-                });
-                console.log('User Activity Chart initialized');
-            } else {
-                console.error('Chart.js is not loaded. Cannot initialize User Activity Chart.');
-            }
-        } else {
-            console.error('User Activity Chart canvas not found');
-        }
-    } catch (e) {
-        console.error('Error initializing User Activity Chart:', e);
-    }
-
-    // Additional Charts (Loaded on Demand)
-    function initializeAdditionalCharts() {
-        try {
-            const signupActivityCtx = document.querySelector('#signupActivityChart')?.getContext('2d');
-            if (signupActivityCtx) {
-                console.log('Signup Activity Chart canvas found');
-                let signupLabels, signupData;
-                try {
-                    signupLabels = JSON.parse('{{ signup_activity_labels|safe }}');
-                    signupData = JSON.parse('{{ signup_activity_data|safe }}');
-                } catch (e) {
-                    console.error('Error parsing signup activity data:', e);
-                    signupLabels = [];
-                    signupData = [];
-                }
-                console.log('Initial Signup Labels:', signupLabels);
-                console.log('Initial Signup Data:', signupData);
-                if (typeof Chart !== 'undefined') {
-                    signupActivityChart = new Chart(signupActivityCtx, {
-                        type: 'line',
-                        data: {
-                            labels: signupLabels,
-                            datasets: [{
-                                label: 'New Users',
-                                data: signupData,
-                                borderColor: '#660066',
-                                backgroundColor: (ctx) => createGradient(signupActivityCtx, 'rgba(102, 0, 102, 0.2)', 'rgba(102, 0, 102, 0)'),
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointBackgroundColor: '#660066',
-                                pointBorderColor: '#FFFFFF',
-                                pointHoverRadius: 6,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            scales: {
-                                x: {
-                                    title: { display: true, text: 'Date', color: '#660066' },
-                                    ticks: { color: '#660066' },
-                                    grid: { color: 'rgba(102, 0, 102, 0.1)' }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    title: { display: true, text: 'Number of Signups', color: '#660066' },
-                                    ticks: { color: '#660066', stepSize: 1 },
-                                    grid: { color: 'rgba(102, 0, 102, 0.1)' }
-                                }
-                            },
-                            plugins: {
-                                legend: { labels: { color: '#660066' } },
-                                tooltip: {
-                                    enabled: true,
-                                    mode: 'index',
-                                    intersect: false,
-                                    backgroundColor: 'rgba(102, 0, 102, 0.8)',
-                                    titleFont: { size: 14 },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                }
-                            },
-                            animation: {
-                                duration: 800,
-                                easing: 'easeOutQuart'
-                            }
-                        }
-                    });
-                    console.log('Signup Activity Chart initialized');
-                } else {
-                    console.error('Chart.js is not loaded. Cannot initialize Signup Activity Chart.');
-                }
-            } else {
-                console.error('Signup Activity Chart canvas not found');
-            }
-
-            const nftStatsCtx = document.querySelector('#nftStatsChart')?.getContext('2d');
-            if (nftStatsCtx) {
-                console.log('NFT Stats Chart canvas found');
-                const nftStatsData = {
-                    collections: {{ nft_stats.collections|default:0 }},
-                    nfts: {{ nft_stats.nfts|default:0 }},
-                    transactions: {{ nft_stats.transactions|default:0 }}
-                };
-                console.log('Initial NFT Stats Data:', [nftStatsData.collections, nftStatsData.nfts, nftStatsData.transactions]);
-                if (typeof Chart !== 'undefined') {
-                    nftStatsChart = new Chart(nftStatsCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Collections', 'NFTs', 'Transactions'],
-                            datasets: [{
-                                label: 'Count',
-                                data: [nftStatsData.collections, nftStatsData.nfts, nftStatsData.transactions],
-                                backgroundColor: [
-                                    (ctx) => createGradient(nftStatsCtx, '#800080', '#660066'),
-                                    (ctx) => createGradient(nftStatsCtx, '#660066', '#800080'),
-                                    (ctx) => createGradient(nftStatsCtx, '#808080', '#606060')
-                                ],
-                                borderColor: ['#800080', '#660066', '#808080'],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            scales: {
-                                x: {
-                                    title: { display: true, text: 'Category', color: '#800080' },
-                                    ticks: { color: '#800080' },
-                                    grid: { color: 'rgba(128, 0, 128, 0.1)' }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    title: { display: true, text: 'Count', color: '#800080' },
-                                    ticks: { color: '#800080', stepSize: 1 },
-                                    grid: { color: 'rgba(128, 0, 128, 0.1)' }
-                                }
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    enabled: true,
-                                    mode: 'index',
-                                    intersect: false,
-                                    backgroundColor: 'rgba(128, 0, 128, 0.8)',
-                                    titleFont: { size: 14 },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                }
-                            },
-                            animation: {
-                                duration: 800,
-                                easing: 'easeOutQuart'
-                            },
-                            onClick: function(event, elements) {
-                                if (elements.length > 0) {
-                                    const index = elements[0].index;
-                                    const label = this.data.labels[index].toLowerCase();
-                                    const urls = {
-                                        'collections': '{% url "admin:nft_data_nftcollection_changelist" %}',
-                                        'nfts': '{% url "admin:nft_data_nft_changelist" %}',
-                                        'transactions': '{% url "admin:indexer_nftevent_changelist" %}'
-                                    };
-                                    if (urls[label]) {
-                                        window.location.href = urls[label];
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    console.log('NFT Stats Chart initialized');
-                } else {
-                    console.error('Chart.js is not loaded. Cannot initialize NFT Stats Chart.');
-                }
-            } else {
-                console.error('NFT Stats Chart canvas not found');
-            }
-
-            const platformMetricsCtx = document.querySelector('#platformMetricsChart')?.getContext('2d');
-            if (platformMetricsCtx) {
-                console.log('Platform Metrics Chart canvas found');
-                const platformMetricsData = {
-                    total_users: {{ user_stats.total_users|default:0 }},
-                    active_users: {{ user_stats.active_users|default:0 }},
-                    wallet_connections: {{ user_stats.wallet_connections|default:0 }},
-                    admin_users: {{ user_stats.admin_users|default:0 }}
-                };
-                console.log('Initial Platform Metrics Data:', [
-                    platformMetricsData.total_users,
-                    platformMetricsData.active_users,
-                    platformMetricsData.wallet_connections,
-                    platformMetricsData.admin_users
-                ]);
-                if (typeof Chart !== 'undefined') {
-                    platformMetricsChart = new Chart(platformMetricsCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Users', 'Active Users', 'Wallet Connections', 'Admin Users'],
-                            datasets: [{
-                                label: 'Platform Metrics',
-                                data: [
-                                    platformMetricsData.total_users,
-                                    platformMetricsData.active_users,
-                                    platformMetricsData.wallet_connections,
-                                    platformMetricsData.admin_users
-                                ],
-                                backgroundColor: ['#800080', '#660066', '#808080', '#A0A0A0'],
-                                borderColor: ['#FFFFFF'],
-                                borderWidth: 2
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { font: { size: 12 }, color: '#800080' } },
-                                tooltip: {
-                                    enabled: true,
-                                    backgroundColor: 'rgba(128, 0, 128, 0.8)',
-                                    titleFont: { size: 14 },
-                                    bodyFont: { size: 12 },
-                                    padding: 10,
-                                }
-                            },
-                            animation: {
-                                duration: 800,
-                                easing: 'easeOutQuart'
-                            }
-                        }
-                    });
-                    console.log('Platform Metrics Chart initialized');
-                } else {
-                    console.error('Chart.js is not loaded. Cannot initialize Platform Metrics Chart.');
-                }
-            } else {
-                console.error('Platform Metrics Chart canvas not found');
-            }
-        } catch (e) {
-            console.error('Error initializing additional charts:', e);
-        }
-    }
-
-    async function updateCharts() {
-        console.log('updateCharts called at:', new Date().toISOString());
-        try {
-            // Fetch user activity data
-            const userActivityResponse = await fetch('{% url "admin_panel:user_activity_data" %}');
-            if (!userActivityResponse.ok) {
-                throw new Error('Failed to fetch user activity data: ' + userActivityResponse.statusText);
-            }
-            const userActivityData = await userActivityResponse.json();
-            console.log('Fetched User Activity Data:', userActivityData);
-            if (typeof userActivityChart !== 'undefined' && userActivityChart) {
-                userActivityChart.data.labels = userActivityData.labels;
-                userActivityChart.data.datasets[0].data = userActivityData.data;
-                userActivityChart.update();
-                console.log('User Activity Chart updated');
-            } else {
-                console.warn('User Activity Chart not initialized. Skipping update.');
-            }
-
-            // Fetch additional chart data only if additional charts are initialized
-            if (typeof signupActivityChart !== 'undefined' && signupActivityChart) {
-                const signupActivityResponse = await fetch('{% url "admin_panel:signup_activity_data" %}');
-                if (!signupActivityResponse.ok) {
-                    throw new Error('Failed to fetch signup activity data: ' + signupActivityResponse.statusText);
-                }
-                const signupActivityData = await signupActivityResponse.json();
-                console.log('Fetched Signup Activity Data:', signupActivityData);
-                signupActivityChart.data.labels = signupActivityData.labels;
-                signupActivityChart.data.datasets[0].data = signupActivityData.data;
-                signupActivityChart.update();
-                console.log('Signup Activity Chart updated');
-
-                const nftStatsResponse = await fetch('{% url "admin_panel:nft_stats_data" %}');
-                if (!nftStatsResponse.ok) {
-                    throw new Error('Failed to fetch NFT stats data: ' + nftStatsResponse.statusText);
-                }
-                const nftStatsData = await nftStatsResponse.json();
-                console.log('Fetched NFT Stats Data:', nftStatsData);
-                nftStatsChart.data.datasets[0].data = nftStatsData.data;
-                nftStatsChart.update();
-                console.log('NFT Stats Chart updated');
-
-                const platformMetricsResponse = await fetch('{% url "admin_panel:user_stats_data" %}');
-                if (!platformMetricsResponse.ok) {
-                    throw new Error('Failed to fetch platform metrics data: ' + platformMetricsResponse.statusText);
-                }
-                const platformMetricsData = await platformMetricsResponse.json();
-                console.log('Fetched Platform Metrics Data:', platformMetricsData);
-                platformMetricsChart.data.datasets[0].data = platformMetricsData.data;
-                const retentionRateElement = document.getElementById('retentionRate');
-                if (retentionRateElement) {
-                    retentionRateElement.textContent = platformMetricsData.retention_rate.toFixed(1) + '%';
-                }
-                platformMetricsChart.update();
-                console.log('Platform Metrics Chart updated');
-            } else {
-                console.log('Additional charts not initialized. Skipping update.');
-            }
-        } catch (error) {
-            console.error('Error updating charts:', error);
-        }
-    }
-
-    // Set up interval to update charts every 30 seconds
-    console.log('Setting up chart update interval');
-    setInterval(updateCharts, 30000);
-
-    // Initial update to populate charts immediately
-    updateCharts();
-
-    // Theme toggle and chart color updates (if present in your original code)
-    const html = document.documentElement;
-    function updateChartColors() {
-        console.log('Updating chart colors');
-        const textColor = html.classList.contains('dark') ? '#E0E0E0' : '#0A0A0A';
-        const bgColor = html.classList.contains('dark') ? '#1E1E1E' : '#F3F4F6';
-        const gridColor = html.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(128, 0, 128, 0.1)';
-        const tooltipColor = html.classList.contains('dark') ? '#E0E0E0' : '#0A0A0A';
-
-        if (userActivityChart) {
-            userActivityChart.canvas.style.backgroundColor = bgColor;
-            userActivityChart.options.scales.x.title.color = textColor;
-            userActivityChart.options.scales.x.ticks.color = textColor;
-            userActivityChart.options.scales.x.grid.color = gridColor;
-            userActivityChart.options.scales.y.title.color = textColor;
-            userActivityChart.options.scales.y.ticks.color = textColor;
-            userActivityChart.options.scales.y.grid.color = gridColor;
-            userActivityChart.options.plugins.legend.labels.color = textColor;
-            userActivityChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
-            userActivityChart.update();
-        }
-
-        if (signupActivityChart) {
-            signupActivityChart.canvas.style.backgroundColor = bgColor;
-            signupActivityChart.options.scales.x.title.color = textColor;
-            signupActivityChart.options.scales.x.ticks.color = textColor;
-            signupActivityChart.options.scales.x.grid.color = gridColor;
-            signupActivityChart.options.scales.y.title.color = textColor;
-            signupActivityChart.options.scales.y.ticks.color = textColor;
-            signupActivityChart.options.scales.y.grid.color = gridColor;
-            signupActivityChart.options.plugins.legend.labels.color = textColor;
-            signupActivityChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
-            signupActivityChart.update();
-        }
-
-        if (nftStatsChart) {
-            nftStatsChart.canvas.style.backgroundColor = bgColor;
-            nftStatsChart.options.scales.x.title.color = textColor;
-            nftStatsChart.options.scales.x.ticks.color = textColor;
-            nftStatsChart.options.scales.x.grid.color = gridColor;
-            nftStatsChart.options.scales.y.title.color = textColor;
-            nftStatsChart.options.scales.y.ticks.color = textColor;
-            nftStatsChart.options.scales.y.grid.color = gridColor;
-            nftStatsChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
-            nftStatsChart.update();
-        }
-
-        if (platformMetricsChart) {
-            platformMetricsChart.canvas.style.backgroundColor = bgColor;
-            platformMetricsChart.options.plugins.legend.labels.color = textColor;
-            platformMetricsChart.options.plugins.tooltip.callbacks.labelTextColor = () => tooltipColor;
-            platformMetricsChart.update();
-        }
-    }
-
-    updateChartColors();
-    const themeToggle = document.querySelector('#theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', updateChartColors);
-    } else {
-        console.error('Theme toggle button not found');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
     }
 });
 </script>
