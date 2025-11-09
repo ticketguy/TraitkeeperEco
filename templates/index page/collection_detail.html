@@ -1831,7 +1831,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (typeof window.populateAndShowNftModal !== 'function') {
             console.error('populateAndShowNftModal function not found.');
-            alert('Error displaying NFT details.');
+            showToast('Error displaying NFT details.', 'error');
             closeNftModal();
             return;
         }
@@ -1845,7 +1845,7 @@ document.addEventListener("DOMContentLoaded", function () {
             window.populateAndShowNftModal(nftData.details);
         } catch (error) {
             console.error("Error loading NFT:", error);
-            alert(`Could not load NFT details: ${error.message}`);
+            showToast(`Could not load NFT details: ${error.message}`, 'error');
             closeNftModal();
         }
     }
@@ -2191,17 +2191,17 @@ async function submitAuction() {
 
     // Validation
     if (!startingPrice || startingPrice <= 0) {
-        alert('Please enter a valid starting price');
+        showToast('Please enter a valid starting price', 'warning');
         return;
     }
 
     if (reservePrice && reservePrice < startingPrice) {
-        alert('Reserve price must be greater than or equal to starting price');
+        showToast('Reserve price must be greater than or equal to starting price', 'warning');
         return;
     }
 
     if (!currentAuctionNFTMint) {
-        alert('NFT information not found');
+        showToast('NFT information not found', 'error');
         return;
     }
 
@@ -2227,11 +2227,11 @@ async function submitAuction() {
                 reservePrice
             );
         } else {
-            alert('Auction creation function not available. Please ensure marketplace_actions.js is loaded.');
+            showToast('Auction creation function not available. Please ensure marketplace_actions.js is loaded.', 'error');
         }
     } catch (error) {
         console.error('Error creating auction:', error);
-        alert('Failed to create auction: ' + error.message);
+        showToast('Failed to create auction: ' + error.message, 'error');
     }
 }
 
@@ -2299,11 +2299,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const nftId = this.getAttribute('data-nft-id');
             const price = this.getAttribute('data-price');
 
-            if (confirm(`Buy this NFT for ${price} SOL?`)) {
-                // TODO: Implement buy now functionality
-                alert('Buy Now functionality - integrate with your Solana wallet');
-                console.log('Buy NFT:', nftId, 'Price:', price);
-            }
+            // TODO: Implement buy now functionality
+            showToast('Buy Now functionality coming soon - integrate with your Solana wallet', 'info');
+            console.log('Buy NFT:', nftId, 'Price:', price);
         });
     });
 
@@ -2362,14 +2360,14 @@ function handleOfferSubmit(event, nftMintAddress) {
 
     // Basic validation
     if (!offerAmount || parseFloat(offerAmount) <= 0) {
-        alert('Please enter a valid offer amount');
+        showToast('Please enter a valid offer amount', 'warning');
         return false;
     }
 
     // Check if user is authenticated
     const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
     if (!isAuthenticated) {
-        alert('Please log in to make an offer');
+        showToast('Please log in to make an offer', 'warning');
         return false;
     }
 
@@ -2399,7 +2397,7 @@ function handleOfferSubmit(event, nftMintAddress) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(`Offer submitted successfully! Amount: ${offerAmount} SOL`);
+            showToast(`Offer submitted successfully! Amount: ${offerAmount} SOL`, 'success');
             form.reset();
 
             // Close the overlay
@@ -2409,12 +2407,12 @@ function handleOfferSubmit(event, nftMintAddress) {
                 overlay.classList.remove('flex');
             }
         } else {
-            alert('Error: ' + (data.message || 'Failed to submit offer'));
+            showToast('Error: ' + (data.message || 'Failed to submit offer'), 'error');
         }
     })
     .catch(error => {
         console.error('Error submitting offer:', error);
-        alert('Failed to submit offer. Please try again.');
+        showToast('Failed to submit offer. Please try again.', 'error');
     })
     .finally(() => {
         submitBtn.disabled = false;
@@ -2438,19 +2436,19 @@ function handleModalOfferSubmit(event) {
 
     // Basic validation
     if (!offerAmount || parseFloat(offerAmount) <= 0) {
-        alert('Please enter a valid offer amount');
+        showToast('Please enter a valid offer amount', 'warning');
         return false;
     }
 
     if (!nftMintAddress) {
-        alert('Error: NFT information not found');
+        showToast('Error: NFT information not found', 'error');
         return false;
     }
 
     // Check if user is authenticated
     const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
     if (!isAuthenticated) {
-        alert('Please log in to make an offer');
+        showToast('Please log in to make an offer', 'warning');
         return false;
     }
 
@@ -2480,7 +2478,7 @@ function handleModalOfferSubmit(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(`Offer submitted successfully! Amount: ${offerAmount} SOL`);
+            showToast(`Offer submitted successfully! Amount: ${offerAmount} SOL`, 'success');
             form.reset();
 
             // Close the modal offer form
@@ -2489,12 +2487,12 @@ function handleModalOfferSubmit(event) {
                 modalOfferForm.classList.add('hidden');
             }
         } else {
-            alert('Error: ' + (data.message || 'Failed to submit offer'));
+            showToast('Error: ' + (data.message || 'Failed to submit offer'), 'error');
         }
     })
     .catch(error => {
         console.error('Error submitting offer:', error);
-        alert('Failed to submit offer. Please try again.');
+        showToast('Failed to submit offer. Please try again.', 'error');
     })
     .finally(() => {
         submitBtn.disabled = false;

@@ -1,21 +1,41 @@
 {
-  "name": "TraitKeeper",
+  "name": "TraitKeeper - NFT Marketplace",
   "short_name": "TraitKeeper",
-  "description": "Secure and analyze your NFT's traits",
+  "description": "Secure and analyze your NFT's traits on Solana",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#800080",
+  "background_color": "#0f172a",
+  "theme_color": "#9945FF",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/static/img/favicon/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/static/img/favicon/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Explore Collections",
+      "short_name": "Collections",
+      "description": "Browse NFT collections",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/static/img/favicon/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
