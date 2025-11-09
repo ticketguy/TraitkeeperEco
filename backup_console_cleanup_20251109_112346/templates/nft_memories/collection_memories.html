@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Animate.css -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<!-- Custom CSS for Fire Aesthetic -->
+<style>
+    body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .navbar {
+        background: rgba(0, 0, 0, 0.8);
+        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+    }
+
+    .navbar a {
+        color: #ff6b6b !important;
+        transition: color 0.3s;
+    }
+
+    .navbar a:hover {
+        color: #ff8787 !important;
+    }
+
+    .timeline-event,
+    .burned-nft,
+    .rarity-snapshot {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #ff6b6b;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: none;
+        /* Initially hidden for playback */
+    }
+
+    .timeline-event.visible,
+    .burned-nft.visible,
+    .rarity-snapshot.visible {
+        display: block;
+    }
+
+    .timeline-event:hover,
+    .burned-nft:hover,
+    .rarity-snapshot:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.5);
+    }
+
+    .highlight {
+        border: 2px solid #ffd700;
+        box-shadow: 0 0 15px #ffd700;
+        background: rgba(255, 215, 0, 0.1);
+    }
+
+    .user-interactions {
+        margin-top: 15px;
+    }
+
+    .btn-neon {
+        background: #ff6b6b;
+        color: #fff;
+        border: none;
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-neon:hover {
+        background: #ff8787;
+        box-shadow: 0 0 10px #ff6b6b;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e0e0e0;
+        border: 1px solid #ff6b6b;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.2);
+        color: #e0e0e0;
+        border-color: #ff8787;
+        box-shadow: 0 0 5px #ff6b6b;
+    }
+
+    .nav-link.active {
+        font-weight: bold;
+        color: #ffd700 !important;
+    }
+
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 10px #ff6b6b;
+    }
+
+    .back-to-top:hover {
+        background: #ff8787;
+    }
+
+    .playback-controls {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Sticky Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Memories for {{ collection.name }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if not event_type_filter %}active{% endif %}"
+                            href="#timeline">Timeline</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#burned-nfts">Burned NFTs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#rarity-history">Rarity History</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Points: {{ user_points }}</span>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'nft_memories:moderate_burn_reasons' %}">Moderate Reasons</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Display Messages -->
+    {% if messages %}
+    <div class="messages animate__animated animate__fadeIn">
+        {% for message in messages %}
+        <div
+            class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Collection Timeline -->
+    <section id="timeline">
+        <h2 class="animate__animated animate__fadeIn">Timeline ({{ total_events }} Events)</h2>
+        <!-- Filter, Search, and Playback Controls -->
+        <div class="playback-controls animate__animated animate__fadeIn">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <button id="playTimeline" class="btn btn-neon w-100">Play Timeline</button>
+                </div>
+                <div class="col-md-3">
+                    <label for="playbackSpeed" class="form-label">Playback Speed</label>
+                    <input type="range" id="playbackSpeed" class="form-range" min="500" max="2000" value="1000"
+                        step="100">
+                </div>
+                <div class="col-md-3">
+                    <select name="event_type" id="eventTypeFilter" class="form-control">
+                        <option value="">All Event Types</option>
+                        {% for event_type in event_types %}
+                        <option value="{{ event_type }}" {% if event_type_filter==event_type %}selected{% endif %}>{{
+                            event_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Search by mint address..."
+                        value="{{ search_query }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline" id="timelineEvents">
+            {% for event in timeline %}
+            <div class="timeline-event {% if event.is_highlight %}highlight{% endif %} animate__animated animate__fadeInUp"
+                data-event-id="{{ event.event_id }}">
+                <h3>{{ event.event_type }} ({{ event.significance }}) {% if event.is_highlight %}<span
+                        class="badge bg-warning text-dark">Highlight</span>{% endif %}</h3>
+                <p><strong>Timestamp:</strong> {{ event.timestamp }}</p>
+                <p><strong>Mint Address:</strong> {{ event.mint_address }}</p>
+                {% if event.event_type == "BURN" %}
+                <p><strong>Name:</strong> {{ event.details.name }}</p>
+                <p><strong>Description:</strong> {{ event.details.description }}</p>
+                <img src="{{ event.details.image_url }}" alt="{{ event.details.name }}" class="img-fluid rounded"
+                    style="max-width: 200px;" />
+                <p><strong>Number:</strong> {{ event.details.number }}</p>
+                <p><strong>Rarity:</strong> {{ event.details.rarity|json_script:"rarity-{{ event.event_id }}" }}</p>
+                <p><strong>Burner:</strong> {{ event.details.burner }}</p>
+                <p><strong>Context:</strong> {{ event.details.context }}</p>
+                {% elif event.event_type == "SALE" %}
+                <p><strong>Buyer:</strong> {{ event.details.buyer }}</p>
+                <p><strong>Seller:</strong> {{ event.details.seller }}</p>
+                <p><strong>Price:</strong> {{ event.details.price }} SOL</p>
+                {% endif %}
+                <!-- User Interactions -->
+                <div class="user-interactions">
+                    <p><strong>Likes:</strong> {{ event.user_interactions.likes }}</p>
+                    <p><strong>Reactions:</strong></p>
+                    <ul>
+                        <li>🔥 Fire: {{ event.user_interactions.reactions.fire }}</li>
+                        <li>💔 Heartbreak: {{ event.user_interactions.reactions.heartbreak }}</li>
+                        <li>🎉 Party: {{ event.user_interactions.reactions.party }}</li>
+                    </ul>
+                    <h4>Comments:</h4>
+                    <ul>
+                        {% for comment in event.user_interactions.comments %}
+                        <li>{{ comment.user }}: {{ comment.comment }} ({{ comment.timestamp }})</li>
+                        {% empty %}
+                        <li>No comments yet.</li>
+                        {% endfor %}
+                    </ul>
+                    <h4>Tributes:</h4>
+                    <ul>
+                        {% for tribute in event.user_interactions.tributes %}
+                        <li>{{ tribute.user }} left a {{ tribute.tribute }} ({{ tribute.timestamp }})</li>
+                        {% empty %}
+                        <li>No tributes yet.</li>
+                        {% endfor %}
+                    </ul>
+                    {% if event.can_add_interaction %}
+                    <div class="interaction-buttons mt-3">
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="like">
+                            <input type="hidden" name="target_type" value="event">
+                            <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="Like this event">👍 Like</button>
+                        </form>
+                        <!-- Reaction Buttons -->
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="event">
+                            <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                            <input type="hidden" name="reaction_type" value="fire">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Fire">🔥</button>
+                        </form>
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="event">
+                            <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                            <input type="hidden" name="reaction_type" value="heartbreak">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Heartbreak">💔</button>
+                        </form>
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="event">
+                            <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                            <input type="hidden" name="reaction_type" value="party">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Party">🎉</button>
+                        </form>
+                        <!-- Comment Modal Trigger -->
+                        <button class="btn btn-neon btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#commentModal-{{ event.event_id }}" data-bs-toggle="tooltip"
+                            title="Add a comment">💬 Comment</button>
+                        <!-- Tribute Modal Trigger -->
+                        <button class="btn btn-neon btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#tributeModal-{{ event.event_id }}" data-bs-toggle="tooltip"
+                            title="Leave a tribute">🎁 Tribute</button>
+                    </div>
+
+                    <!-- Comment Modal -->
+                    <div class="modal fade" id="commentModal-{{ event.event_id }}" tabindex="-1"
+                        aria-labelledby="commentModalLabel-{{ event.event_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="commentModalLabel-{{ event.event_id }}">Add Comment</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="comment">
+                                        <input type="hidden" name="target_type" value="event">
+                                        <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                                        <textarea name="comment" class="form-control" placeholder="Add a comment..."
+                                            required></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-neon">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tribute Modal -->
+                    <div class="modal fade" id="tributeModal-{{ event.event_id }}" tabindex="-1"
+                        aria-labelledby="tributeModalLabel-{{ event.event_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="tributeModalLabel-{{ event.event_id }}">Leave a Tribute
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="tribute">
+                                        <input type="hidden" name="target_type" value="event">
+                                        <input type="hidden" name="target_id" value="{{ event.event_id }}">
+                                        <select name="tribute_type" class="form-control">
+                                            <option value="flower">🌸 Flower</option>
+                                            <option value="candle">🕯️ Candle</option>
+                                            <option value="heart">❤️ Heart</option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-neon">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Share Buttons -->
+                <div class="share-buttons mt-3">
+                    <h4>Share This Memory</h4>
+                    <div class="sharethis-inline-share-buttons"
+                        data-url="{% url 'nft_memories:event_detail' collection_address=collection.address event_id=event.event_id %}"
+                        data-title="Check out this NFT memory on {{ collection.name }}!"></div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted animate__animated animate__fadeIn">No events found for this collection.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Burned NFTs -->
+    <section id="burned-nfts">
+        <h2 class="animate__animated animate__fadeIn">Burned NFTs</h2>
+        <div class="burned-nfts">
+            {% for burn in burned_nfts %}
+            <div class="burned-nft {% if burn.user_interactions.likes > 10 %}highlight{% endif %} animate__animated animate__fadeInUp"
+                data-burn-id="{{ burn.burn_id }}">
+                <h3>{{ burn.name }} (Burned)</h3>
+                <p><strong>Timestamp:</strong> {{ burn.timestamp }}</p>
+                <p><strong>Mint Address:</strong> {{ burn.mint_address }}</p>
+                <p><strong>Burner:</strong> {{ burn.burner }}</p>
+                <p><strong>Description:</strong> {{ burn.description }}</p>
+                <img src="{{ burn.image_url }}" alt="{{ burn.name }}" class="img-fluid rounded"
+                    style="max-width: 200px;" />
+                <p><strong>Number:</strong> {{ burn.number }}</p>
+                <p><strong>Rarity:</strong> {{ burn.rarity|json_script:"rarity-{{ burn.burn_id }}" }}</p>
+                <p><strong>Reason:</strong> {{ burn.reason }}</p>
+
+                <!-- Form to Add Burn Reason -->
+                {% if burn.can_add_reason %}
+                <div class="add-reason mb-3">
+                    <h4>Add/Update Burn Reason</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_burn_reason">
+                        <input type="hidden" name="burn_id" value="{{ burn.burn_id }}">
+                        <textarea name="reason" class="form-control" placeholder="Why was this NFT burned?"
+                            required>{{ burn.reason }}</textarea>
+                        <button type="submit" class="btn btn-neon mt-2">Submit Reason</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- User Interactions -->
+                <div class="user-interactions">
+                    <p><strong>Likes:</strong> {{ burn.user_interactions.likes }}</p>
+                    <p><strong>Reactions:</strong></p>
+                    <ul>
+                        <li>🔥 Fire: {{ burn.user_interactions.reactions.fire }}</li>
+                        <li>💔 Heartbreak: {{ burn.user_interactions.reactions.heartbreak }}</li>
+                        <li>🎉 Party: {{ burn.user_interactions.reactions.party }}</li>
+                    </ul>
+                    <h4>Comments:</h4>
+                    <ul>
+                        {% for comment in burn.user_interactions.comments %}
+                        <li>{{ comment.user }}: {{ comment.comment }} ({{ comment.timestamp }})</li>
+                        {% empty %}
+                        <li>No comments yet.</li>
+                        {% endfor %}
+                    </ul>
+                    <h4>Tributes:</h4>
+                    <ul>
+                        {% for tribute in burn.user_interactions.tributes %}
+                        <li>{{ tribute.user }} left a {{ tribute.tribute }} ({{ tribute.timestamp }})</li>
+                        {% empty %}
+                        <li>No tributes yet.</li>
+                        {% endfor %}
+                    </ul>
+                    {% if burn.can_add_interaction %}
+                    <div class="interaction-buttons mt-3">
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="like">
+                            <input type="hidden" name="target_type" value="burn">
+                            <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="Like this burned NFT">👍 Like</button>
+                        </form>
+                        <!-- Reaction Buttons -->
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="burn">
+                            <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                            <input type="hidden" name="reaction_type" value="fire">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Fire">🔥</button>
+                        </form>
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="burn">
+                            <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                            <input type="hidden" name="reaction_type" value="heartbreak">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Heartbreak">💔</button>
+                        </form>
+                        <form method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="react">
+                            <input type="hidden" name="target_type" value="burn">
+                            <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                            <input type="hidden" name="reaction_type" value="party">
+                            <button type="submit" class="btn btn-neon btn-sm" data-bs-toggle="tooltip"
+                                title="React with Party">🎉</button>
+                        </form>
+                        <!-- Comment Modal Trigger -->
+                        <button class="btn btn-neon btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#commentModal-burn-{{ burn.burn_id }}" data-bs-toggle="tooltip"
+                            title="Add a comment">💬 Comment</button>
+                        <!-- Tribute Modal Trigger -->
+                        <button class="btn btn-neon btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#tributeModal-burn-{{ burn.burn_id }}" data-bs-toggle="tooltip"
+                            title="Leave a tribute">🎁 Tribute</button>
+                    </div>
+
+                    <!-- Comment Modal -->
+                    <div class="modal fade" id="commentModal-burn-{{ burn.burn_id }}" tabindex="-1"
+                        aria-labelledby="commentModalLabel-burn-{{ burn.burn_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="commentModalLabel-burn-{{ burn.burn_id }}">Add Comment
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="comment">
+                                        <input type="hidden" name="target_type" value="burn">
+                                        <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                                        <textarea name="comment" class="form-control" placeholder="Add a comment..."
+                                            required></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-neon">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tribute Modal -->
+                    <div class="modal fade" id="tributeModal-burn-{{ burn.burn_id }}" tabindex="-1"
+                        aria-labelledby="tributeModalLabel-burn-{{ burn.burn_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="tributeModalLabel-burn-{{ burn.burn_id }}">Leave a
+                                        Tribute</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="tribute">
+                                        <input type="hidden" name="target_type" value="burn">
+                                        <input type="hidden" name="target_id" value="{{ burn.burn_id }}">
+                                        <select name="tribute_type" class="form-control">
+                                            <option value="flower">🌸 Flower</option>
+                                            <option value="candle">🕯️ Candle</option>
+                                            <option value="heart">❤️ Heart</option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-neon">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- History of the Burned NFT -->
+                <h4>History of This NFT</h4>
+                <ul>
+                    {% for event in burn.history %}
+                    <li>{{ event.event_type }} ({{ event.timestamp }}) - {{ event.details }}</li>
+                    {% empty %}
+                    <li>No history available for this NFT.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% empty %}
+            <p class="text-muted animate__animated animate__fadeIn">No burned NFTs found for this collection.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Rarity History -->
+    <section id="rarity-history">
+        <h2 class="animate__animated animate__fadeIn">Rarity History</h2>
+        <div class="rarity-history">
+            {% for snapshot in rarity_history %}
+            <div class="rarity-snapshot animate__animated animate__fadeInUp">
+                <p><strong>Timestamp:</strong> {{ snapshot.timestamp }}</p>
+                <p><strong>Total Supply:</strong> {{ snapshot.total_supply }}</p>
+                <p><strong>Rarity Base:</strong> {{ snapshot.rarity_base|json_script:"rarity_base-{{ snapshot.timestamp
+                    }}" }}</p>
+            </div>
+            {% empty %}
+            <p class="text-muted animate__animated animate__fadeIn">No rarity snapshots available.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">↑</button>
+</div>
+
+<!-- Bootstrap 5 JS and Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<!-- Canvas Confetti for Celebratory Effects -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<!-- ShareThis for Social Sharing -->
+<script type="text/javascript"
+    src="https://platform-api.sharethis.com/js/sharethis.js#property=YOUR_PROPERTY_ID&product=inline-share-buttons"
+    async="async"></script>
+<script>
+    // Initialize Bootstrap Tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Back to Top Button
+    window.onscroll = function () {
+        var backToTop = document.getElementById("backToTop");
+        if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+            backToTop.style.display = "flex";
+        } else {
+            backToTop.style.display = "none";
+        }
+    };
+    document.getElementById("backToTop").onclick = function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Confetti Animation for Highlights
+    document.querySelectorAll('.highlight').forEach(element => {
+        element.addEventListener('mouseenter', () => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff6b6b', '#ffd700', '#ff8787']
+            });
+        });
+    });
+
+    // Confetti for Interactions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', () => {
+            confetti({
+                particleCount: 50,
+                spread: 50,
+                origin: { y: 0.6 },
+                colors: ['#ff6b6b', '#ff8787']
+            });
+        });
+    });
+
+    // Timeline Playback
+    let isPlaying = false;
+    const playTimelineButton = document.getElementById("playTimeline");
+    const playbackSpeedInput = document.getElementById("playbackSpeed");
+    const timelineEvents = document.querySelectorAll(".timeline-event");
+
+    playTimelineButton.addEventListener("click", () => {
+        if (isPlaying) {
+            isPlaying = false;
+            playTimelineButton.textContent = "Play Timeline";
+            return;
+        }
+
+        isPlaying = true;
+        playTimelineButton.textContent = "Stop Playback";
+        timelineEvents.forEach(event => event.classList.remove("visible"));
+
+        let index = 0;
+        function showNextEvent() {
+            if (!isPlaying || index >= timelineEvents.length) {
+                isPlaying = false;
+                playTimelineButton.textContent = "Play Timeline";
+                return;
+            }
+
+            timelineEvents[index].classList.add("visible");
+            index++;
+            setTimeout(showNextEvent, parseInt(playbackSpeedInput.value));
+        }
+
+        showNextEvent();
+    });
+
+    // Filter and Search Handling
+    document.getElementById("eventTypeFilter").addEventListener("change", function () {
+        const eventType = this.value;
+        const searchQuery = document.getElementById("searchQuery").value;
+        const url = new URL(window.location);
+        if (eventType) {
+            url.searchParams.set("event_type", eventType);
+        } else {
+            url.searchParams.delete("event_type");
+        }
+        if (searchQuery) {
+            url.searchParams.set("search", searchQuery);
+        } else {
+            url.searchParams.delete("search");
+        }
+        window.location = url;
+    });
+
+    document.getElementById("searchQuery").addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            const eventType = document.getElementById("eventTypeFilter").value;
+            const searchQuery = this.value;
+            const url = new URL(window.location);
+            if (eventType) {
+                url.searchParams.set("event_type", eventType);
+            } else {
+                url.searchParams.delete("event_type");
+            }
+            if (searchQuery) {
+                url.searchParams.set("search", searchQuery);
+            } else {
+                url.searchParams.delete("search");
+            }
+            window.location = url;
+        }
+    });
+
+    // Initially Show All Events if Not Playing
+    if (!isPlaying) {
+        timelineEvents.forEach(event => event.classList.add("visible"));
+    }
+</script>
+{% endblock %}

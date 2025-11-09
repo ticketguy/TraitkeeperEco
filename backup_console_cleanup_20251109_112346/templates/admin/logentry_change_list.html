@@ -1,0 +1,502 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list admin_tags %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              'purple': '#800080',
+              'purple-dark': '#660066',
+              'white': '#FFFFFF',
+              'black': '#0A0A0A',
+            },
+            accent: {
+              light: '#F3F4F6',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Ensure sidebar scrolling works on smaller screens */
+    #filter-sidebar {
+      max-height: calc(100vh - 40px);
+    }
+    /* Fix for sticky positioning inside Tailwind */
+    .sticky {
+      position: -webkit-sticky;
+      position: sticky;
+    }
+    /* Highlight for recent entries */
+    .log-entry-recent {
+      background-color: #e6f0fa;
+      border-left-color: #2563eb;
+    }
+    /* Spinner for filter submission */
+    .spinner {
+      display: none;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #800080;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+  <script type="text/javascript" src="{% static 'admin/js/calendar.js' %}"></script>
+  <script type="text/javascript" src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+  <!-- Include jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="w-full">
+  <div class="p-6 animate-fade-in">
+    <div class="flex flex-wrap gap-5 relative">
+      <!-- Button to show filters on mobile/when hidden -->
+      <button id="show-filter-btn" class="fixed left-0 top-1/2 -translate-y-1/2 bg-brand-purple text-white border-none rounded-r-md py-3 px-2 cursor-pointer z-50 transition-opacity opacity-0 pointer-events-none">
+        <i class="fas fa-filter"></i>
+      </button>
+      
+      <!-- Filter Sidebar -->
+      <form id="filter-form" method="get" action="">
+        <div id="filter-sidebar" class="w-72 bg-gray-50 p-4 rounded-lg border border-gray-200 transition-all duration-300 sticky top-5 max-h-[calc(100vh-40px)] overflow-y-auto self-start shadow-sm flex-shrink-0 z-10">
+          <!-- Filter Toggle Button -->
+          <button type="button" class="bg-brand-purple text-white py-2 px-4 rounded cursor-pointer flex items-center justify-center transition-colors hover:bg-brand-purple-dark mb-4 border-none w-full" id="filter-toggle" onclick="toggleFilter()">
+            <i class="fas fa-filter mr-2"></i>
+            <span id="filter-toggle-text">Hide Filters</span>
+          </button>
+
+          <!-- User Filter (ForeignKey to AdminUser) -->
+          <div class="mb-5 pb-4 border-b border-gray-200">
+            <h3 class="font-medium text-gray-600 mb-3 cursor-pointer flex justify-between items-center text-base py-1.5 transition-colors hover:text-brand-purple" onclick="toggleSection(this)">
+              User <i class="fas fa-chevron-down transition-transform"></i>
+            </h3>
+            <div class="max-h-[500px] overflow-y-auto transition-all duration-300 opacity-100 py-1">
+              <div class="relative mb-4">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="related-search-user" placeholder="Search users..." onkeyup="filterRelated('user')" class="w-full p-2 pl-8 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+              </div>
+              <div id="related-list-user">
+                {% for user in cl.model_admin.get_users %}
+                  <div class="related-item mb-2" data-name="{{ user.username|lower }}">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="user__id__in" value="{{ user.id }}" {% if user.id|stringformat:"s" in selected_users %}checked{% endif %} class="mr-2">
+                      <span class="text-sm text-gray-600">{{ user.username }}</span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Flag Filter (Choices) -->
+          <div class="mb-5 pb-4 border-b border-gray-200">
+            <h3 class="font-medium text-gray-600 mb-3 cursor-pointer flex justify-between items-center text-base py-1.5 transition-colors hover:text-brand-purple" onclick="toggleSection(this)">
+              Action <i class="fas fa-chevron-down transition-transform"></i>
+            </h3>
+            <div class="max-h-[500px] overflow-y-auto transition-all duration-300 opacity-100 py-1">
+              <label for="action_flag" class="block mb-1.5 text-gray-600 text-sm">Action Type</label>
+              <select id="action_flag" name="action_flag__exact" class="w-full p-2 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10 mb-3">
+                <option value="">All Actions</option>
+                <option value="1" {% if cl.params.action_flag__exact == '1' %}selected{% endif %}>Addition</option>
+                <option value="2" {% if cl.params.action_flag__exact == '2' %}selected{% endif %}>Change</option>
+                <option value="3" {% if cl.params.action_flag__exact == '3' %}selected{% endif %}>Deletion</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Content Type Filter (ForeignKey to ContentType) -->
+          <div class="mb-5 pb-4 border-b border-gray-200">
+            <h3 class="font-medium text-gray-600 mb-3 cursor-pointer flex justify-between items-center text-base py-1.5 transition-colors hover:text-brand-purple" onclick="toggleSection(this)">
+              Content Type <i class="fas fa-chevron-down transition-transform"></i>
+            </h3>
+            <div class="max-h-[500px] overflow-y-auto transition-all duration-300 opacity-100 py-1">
+              <div class="relative mb-4">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="related-search-content_type" placeholder="Search content types..." onkeyup="filterRelated('content_type')" class="w-full p-2 pl-8 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+              </div>
+              <div id="related-list-content_type">
+                {% for ct in cl.model_admin.get_content_types %}
+                  <div class="related-item mb-2" data-name="{{ ct.app_label }}.{{ ct.model }}|lower">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="content_type__id__in" value="{{ ct.id }}" {% if ct.id|stringformat:"s" in selected_content_types %}checked{% endif %} class="mr-2">
+                      <span class="text-sm text-gray-600">{{ ct.app_label }}.{{ ct.model }}</span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Time Filter (DateTimeField) -->
+          <div class="mb-5 pb-4 border-b border-gray-200">
+            <h3 class="font-medium text-gray-600 mb-3 cursor-pointer flex justify-between items-center text-base py-1.5 transition-colors hover:text-brand-purple" onclick="toggleSection(this)">
+              Action Time <i class="fas fa-chevron-down transition-transform"></i>
+            </h3>
+            <div class="max-h-[500px] overflow-y-auto transition-all duration-300 opacity-100 py-1">
+              <label class="block mb-1.5 text-gray-600 text-sm">Action Time Range</label>
+              <div class="flex gap-2.5 mb-1">
+                <div class="flex-1">
+                  <input type="date" id="action_time_after" name="action_time__gte" value="{{ cl.params.action_time__gte }}" placeholder="From" class="w-full p-2 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10 vDateField">
+                </div>
+                <div class="flex-1">
+                  <input type="date" id="action_time_before" name="action_time__lte" value="{{ cl.params.action_time__lte }}" placeholder="To" class="w-full p-2 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10 vDateField">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text Filters (Change Message) -->
+          <div class="mb-5 pb-4 border-b border-gray-200">
+            <h3 class="font-medium text-gray-600 mb-3 cursor-pointer flex justify-between items-center text-base py-1.5 transition-colors hover:text-brand-purple" onclick="toggleSection(this)">
+              Text Filters <i class="fas fa-chevron-down transition-transform"></i>
+            </h3>
+            <div class="max-h-[500px] overflow-y-auto transition-all duration-300 opacity-100 py-1">
+              <div class="relative mb-4">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="attribute-search" placeholder="Search Attributes..." onkeyup="filterAttributes()" class="w-full p-2 pl-8 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+              </div>
+              
+              <div id="attribute-list">
+                <div class="attribute-item mb-3" data-name="change message">
+                  <label for="change_message" class="block mb-1.5 text-gray-600 text-sm">Change Message</label>
+                  <input type="text" id="change_message" name="change_message__icontains" value="{{ cl.params.change_message__icontains }}" placeholder="Search change message..." class="w-full p-2 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+                </div>
+                <div class="attribute-item mb-3" data-name="object representation">
+                  <label for="object_repr" class="block mb-1.5 text-gray-600 text-sm">Object Representation</label>
+                  <input type="text" id="object_repr" name="object_repr__icontains" value="{{ cl.params.object_repr__icontains }}" placeholder="Search object..." class="w-full p-2 border border-gray-300 rounded bg-white text-sm transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apply and Clear Filters Buttons -->
+          <div class="flex gap-2.5 mt-2.5">
+            <button type="submit" class="bg-brand-purple text-white border-none py-2.5 px-4 rounded cursor-pointer flex-1 transition-colors hover:bg-brand-purple-dark apply-filters">
+              Apply Filters <span class="spinner"></span>
+            </button>
+            <button type="button" onclick="clearFilters()" class="bg-gray-200 text-gray-800 border-none py-2.5 px-4 rounded cursor-pointer flex-1 transition-colors hover:bg-gray-300">Clear Filters</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0">
+        <!-- Search Bar -->
+        {% if cl.search_fields %}
+          <form id="changelist-search" method="get" action="">
+            {% csrf_token %}
+            <div class="flex flex-wrap gap-2.5 items-center w-full mb-5">
+              <input type="text" name="q" value="{{ cl.query }}" placeholder="Search by object or change message..." class="p-2.5 px-3 border border-gray-300 rounded flex-1 min-w-[200px] transition-colors focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple focus:ring-opacity-10">
+              <input type="submit" value="Search" class="bg-brand-purple text-white border-none py-2.5 px-4 rounded cursor-pointer transition-colors hover:bg-brand-purple-dark">
+            </div>
+          </form>
+        {% endif %}
+
+        <!-- Combined Actions and Results Table Form -->
+        <form id="changelist-form" method="post" action="" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if cl.formset %}
+            {{ cl.formset.management_form }}
+          {% endif %}
+
+          <!-- Actions (Not applicable for AdminLogEntry since we don't have actions) -->
+          <!-- Export Buttons -->
+          <div class="flex flex-wrap gap-2.5 items-center mb-5">
+            <a href="?format=csv" class="bg-brand-purple text-white border-none py-2.5 px-4 rounded cursor-pointer transition-colors hover:bg-brand-purple-dark flex items-center gap-2">
+              <i class="fas fa-file-csv"></i> Export to CSV
+            </a>
+            <button type="button" id="export-pdf" class="bg-brand-purple text-white border-none py-2.5 px-4 rounded cursor-pointer transition-colors hover:bg-brand-purple-dark flex items-center gap-2">
+              <i class="fas fa-file-pdf"></i> Export to PDF
+            </button>
+          </div>
+
+          <!-- Results Table -->
+          {% block result_list %}
+            <div class="overflow-x-auto bg-white border border-gray-200 rounded-lg p-4 shadow-sm w-full">
+              {% if cl.result_list %}
+                <table class="w-full border-collapse mb-6">
+                  <thead>
+                    <tr>
+                      {% for header in cl.list_display %}
+                        <th class="bg-brand-purple text-white font-medium py-3.5 px-4 text-left whitespace-nowrap sticky top-0 z-10">
+                          {{ header|capfirst }}
+                        </th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for result in cl.result_list %}
+                      {% with is_recent=result.action_time|timesince|slice:":12"|default:"" %}
+                      <tr class="hover:bg-gray-50 {% if is_recent == '0 minutes' or is_recent|slice:":2" == '1 day' %}log-entry-recent{% endif %}">
+                        {% for field in cl.list_display %}
+                          <td class="py-3.5 px-4 border-b border-gray-200 whitespace-normal break-words max-w-[200px] overflow-hidden text-ellipsis text-gray-900 text-sm">
+                            {% if field == 'user_link' or field == 'object_link' %}
+                              {{ result|lookup:field|safe }}
+                            {% else %}
+                              {{ result|lookup:field|default:"-" }}
+                            {% endif %}
+                          </td>
+                        {% endfor %}
+                      </tr>
+                      {% endwith %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              {% else %}
+                <div class="text-center py-6 text-gray-500">
+                  <p>No log entries found. Try adjusting your filters.</p>
+                </div>
+              {% endif %}
+            </div>
+          {% endblock %}
+
+          <!-- Pagination -->
+          {% if cl.paginator %}
+            <div class="flex justify-center flex-wrap gap-2 mt-5">
+              {% if cl.has_previous %}
+                <a href="{{ cl.get_query_string|add:'p='|add:cl.previous_page_number }}" class="py-2 px-3 border border-gray-300 rounded no-underline text-brand-purple transition-colors hover:bg-gray-50 min-w-[40px] text-center">Previous</a>
+              {% else %}
+                <span class="py-2 px-3 border border-gray-300 rounded text-gray-400 cursor-not-allowed min-w-[40px] text-center">Previous</span>
+              {% endif %}
+
+              {% for page in pagination_range %}
+                {% if page == cl.page_num %}
+                  <span class="py-2 px-3 bg-brand-purple text-white border border-brand-purple rounded min-w-[40px] text-center">{{ page }}</span>
+                {% else %}
+                  <a href="{{ cl.get_query_string|add:'p='|add:page }}" class="py-2 px-3 border border-gray-300 rounded no-underline text-brand-purple transition-colors hover:bg-gray-50 min-w-[40px] text-center">{{ page }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if cl.has_next %}
+                <a href="{{ cl.get_query_string|add:'p='|add:cl.next_page_number }}" class="py-2 px-3 border border-gray-300 rounded no-underline text-brand-purple transition-colors hover:bg-gray-50 min-w-[40px] text-center">Next</a>
+              {% else %}
+                <span class="py-2 px-3 border border-gray-300 rounded text-gray-400 cursor-not-allowed min-w-[40px] text-center">Next</span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date pickers
+    if (typeof DateTimeShortcuts !== 'undefined') {
+      DateTimeShortcuts.init();
+    }
+
+    // Filter sidebar toggle functionality
+    const filterSidebar = document.getElementById('filter-sidebar');
+    const filterToggleBtn = document.getElementById('filter-toggle');
+    const filterToggleText = document.getElementById('filter-toggle-text');
+    const showFilterBtn = document.getElementById('show-filter-btn');
+    const filterForm = document.getElementById('filter-form');
+    const applyFiltersBtn = filterForm.querySelector('.apply-filters');
+    const spinner = applyFiltersBtn.querySelector('.spinner');
+    
+    // Setup toggle filter function
+    window.toggleFilter = function() {
+        if (!filterSidebar.classList.contains('translate-x-[-100%]')) {
+            // Hide sidebar
+            filterSidebar.classList.add('translate-x-[-100%]');
+            filterSidebar.classList.add('fixed', 'top-0', 'left-0', 'h-screen', 'z-50');
+            filterSidebar.classList.remove('sticky');
+            filterToggleText.textContent = 'Show Filters';
+            showFilterBtn.classList.remove('opacity-0', 'pointer-events-none');
+        } else {
+            // Show sidebar
+            filterSidebar.classList.remove('translate-x-[-100%]', 'fixed', 'top-0', 'left-0', 'h-screen');
+            filterSidebar.classList.add('sticky');
+            filterToggleText.textContent = 'Hide Filters';
+            showFilterBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
+    };
+    
+    // Setup show filter button (for mobile)
+    if (showFilterBtn) {
+        showFilterBtn.addEventListener('click', function() {
+            filterSidebar.classList.remove('translate-x-[-100%]', 'fixed', 'top-0', 'left-0', 'h-screen');
+            filterSidebar.classList.add('sticky');
+            filterToggleText.textContent = 'Hide Filters';
+            showFilterBtn.classList.add('opacity-0', 'pointer-events-none');
+        });
+    }
+    
+    // Check for smaller screens and hide filter by default
+    function checkScreenSize() {
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            if (!filterSidebar.classList.contains('translate-x-[-100%]')) {
+                toggleFilter();
+            }
+        } else {
+            // On larger screens, ensure filter is visible
+            if (filterSidebar.classList.contains('translate-x-[-100%]')) {
+                toggleFilter();
+            }
+        }
+    }
+    
+    // Run on load
+    checkScreenSize();
+    
+    // Run when window is resized
+    window.addEventListener('resize', checkScreenSize);
+
+    // Filter section toggle functionality
+    window.toggleSection = function(header) {
+        const content = header.nextElementSibling;
+        if (content.classList.contains('max-h-[500px]')) {
+            content.classList.remove('max-h-[500px]', 'opacity-100', 'py-1');
+            content.classList.add('max-h-0', 'opacity-0', 'overflow-hidden', 'py-0');
+            header.classList.add('collapsed');
+            header.querySelector('i').classList.add('-rotate-90');
+        } else {
+            content.classList.add('max-h-[500px]', 'opacity-100', 'py-1');
+            content.classList.remove('max-h-0', 'opacity-0', 'overflow-hidden', 'py-0');
+            header.classList.remove('collapsed');
+            header.querySelector('i').classList.remove('-rotate-90');
+        }
+    };
+    
+    // Filter attributes by search input (for Text Filters)
+    window.filterAttributes = function() {
+        const input = document.getElementById('attribute-search');
+        const filter = input.value.toLowerCase();
+        const items = document.querySelectorAll('.attribute-item');
+        
+        items.forEach(item => {
+            const name = item.getAttribute('data-name');
+            if (name.toLowerCase().indexOf(filter) > -1) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    };
+    
+    // Filter related fields by search input
+    window.filterRelated = function(fieldName) {
+        const input = document.getElementById(`related-search-${fieldName}`);
+        const filter = input.value.toLowerCase();
+        const items = document.querySelectorAll(`#related-list-${fieldName} .related-item`);
+        
+        items.forEach(item => {
+            const name = item.getAttribute('data-name');
+            if (name.toLowerCase().indexOf(filter) > -1) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    };
+    
+    // Clear all filters
+    window.clearFilters = function() {
+        const form = document.getElementById('filter-form');
+        // Clear all inputs
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.type === 'date' || input.type === 'text' || input.type === 'number') {
+                input.value = '';
+            } else if (input.tagName === 'SELECT') {
+                input.value = '';
+            } else if (input.type === 'checkbox') {
+                input.checked = false;
+            }
+        });
+        // Submit the form to reset filters
+        form.submit();
+    };
+    
+    // Show loading spinner on form submit
+    if (filterForm && applyFiltersBtn && spinner) {
+      filterForm.addEventListener('submit', function() {
+        applyFiltersBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+      });
+    }
+
+    // Prevent closing when clicking inside the filter
+    filterSidebar.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+    
+    // Prevent closing when clicking the show button
+    showFilterBtn.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+
+    // Highlight recent entries (within the last 24 hours)
+    const logEntries = document.querySelectorAll('.log-entry');
+    logEntries.forEach(entry => {
+      entry.addEventListener('click', function(e) {
+        if (!e.target.closest('a')) {
+          const detailLink = this.querySelector('a[href*="adminlogentry_change"]');
+          if (detailLink) {
+            detailLink.click();
+          }
+        }
+      });
+    });
+
+    // Export to PDF functionality
+    document.getElementById('export-pdf').addEventListener('click', function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(16);
+      doc.text('Admin Activity Log', 20, 20);
+      
+      doc.setFontSize(12);
+      let yOffset = 30;
+      const logEntries = document.querySelectorAll('.log-entry');
+      
+      logEntries.forEach((entry, index) => {
+        const timestamp = entry.querySelector('td:nth-child(1)').textContent;
+        const user = entry.querySelector('td:nth-child(2)').textContent;
+        const contentType = entry.querySelector('td:nth-child(3)').textContent;
+        const action = entry.querySelector('td:nth-child(5)').textContent.trim();
+        const objectRepr = entry.querySelector('td:nth-child(4)').textContent;
+        const message = entry.querySelector('td:nth-child(6)').textContent;
+        
+        doc.text(`${index + 1}. ${timestamp} - ${user} - ${contentType} - ${action} - ${objectRepr}`, 20, yOffset);
+        if (message) {
+          yOffset += 5;
+          doc.text(`   Message: ${message}`, 20, yOffset);
+        }
+        yOffset += 10;
+        
+        if (yOffset > 270) {
+          doc.addPage();
+          yOffset = 20;
+        }
+      });
+      
+      doc.save('admin_activity_log.pdf');
+    });
+});
+</script>
+{% endblock %}

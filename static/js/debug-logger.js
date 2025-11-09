@@ -10,7 +10,7 @@
  *   <script>window.DEBUG_MODE = {{ DEBUG|lower }};</script>
  *   <script src="{% static 'js/debug-logger.js' %}"></script>
  *
- *   // In your code (replace console.log with debugLog):
+ *   // In your code (replace // console.log with debugLog):
  *   debugLog('User clicked button', buttonData);
  *   debugWarn('API rate limit approaching');
  *   debugError('Failed to load collection', error);
@@ -26,8 +26,8 @@
      * Debug log - only logs in development
      */
     window.debugLog = function(...args) {
-        if (isDebugMode && console && console.log) {
-            console.log(...args);
+        if (isDebugMode && console && // console.log) {
+            // console.log(...args);
         }
     };
 
@@ -127,13 +127,13 @@
 
     // Log initialization status
     if (isDebugMode) {
-        console.log('%c🔍 Debug Mode Enabled', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
-        console.log('Debug logging is active. Use debugLog(), debugWarn(), debugError() for logging.');
+        // console.log('%c🔍 Debug Mode Enabled', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+        // console.log('Debug logging is active. Use debugLog(), debugWarn(), debugError() for logging.');
     } else {
         // Optionally override console methods in production to prevent accidental logging
         if (window.STRICT_PRODUCTION_MODE === true) {
             const noop = function() {};
-            console.log = noop;
+            // console.log = noop;
             console.warn = noop;
             console.info = noop;
             console.debug = noop;

@@ -107,12 +107,12 @@
             };
             
             socket.onopen = function() {
-                console.log('WebSocket connected');
+                // console.log('WebSocket connected');
                 requestStatus();
             };
             
             socket.onclose = function() {
-                console.log('WebSocket disconnected');
+                // console.log('WebSocket disconnected');
                 setTimeout(initializeWebSocket, 5000); // Reconnect after 5 seconds
             };
         }

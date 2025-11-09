@@ -206,7 +206,7 @@ const connection = new solanaWeb3.Connection(
 
 // Claim Quest Function
 async function claimQuest(questId, questOnChainId, questAddress) {
-    console.log('Claiming quest:', questId, questOnChainId, questAddress);
+    // console.log('Claiming quest:', questId, questOnChainId, questAddress);
 
     // Show modal
     const modal = document.getElementById('claim-modal');
@@ -243,9 +243,9 @@ async function claimQuest(questId, questOnChainId, questAddress) {
         const wallet = window.solana;
         const userPublicKey = wallet.publicKey;
 
-        console.log('User wallet:', userPublicKey.toString());
-        console.log('Quest on-chain address:', data.quest_on_chain_address);
-        console.log('Reward:', data.reward_sol, 'SOL');
+        // console.log('User wallet:', userPublicKey.toString());
+        // console.log('Quest on-chain address:', data.quest_on_chain_address);
+        // console.log('Reward:', data.reward_sol, 'SOL');
 
         // Step 3: Build Solana transaction to claim quest reward
 
@@ -263,8 +263,8 @@ async function claimQuest(questId, questOnChainId, questAddress) {
             QUEST_PROGRAM_ID
         );
 
-        console.log('Quest User PDA:', questUserPDA.toString());
-        console.log('Quest Wallet PDA:', questWalletPDA.toString());
+        // console.log('Quest User PDA:', questUserPDA.toString());
+        // console.log('Quest Wallet PDA:', questWalletPDA.toString());
 
         // Create instruction data for claim_quest_reward
         // Get instruction discriminator from utility
@@ -294,14 +294,14 @@ async function claimQuest(questId, questOnChainId, questAddress) {
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = userPublicKey;
 
-        console.log('Transaction created, requesting signature...');
+        // console.log('Transaction created, requesting signature...');
 
         // Step 4: Sign and send transaction
         const signedTransaction = await wallet.signTransaction(transaction);
-        console.log('Transaction signed');
+        // console.log('Transaction signed');
 
         const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        console.log('Transaction sent:', signature);
+        // console.log('Transaction sent:', signature);
 
         // Wait for confirmation
         const confirmation = await connection.confirmTransaction(signature, 'confirmed');
@@ -310,7 +310,7 @@ async function claimQuest(questId, questOnChainId, questAddress) {
             throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
         }
 
-        console.log('Transaction confirmed!');
+        // console.log('Transaction confirmed!');
 
         // Step 5: Confirm claim on backend
         const confirmResponse = await fetch('/profiles/quests/claim/confirm/', {

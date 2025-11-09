@@ -1,11 +1,11 @@
-console.log("solana-stats.js loaded");
+// console.log("solana-stats.js loaded");
 
 // Variable to store the previous Solana price (no longer needed, but keeping for potential future use)
 let previousPrice = null;
 
 // Function to fetch and update Solana price and TPS
 function updateSolanaStats() {
-    console.log("Running updateSolanaStats");
+    // console.log("Running updateSolanaStats");
 
     // Find DOM elements
     const priceElement = document.querySelector('.solana-price .price-value');
@@ -13,8 +13,8 @@ function updateSolanaStats() {
 
     if (!priceElement || !tpsElement) {
         console.error("Price or TPS element not found in DOM");
-        console.log("Price element:", priceElement);
-        console.log("TPS element:", tpsElement);
+        // console.log("Price element:", priceElement);
+        // console.log("TPS element:", tpsElement);
         return;
     }
 
@@ -22,17 +22,17 @@ function updateSolanaStats() {
     priceElement.classList.add('animate-fade-pulse');
     tpsElement.classList.add('animate-fade-pulse');
 
-    console.log("Making fetch request to /api/solana-network-stats/");
+    // console.log("Making fetch request to /api/solana-network-stats/");
     fetch('/api/solana-network-stats/')
         .then(response => {
-            console.log("Fetch response received:", response);
+            // console.log("Fetch response received:", response);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
-            console.log('API Response:', data);
+            // console.log('API Response:', data);
 
             // Update Solana price with 24-hour change
             if (priceElement) {
@@ -97,7 +97,7 @@ function updateSolanaStats() {
 
 // Function to initialize the updateSolanaStats with retries
 function initializeSolanaStats(retries = 3, delay = 1000) {
-    console.log("Initializing Solana stats");
+    // console.log("Initializing Solana stats");
 
     // Check if DOM elements are available
     const priceElement = document.querySelector('.solana-price .price-value');
@@ -105,7 +105,7 @@ function initializeSolanaStats(retries = 3, delay = 1000) {
 
     if (!priceElement || !tpsElement) {
         if (retries > 0) {
-            console.log(`DOM elements not found, retrying in ${delay}ms... (${retries} retries left)`);
+            // console.log(`DOM elements not found, retrying in ${delay}ms... (${retries} retries left)`);
             setTimeout(() => initializeSolanaStats(retries - 1, delay * 2), delay);
         } else {
             console.error("DOM elements not found after retries, giving up");
@@ -114,22 +114,22 @@ function initializeSolanaStats(retries = 3, delay = 1000) {
     }
 
     // Initial fetch
-    console.log("Calling updateSolanaStats initially");
+    // console.log("Calling updateSolanaStats initially");
     updateSolanaStats();
 
     // Refresh every 30 seconds
     setInterval(() => {
-        console.log("Polling for updated Solana stats");
+        // console.log("Polling for updated Solana stats");
         updateSolanaStats();
     }, 30000);
 }
 
 // Run initialization with retries
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOMContentLoaded event fired in solana-stats.js, running initializeSolanaStats");
+    // console.log("DOMContentLoaded event fired in solana-stats.js, running initializeSolanaStats");
     initializeSolanaStats();
 });
 
 // Fallback: Run initialization immediately in case DOMContentLoaded doesn't fire
-console.log("Running initializeSolanaStats as fallback in solana-stats.js");
+// console.log("Running initializeSolanaStats as fallback in solana-stats.js");
 initializeSolanaStats();

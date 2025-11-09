@@ -1245,11 +1245,11 @@
 
         // Handle site updates
         siteUpdatesSource.onopen = function() {
-            console.log("SSE connection established for site updates");
+            // console.log("SSE connection established for site updates");
         };
 
         siteUpdatesSource.onmessage = function(event) {
-            console.log("Received SSE message for site updates:", event.data);
+            // console.log("Received SSE message for site updates:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1564,11 +1564,11 @@
 
         // Handle Hero Slides Updates
         heroSlidesSource.onopen = function() {
-            console.log("SSE connection established for hero slides");
+            // console.log("SSE connection established for hero slides");
         };
 
         heroSlidesSource.onmessage = function(event) {
-            console.log("Received SSE message for hero slides:", event.data);
+            // console.log("Received SSE message for hero slides:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1589,11 +1589,11 @@
 
        // Handle Highest Vitality Collections Updates
         highestVitalitySource.onopen = function() {
-            console.log("SSE connection established for highest vitality collections");
+            // console.log("SSE connection established for highest vitality collections");
         };
 
         highestVitalitySource.onmessage = function(event) {
-            console.log("Received SSE message for highest vitality collections:", event.data);
+            // console.log("Received SSE message for highest vitality collections:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1739,7 +1739,7 @@
         
         // --- THIS IS THE SSE UPDATE FUNCTION ---
         window.updateHighestVitalityCarousel = function(newCollections) {
-            console.log("Updating carousel with new data...");
+            // console.log("Updating carousel with new data...");
             
             // 1. Destroy old tilt effects
             const existingTilts = carousel.querySelectorAll('[data-tilt]');

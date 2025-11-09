@@ -1,4 +1,4 @@
-console.log("wallet-connection.js loaded");
+// console.log("wallet-connection.js loaded");
 
 // Constants for the application
 const CONSTANTS = {
@@ -20,11 +20,11 @@ const loadingIndicators = document.querySelectorAll('#loading-indicator');
 const walletBackdrop = document.getElementById('wallet-backdrop');
 // Define userProfileMenus in the global scope
 const userProfileMenus = document.querySelectorAll('#user-profile-menu, #user-profile-menu-mobile');
-console.log('Globally cached user-profile-menus:', userProfileMenus.length);
+// console.log('Globally cached user-profile-menus:', userProfileMenus.length);
 
 // Utility Functions
 function showWalletOptions() {
-    console.log("Showing wallet options");
+    // console.log("Showing wallet options");
     walletOptionsElements.forEach(option => {
         option.classList.remove('hidden');
         setTimeout(() => option.classList.add('opacity-100'), 10);
@@ -42,7 +42,7 @@ function showWalletOptions() {
 }
 
 function hideWalletOptions() {
-    console.log("Hiding wallet options");
+    // console.log("Hiding wallet options");
     walletOptionsElements.forEach(option => {
         option.classList.remove('opacity-100');
         option.classList.add('opacity-0');
@@ -74,7 +74,7 @@ function handleError(error, customMessage) {
 }
 
 function addTouchAndClickListener(elements, handler) {
-    console.log("Adding touch and click listeners to elements:", elements);
+    // console.log("Adding touch and click listeners to elements:", elements);
     elements.forEach(element => {
         element.addEventListener('click', handler);
         element.addEventListener('touchend', function (event) {
@@ -85,7 +85,7 @@ function addTouchAndClickListener(elements, handler) {
 }
 
 function getCookie(name) {
-    console.log("Getting cookie:", name);
+    // console.log("Getting cookie:", name);
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -97,7 +97,7 @@ function getCookie(name) {
             }
         }
     }
-    console.log("Cookie value for", name, ":", cookieValue);
+    // console.log("Cookie value for", name, ":", cookieValue);
     if (!cookieValue) {
         console.warn(`CSRF token not found. Ensure CSRF cookie is set.`);
     }
@@ -105,16 +105,16 @@ function getCookie(name) {
 }
 
 function startPollingWalletState() {
-    console.log("Starting polling wallet state");
+    // console.log("Starting polling wallet state");
     if (isDisconnecting) {
-        console.log('Polling skipped due to disconnection in progress');
+        // console.log('Polling skipped due to disconnection in progress');
         return;
     }
 
     const pollingInterval = setInterval(async () => {
-        console.log("Polling wallet state, publicKey:", publicKey);
+        // console.log("Polling wallet state, publicKey:", publicKey);
         if (isDisconnecting || !publicKey) {
-            console.log("Clearing polling interval due to disconnection or no publicKey");
+            // console.log("Clearing polling interval due to disconnection or no publicKey");
             clearInterval(pollingInterval);
             return;
         }
@@ -128,13 +128,13 @@ function startPollingWalletState() {
                 body: JSON.stringify({ public_key: publicKey })
             });
 
-            console.log("Polling response:", response);
+            // console.log("Polling response:", response);
             if (!response.ok) {
                 throw new Error('Failed to verify connection state');
             }
 
             const data = await response.json();
-            console.log("Polling data:", data);
+            // console.log("Polling data:", data);
             if (data.status === 'success') {
                 updateHeaderWalletState(true, data.username, data.profile_picture);
             } else {
@@ -150,7 +150,7 @@ function startPollingWalletState() {
 }
 
 async function detectWallets() {
-    console.log("Detecting wallets");
+    // console.log("Detecting wallets");
     try {
         const supportedWallets = [
             { name: 'Phantom', provider: window.phantom?.solana, icon: 'https://phantom.app/favicon.ico', installLink: 'https://phantom.app/' },
@@ -208,7 +208,7 @@ async function detectWallets() {
             blockchain: 'solana'
         })).concat(additionalWallets);
 
-        console.log(`Detected wallets:`, detectedWallets.map(w => `${w.name} (${w.isInstalled ? 'Installed' : 'Not Installed'}, Blockchain: ${w.blockchain})`).join(', '));
+        // console.log(`Detected wallets:`, detectedWallets.map(w => `${w.name} (${w.isInstalled ? 'Installed' : 'Not Installed'}, Blockchain: ${w.blockchain})`).join(', '));
         return detectedWallets;
     } catch (error) {
         console.error('Error detecting wallets:', error);
@@ -217,20 +217,20 @@ async function detectWallets() {
 }
 
 async function connectWalletAndSignMessage(wallet, isLinking = false) {
-    console.log("Connecting wallet:", wallet.name);
+    // console.log("Connecting wallet:", wallet.name);
     if (!wallet || !wallet.provider) {
         throw new Error('Invalid wallet provider');
     }
 
     if (isWalletConnected && !isLinking) {
-        console.log('Wallet already connected');
+        // console.log('Wallet already connected');
         return publicKey;
     }
 
     try {
         showLoadingIndicator();
 
-        console.log(`Initiating connection to ${wallet.name}`);
+        // console.log(`Initiating connection to ${wallet.name}`);
 
         let connectionResponse;
         if (wallet.name === 'Solflare') {
@@ -249,7 +249,7 @@ async function connectWalletAndSignMessage(wallet, isLinking = false) {
         }
 
         publicKey = connectionResponse.publicKey.toString();
-        console.log("Wallet connected, publicKey:", publicKey);
+        // console.log("Wallet connected, publicKey:", publicKey);
 
         const messageText = isLinking
             ? `Sign this message to link. Wallet: ${publicKey}`
@@ -267,14 +267,14 @@ async function connectWalletAndSignMessage(wallet, isLinking = false) {
                 } else {
                     throw new Error('Unexpected signature format from Solflare');
                 }
-                console.log("Solflare signatureData:", signatureData);
+                // console.log("Solflare signatureData:", signatureData);
             } else {
                 const signatureData = await wallet.provider.signMessage(message, 'utf8');
                 if (!signatureData || !signatureData.signature) {
                     throw new Error('Unexpected signature format from wallet');
                 }
                 signedMessage = Array.from(signatureData.signature);
-                console.log("Non-Solflare signatureData:", signatureData);
+                // console.log("Non-Solflare signatureData:", signatureData);
             }
         } catch (error) {
             console.error('Error signing message:', error);
@@ -284,7 +284,7 @@ async function connectWalletAndSignMessage(wallet, isLinking = false) {
         if (!signedMessage || signedMessage.length === 0) {
             throw new Error('Failed to obtain a valid signature from the wallet');
         }
-        console.log("Message signed, signedMessage:", signedMessage);
+        // console.log("Message signed, signedMessage:", signedMessage);
 
         const url = isLinking ? '/wallet/link-wallet/' : '/wallet/session/';
         const data = await createSessionOnServer(publicKey, signedMessage, url);
@@ -322,7 +322,7 @@ async function connectWalletAndSignMessage(wallet, isLinking = false) {
 }
 
 async function checkInitialWalletState() {
-    console.log("Checking initial wallet state");
+    // console.log("Checking initial wallet state");
     if (isWalletConnected) {
         return;
     }
@@ -337,7 +337,7 @@ async function checkInitialWalletState() {
 }
 
 async function createSessionOnServer(publicKey, signedMessage, url) {
-    console.log("Creating session on server, publicKey:", publicKey);
+    // console.log("Creating session on server, publicKey:", publicKey);
     
     // 1. Convert signature to Base64 (needed for Django/REST transport)
     const signatureArray = new Uint8Array(signedMessage);
@@ -351,7 +351,7 @@ async function createSessionOnServer(publicKey, signedMessage, url) {
         // Send the signature directly with the public key
         signed_message: signatureBase64 
     });
-    console.log("Request body for session creation:", requestBody);
+    // console.log("Request body for session creation:", requestBody);
 
     try {
         const response = await fetch(url, {
@@ -363,7 +363,7 @@ async function createSessionOnServer(publicKey, signedMessage, url) {
             body: requestBody // Send everything at once
         });
 
-        console.log("Session/Link response status:", response.status);
+        // console.log("Session/Link response status:", response.status);
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Error response from server:", errorData);
@@ -371,7 +371,7 @@ async function createSessionOnServer(publicKey, signedMessage, url) {
         }
 
         const data = await response.json();
-        console.log("Session/Link data:", data);
+        // console.log("Session/Link data:", data);
         if (data.status !== 'success') {
             throw new Error(data.error || 'Failed to complete session/link action');
         }
@@ -383,7 +383,7 @@ async function createSessionOnServer(publicKey, signedMessage, url) {
 }
 
 async function disconnectWalletGlobal() {
-    console.log("Disconnecting wallet globally");
+    // console.log("Disconnecting wallet globally");
     try {
         showLoadingIndicator();
 
@@ -407,7 +407,7 @@ async function disconnectWalletGlobal() {
         isWalletConnected = false;
         publicKey = null;
 
-        console.log("Wallet disconnected successfully");
+        // console.log("Wallet disconnected successfully");
         hideWalletOptions();
         updateHeaderWalletState(false);
     } catch (error) {
@@ -419,14 +419,14 @@ async function disconnectWalletGlobal() {
 }
 
 async function updateHeaderWalletState(isConnected, username = '', profilePicture = '') {
-    console.log("Updating header wallet state, isConnected:", isConnected);
+    // console.log("Updating header wallet state, isConnected:", isConnected);
 
     const desktopWalletContainer = document.querySelector('.desktop-header .wallet-container');
     const mobileHeaderRight = document.querySelector('.mobile-header .mobile-header-right');
 
-    console.log('Found desktop-wallet-container:', !!desktopWalletContainer);
-    console.log('Found mobile-header-right:', !!mobileHeaderRight);
-    console.log('Found user-profile-menus:', userProfileMenus.length);
+    // console.log('Found desktop-wallet-container:', !!desktopWalletContainer);
+    // console.log('Found mobile-header-right:', !!mobileHeaderRight);
+    // console.log('Found user-profile-menus:', userProfileMenus.length);
 
     if (isConnected) {
         // Fetch unread notification count
@@ -444,7 +444,7 @@ async function updateHeaderWalletState(isConnected, username = '', profilePictur
                 const data = await response.json();
                 if (data.status === 'success') {
                     unreadCount = data.unread_count;
-                    console.log("Unread notifications count:", unreadCount);
+                    // console.log("Unread notifications count:", unreadCount);
                 }
             }
         } catch (error) {
@@ -617,7 +617,7 @@ async function updateHeaderWalletState(isConnected, username = '', profilePictur
 }
 
 function updateWalletList(wallets) {
-    console.log("Updating wallet list, wallets:", wallets);
+    // console.log("Updating wallet list, wallets:", wallets);
     const walletList = document.getElementById('detected-wallets');
     const loadingIndicator = document.getElementById('loading-indicator');
     const noWalletsMessage = document.getElementById('no-wallets-message');
@@ -675,7 +675,7 @@ function updateWalletList(wallets) {
 }
 
 function showLoadingIndicator() {
-    console.log("Showing loading indicator");
+    // console.log("Showing loading indicator");
     loadingIndicators.forEach(indicator => {
         indicator.classList.remove('hidden');
         indicator.classList.add('flex');
@@ -695,7 +695,7 @@ function showLoadingIndicator() {
 }
 
 function hideLoadingIndicator() {
-    console.log("Hiding loading indicator");
+    // console.log("Hiding loading indicator");
     loadingIndicators.forEach(indicator => {
         indicator.classList.add('hidden');
         indicator.classList.remove('flex');
@@ -758,7 +758,7 @@ function initializeNotificationWebSocket() {
     window.notificationSocket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
 
     window.notificationSocket.onopen = function () {
-        console.log("Notification WebSocket connection established");
+        // console.log("Notification WebSocket connection established");
     };
 
     window.notificationSocket.onmessage = function (event) {
@@ -798,7 +798,7 @@ function initializeNotificationWebSocket() {
     };
 
     window.notificationSocket.onclose = function () {
-        console.log("Notification WebSocket connection closed");
+        // console.log("Notification WebSocket connection closed");
     };
 
     window.notificationSocket.onerror = function (error) {
@@ -808,7 +808,7 @@ function initializeNotificationWebSocket() {
 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOMContentLoaded event fired in wallet-connection.js");
+    // console.log("DOMContentLoaded event fired in wallet-connection.js");
     try {
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -830,7 +830,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await response.json();
         if (data.status === 'success' && data.google_data) {
-            console.log("Google signup data found:", data.google_data);
+            // console.log("Google signup data found:", data.google_data);
             showWalletOptions(); // Ensure the wallet modal is open
             showGoogleSignupForm(data.google_data);
         }
@@ -873,7 +873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     positionDropdownMenu(associatedMenu, profileLink);
                     const isVisible = associatedMenu.style.display === 'block';
                     associatedMenu.style.display = isVisible ? 'none' : 'block';
-                    console.log(`User profile menu display set to: ${associatedMenu.style.display}`);
+                    // console.log(`User profile menu display set to: ${associatedMenu.style.display}`);
                 }
             }
 
@@ -911,7 +911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (target.closest('.profile-link')) {
                 event.stopPropagation();
                 event.preventDefault();
-                console.log('Profile link touched');
+                // console.log('Profile link touched');
 
                 const profileLink = target.closest('.profile-link');
                 const userProfile = profileLink.closest('.user-profile');
@@ -920,7 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     positionDropdownMenu(associatedMenu, profileLink);
                     const isVisible = associatedMenu.style.display === 'block';
                     associatedMenu.style.display = isVisible ? 'none' : 'block';
-                    console.log(`User profile menu display set to: ${associatedMenu.style.display}`);
+                    // console.log(`User profile menu display set to: ${associatedMenu.style.display}`);
                 }
 
                 setTimeout(() => { isTouchEvent = false; }, 300);
@@ -1018,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const data = await response.json();
                     if (data.status === 'success') {
-                        console.log("Email login successful");
+                        // console.log("Email login successful");
                         isWalletConnected = true;
                         updateHeaderWalletState(true, data.username, data.profile_picture);
                         hideWalletOptions();
@@ -1156,12 +1156,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const data = await response.json();
                     if (data.status === 'success') {
-                        console.log("Email signup successful");
+                        // console.log("Email signup successful");
                         isWalletConnected = true;
                         updateHeaderWalletState(true, data.username, data.profile_picture);
                         hideWalletOptions();
                     } else if (data.status === 'verification_required') {
-                        console.log("Verification required, showing code input form");
+                        // console.log("Verification required, showing code input form");
                         showVerificationForm(data.email, data.email_error);
                     } else {
                         if (signupErrorDisplay) {
@@ -1251,7 +1251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const data = await response.json();
                     if (data.status === 'success') {
-                        console.log("Email verification successful");
+                        // console.log("Email verification successful");
                         isWalletConnected = true;
                         updateHeaderWalletState(true, data.username, data.profile_picture);
                         hideWalletOptions();
@@ -1758,7 +1758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const data = await response.json();
                 if (data.status === 'success') {
-                    console.log("Google signup successful");
+                    // console.log("Google signup successful");
                     isWalletConnected = true; // Use local variable instead of window.isWalletConnected
                     updateHeaderWalletState(true, data.username, data.profile_picture);
                     hideWalletOptions();

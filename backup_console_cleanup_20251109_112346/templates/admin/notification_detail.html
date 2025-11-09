@@ -1,0 +1,91 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 sm:mb-6 animate-slide-up"
+        style="font-family: 'Space Mono', monospace;">
+        {{ notification.get_type_display }}
+    </h1>
+
+    {% if messages %}
+    <div class="mb-4 sm:mb-6 animate-slide-up">
+        {% for message in messages %}
+        <div
+            class="p-3 sm:p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100{% elif message.tags == 'error' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100{% else %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100{% endif %} shadow-md transform transition-transform duration-300 hover:scale-105 font-roboto text-xs sm:text-sm">
+            {{ message|safe }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="p-4 sm:p-6 rounded-lg bg-accent-light dark:bg-accent-dark shadow-md border border-border-light dark:border-border-dark animate-fade-in">
+        <!-- Severity and Metadata -->
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <span
+                    class="font-semibold text-lg {% if notification.severity == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                    {{ notification.get_type_display }}
+                </span>
+                <span
+                    class="ml-2 text-xs font-medium px-2 py-1 rounded-full {% if notification.severity == 'error' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% elif notification.severity == 'warning' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200{% else %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% endif %}">
+                    {{ notification.get_severity_display }}
+                </span>
+            </div>
+            <span class="text-xs text-gray-500">{{ notification.created_at|timesince }} ago</span>
+        </div>
+
+        <!-- Message -->
+        <div class="text-text-light dark:text-text-dark mb-4" style="overflow-wrap: break-word;">
+            {{ notification.message|safe }}
+        </div>
+
+        <!-- Structured Details -->
+        {% if notification.details %}
+        <div class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+            <p><strong>Started:</strong> {{ notification.details.start_time }}</p>
+            <p><strong>Total Attempted:</strong> {{ notification.details.total_attempted }}</p>
+            <p><strong>Successful:</strong> {{ notification.details.successful }}</p>
+            <p><strong>Failed:</strong> {{ notification.details.failed }}</p>
+            {% if notification.details.collections %}
+            <div class="mt-2">
+                <strong>Collections:</strong>
+                <ul class="list-disc list-inside">
+                    {% for collection in notification.details.collections %}
+                    <li class="{% if collection.status == 'Failed' %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                        {{ collection.address }}: {{ collection.status }}
+                        {% if collection.error %}
+                        (Error: {{ collection.error }})
+                        {% endif %}
+                        {% if collection.link %}
+                        <a href="{{ collection.link }}" target="_blank"
+                            class="text-brand-purple hover:text-primary-dark ml-1">View Collection</a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="mt-4 flex space-x-3">
+            <a href="{% url 'admin:notifications_view' %}"
+                class="glow-button text-white px-4 py-2 rounded-lg text-sm font-semibold font-roboto hover:bg-primary-dark transition-all duration-300">
+                Back to Notifications
+            </a>
+            {% if not notification.is_read %}
+            <a href="{% url 'admin:mark_notification_read' notification.id %}"
+                class="glow-button text-white px-4 py-2 rounded-lg text-sm font-semibold font-roboto hover:bg-primary-dark transition-all duration-300">
+                Mark as Read
+            </a>
+            {% else %}
+            <a href="{% url 'admin:mark_notification_unread' notification.id %}"
+                class="glow-button text-white px-4 py-2 rounded-lg text-sm font-semibold font-roboto hover:bg-primary-dark transition-all duration-300">
+                Mark as Unread
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

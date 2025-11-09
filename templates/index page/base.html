@@ -1211,13 +1211,13 @@ if (header) {
     console.warn("Main header element (#main-header) not found for scroll effects.");
 }
 
-        console.log('Base.html script started loading'); // Debug log to confirm script execution
+        // console.log('Base.html script started loading'); // Debug log to confirm script execution
 
         // Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/static/service-worker.js')
-                    .then(registration => console.log('Service Worker registered:', registration))
+                    .then(registration => // console.log('Service Worker registered:', registration))
                     .catch(error => console.error('Service Worker registration failed:', error));
             });
         }
@@ -1260,13 +1260,13 @@ if (header) {
                 const { outcome } = await deferredPrompt.userChoice;
 
                 if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
+                    // console.log('User accepted the install prompt');
                     localStorage.setItem('pwa-installed', 'true');
                     if (window.showToast) {
                         window.showToast('App installed successfully! Check your home screen.', 'success');
                     }
                 } else {
-                    console.log('User dismissed the install prompt');
+                    // console.log('User dismissed the install prompt');
                 }
 
                 // Hide the prompt
@@ -1300,7 +1300,7 @@ if (header) {
 
         // Check if app is already installed
         window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed');
+            // console.log('PWA was installed');
             localStorage.setItem('pwa-installed', 'true');
             if (installPrompt) {
                 installPrompt.classList.add('hidden');
@@ -1318,25 +1318,25 @@ if (header) {
 
 
         // Main script execution
-            console.log('DOMContentLoaded fired for base.html script'); // Debug log
+            // console.log('DOMContentLoaded fired for base.html script'); // Debug log
 
                 // Mobile Menu Toggle (New Spherical Buttons)
                 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
                 const mobileMenuButtons = document.getElementById('mobile-menu-buttons');
                 const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
 
-                console.log('Mobile menu elements:', {
+                // console.log('Mobile menu elements:', {
                     mobileMenuToggle: !!mobileMenuToggle,
                     mobileMenuButtons: !!mobileMenuButtons,
                     mobileMenuBackdrop: !!mobileMenuBackdrop
                 });
 
                 function openMobileMenu() {
-                    console.log('Opening mobile menu buttons');
+                    // console.log('Opening mobile menu buttons');
                     if (mobileMenuButtons) {
                         mobileMenuButtons.classList.remove('hidden');
                         mobileMenuButtons.classList.add('flex');
-                        console.log('Mobile menu visibility:', !mobileMenuButtons.classList.contains('hidden')); // Debug log
+                        // console.log('Mobile menu visibility:', !mobileMenuButtons.classList.contains('hidden')); // Debug log
                     } else {
                         console.error('mobileMenuButtons element not found during openMobileMenu');
                     }
@@ -1344,14 +1344,14 @@ if (header) {
                         mobileMenuBackdrop.classList.remove('hidden');
                         mobileMenuBackdrop.classList.remove('opacity-0');
                         mobileMenuBackdrop.classList.add('opacity-100');
-                        console.log('Backdrop visibility:', !mobileMenuBackdrop.classList.contains('hidden')); // Debug log
+                        // console.log('Backdrop visibility:', !mobileMenuBackdrop.classList.contains('hidden')); // Debug log
                     } else {
                         console.error('mobileMenuBackdrop element not found during openMobileMenu');
                     }
                 }
 
                 function closeMobileMenu() {
-                    console.log('Closing mobile menu buttons');
+                    // console.log('Closing mobile menu buttons');
                     if (mobileMenuButtons) {
                         mobileMenuButtons.classList.remove('flex');
                         mobileMenuButtons.classList.add('hidden');
@@ -1368,12 +1368,12 @@ if (header) {
                 }
 
                 if (mobileMenuToggle) {
-                    console.log('Attaching click event listener to mobile menu toggle');
+                    // console.log('Attaching click event listener to mobile menu toggle');
                     mobileMenuToggle.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.stopImmediatePropagation();
                         e.preventDefault();
-                        console.log('Mobile menu toggle clicked');
+                        // console.log('Mobile menu toggle clicked');
                         if (mobileMenuButtons.classList.contains('hidden')) {
                             openMobileMenu();
                         } else {
@@ -1388,7 +1388,7 @@ if (header) {
                     mobileMenuBackdrop.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        console.log('Backdrop clicked, closing mobile menu');
+                        // console.log('Backdrop clicked, closing mobile menu');
                         closeMobileMenu();
                     });
                 }
@@ -1410,7 +1410,7 @@ if (header) {
                     if (mobileMenuButtons && mobileMenuToggle && !mobileMenuButtons.contains(e.target) && !mobileMenuToggle.contains(e.target) && !clickedInsideWalletToggle && !clickedThemeToggle && !clickedFooter && (!walletModal || !walletModal.contains(e.target)) && (!walletBackdrop || !walletBackdrop.contains(e.target))) {
                         // Only proceed if the mobile menu is visible (not hidden)
                         if (!mobileMenuButtons.classList.contains('hidden')) {
-                            console.log('Clicked outside mobile menu, closing');
+                            // console.log('Clicked outside mobile menu, closing');
                             closeMobileMenu();
                         }
                     }
@@ -1421,13 +1421,13 @@ if (header) {
                         // Allow theme toggle clicks to propagate
                         const themeToggleMobile = document.getElementById('theme-toggle-mobile');
                         if (themeToggleMobile && themeToggleMobile.contains(e.target)) {
-                            console.log('Theme toggle clicked, allowing propagation');
+                            // console.log('Theme toggle clicked, allowing propagation');
                             return; // Let the theme toggle handler process this
                         }
 
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        console.log('Clicked inside mobile menu buttons, preventing close');
+                        // console.log('Clicked inside mobile menu buttons, preventing close');
                     });
                 }
 
@@ -1438,92 +1438,92 @@ if (header) {
                 const loginTabContent = document.getElementById('login-tab-content');
                 const tabIndicator = document.getElementById('tab-indicator');
 
-                console.log('=== WALLET MODAL TAB INITIALIZATION ===');
-                console.log('Wallet tab element:', walletTab, '| Found:', !!walletTab);
-                console.log('Login tab element:', loginTab, '| Found:', !!loginTab);
-                console.log('Wallet tab content:', walletTabContent, '| Found:', !!walletTabContent);
-                console.log('Login tab content:', loginTabContent, '| Found:', !!loginTabContent);
-                console.log('Tab indicator:', tabIndicator, '| Found:', !!tabIndicator);
+                // console.log('=== WALLET MODAL TAB INITIALIZATION ===');
+                // console.log('Wallet tab element:', walletTab, '| Found:', !!walletTab);
+                // console.log('Login tab element:', loginTab, '| Found:', !!loginTab);
+                // console.log('Wallet tab content:', walletTabContent, '| Found:', !!walletTabContent);
+                // console.log('Login tab content:', loginTabContent, '| Found:', !!loginTabContent);
+                // console.log('Tab indicator:', tabIndicator, '| Found:', !!tabIndicator);
 
                 if (walletTabContent) {
-                    console.log('Wallet tab content initial classes:', walletTabContent.className);
+                    // console.log('Wallet tab content initial classes:', walletTabContent.className);
                 }
                 if (loginTabContent) {
-                    console.log('Login tab content initial classes:', loginTabContent.className);
+                    // console.log('Login tab content initial classes:', loginTabContent.className);
                 }
-                console.log('=== END INITIALIZATION ===');
+                // console.log('=== END INITIALIZATION ===');
 
                 function activateTab(tabButton, tabContent, isWalletTab) {
-                    console.log('\n=== ACTIVATE TAB CALLED ===');
-                    console.log('Tab button:', tabButton);
-                    console.log('Tab content:', tabContent);
-                    console.log('Is wallet tab:', isWalletTab);
-                    console.log('Tab content ID:', tabContent?.id);
+                    // console.log('\n=== ACTIVATE TAB CALLED ===');
+                    // console.log('Tab button:', tabButton);
+                    // console.log('Tab content:', tabContent);
+                    // console.log('Is wallet tab:', isWalletTab);
+                    // console.log('Tab content ID:', tabContent?.id);
 
                     // Remove active state from all tabs
                     const allTabButtons = document.querySelectorAll('.tab-button');
-                    console.log('Found', allTabButtons.length, 'tab buttons');
+                    // console.log('Found', allTabButtons.length, 'tab buttons');
                     allTabButtons.forEach((btn, index) => {
-                        console.log(`Deactivating tab button ${index}:`, btn.id);
+                        // console.log(`Deactivating tab button ${index}:`, btn.id);
                         btn.classList.remove('active-tab', 'text-primary');
                         btn.classList.add('text-gray-600', 'dark:text-gray-400');
                     });
 
                     // Hide all tab content
                     const allTabContent = document.querySelectorAll('.tab-content');
-                    console.log('Found', allTabContent.length, 'tab content elements');
+                    // console.log('Found', allTabContent.length, 'tab content elements');
                     allTabContent.forEach((content, index) => {
-                        console.log(`Hiding tab content ${index}:`, content.id, '| Before classes:', content.className);
+                        // console.log(`Hiding tab content ${index}:`, content.id, '| Before classes:', content.className);
                         content.classList.add('hidden', 'opacity-0');
                         content.classList.remove('opacity-100');
-                        console.log(`After hiding:`, content.className);
+                        // console.log(`After hiding:`, content.className);
                     });
 
                     // Activate the clicked tab with enhanced styling
-                    console.log('Activating tab button:', tabButton.id, '| Before classes:', tabButton.className);
+                    // console.log('Activating tab button:', tabButton.id, '| Before classes:', tabButton.className);
                     tabButton.classList.add('active-tab', 'text-primary');
                     tabButton.classList.remove('text-gray-600', 'dark:text-gray-400');
-                    console.log('After activation:', tabButton.className);
+                    // console.log('After activation:', tabButton.className);
 
                     // Animate tab indicator
                     if (tabIndicator) {
                         const newLeft = isWalletTab ? '4px' : 'calc(50% + 0px)';
-                        console.log('Moving tab indicator to:', newLeft);
+                        // console.log('Moving tab indicator to:', newLeft);
                         tabIndicator.style.left = newLeft;
-                        console.log('Tab indicator left value now:', tabIndicator.style.left);
+                        // console.log('Tab indicator left value now:', tabIndicator.style.left);
                     } else {
                         console.warn('Tab indicator not found!');
                     }
 
                     // Show the corresponding tab content with animation
                     if (tabContent) {
-                        console.log('Showing tab content:', tabContent.id, '| Before classes:', tabContent.className);
+                        // console.log('Showing tab content:', tabContent.id, '| Before classes:', tabContent.className);
                         tabContent.classList.remove('hidden');
-                        console.log('Removed hidden class, classes now:', tabContent.className);
+                        // console.log('Removed hidden class, classes now:', tabContent.className);
 
                         setTimeout(() => {
-                            console.log('Applying opacity animation to:', tabContent.id);
+                            // console.log('Applying opacity animation to:', tabContent.id);
                             tabContent.classList.remove('opacity-0');
                             tabContent.classList.add('opacity-100');
-                            console.log('Final classes:', tabContent.className);
+                            // console.log('Final classes:', tabContent.className);
                         }, 50); // Smooth transition
                     } else {
                         console.error('Tab content is null!');
                     }
-                    console.log('=== END ACTIVATE TAB ===\n');
+                    // console.log('=== END ACTIVATE TAB ===\n');
                 }
 
                 if (walletTab && walletTabContent) {
-                    console.log('Attaching click event to wallet tab');
+                    // console.log('Attaching click event to wallet tab');
                     walletTab.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        console.log('\n>>> WALLET TAB CLICKED <<<');
-                        console.log('Event:', e);
-                        console.log('Current target:', e.currentTarget);
-                        console.log('Calling activateTab for WALLET tab...');
+                        // console.log('\n>>> WALLET TAB CLICKED <<<');
+                        // console.log('Event:', e);
+                        // console.log('Current target:', e.currentTarget);
+                        // console.log('Calling activateTab for WALLET tab...');
                         activateTab(walletTab, walletTabContent, true);
                     });
-                    console.log('Wallet tab click listener attached successfully');
+                    // console.log('Wallet tab click listener attached successfully');
                 } else {
                     console.error('ERROR: Wallet tab or content not found!', {
                         walletTab: !!walletTab,
@@ -1532,16 +1532,16 @@ if (header) {
                 }
 
                 if (loginTab && loginTabContent) {
-                    console.log('Attaching click event to login tab');
+                    // console.log('Attaching click event to login tab');
                     loginTab.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        console.log('\n>>> LOGIN TAB CLICKED <<<');
-                        console.log('Event:', e);
-                        console.log('Current target:', e.currentTarget);
-                        console.log('Calling activateTab for LOGIN tab...');
+                        // console.log('\n>>> LOGIN TAB CLICKED <<<');
+                        // console.log('Event:', e);
+                        // console.log('Current target:', e.currentTarget);
+                        // console.log('Calling activateTab for LOGIN tab...');
                         activateTab(loginTab, loginTabContent, false);
                     });
-                    console.log('Login tab click listener attached successfully');
+                    // console.log('Login tab click listener attached successfully');
                 } else {
                     console.error('ERROR: Login tab or content not found!', {
                         loginTab: !!loginTab,
@@ -1561,7 +1561,7 @@ if (header) {
                 const markAllRead = document.getElementById('mark-all-read');
                 const markAllReadMobile = document.getElementById('mark-all-read-mobile');
 
-                console.log('Notification elements:', {
+                // console.log('Notification elements:', {
                     notificationToggle: !!notificationToggle,
                     notificationDropdown: !!notificationDropdown,
                     notificationToggleMobile: !!notificationToggleMobile,
@@ -1579,7 +1579,7 @@ if (header) {
                     notificationToggle.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log('Desktop notification toggle clicked');
+                        // console.log('Desktop notification toggle clicked');
                         notificationDropdown.classList.toggle('hidden');
                         // Close mobile dropdown if open
                         if (notificationDropdownMobile) {
@@ -1598,7 +1598,7 @@ if (header) {
                     notificationToggleMobile.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log('Mobile notification toggle clicked');
+                        // console.log('Mobile notification toggle clicked');
                         notificationDropdownMobile.classList.toggle('hidden');
                         // Close desktop dropdown if open
                         if (notificationDropdown) {
@@ -1746,7 +1746,7 @@ if (header) {
                 const desktopMenu = document.getElementById('user-profile-menu-desktop');
                 const mobileMenu = document.getElementById('user-profile-menu-mobile');
 
-                console.log('Profile dropdown setup:', {
+                // console.log('Profile dropdown setup:', {
                     profileLinksCount: profileLinks.length,
                     hasDesktopMenu: !!desktopMenu,
                     hasMobileMenu: !!mobileMenu
@@ -1758,7 +1758,7 @@ if (header) {
                         const menu = index === 0 ? desktopMenu : mobileMenu;
                         const menuType = index === 0 ? 'desktop' : 'mobile';
 
-                        console.log(`Setting up ${menuType} profile dropdown`, {
+                        // console.log(`Setting up ${menuType} profile dropdown`, {
                             hasProfileLink: !!profileLink,
                             hasMenu: !!menu
                         });
@@ -1766,13 +1766,13 @@ if (header) {
                         if (profileLink && menu) {
                             // Toggle dropdown on click
                             profileLink.addEventListener('click', function (e) {
-                                console.log(`${menuType} profile link clicked`);
+                                // console.log(`${menuType} profile link clicked`);
                                 e.stopPropagation();
                                 e.preventDefault();
 
                                 const wasHidden = menu.classList.contains('hidden');
                                 menu.classList.toggle('hidden');
-                                console.log(`${menuType} menu toggled from ${wasHidden ? 'hidden' : 'visible'} to ${!wasHidden ? 'hidden' : 'visible'}`);
+                                // console.log(`${menuType} menu toggled from ${wasHidden ? 'hidden' : 'visible'} to ${!wasHidden ? 'hidden' : 'visible'}`);
 
                                 // Close the other menu
                                 const otherMenu = index === 0 ? mobileMenu : desktopMenu;
@@ -1895,14 +1895,14 @@ if (header) {
                                         console.error("Failed to subscribe to push notifications:", error);
                                     });
                                 } else {
-                                    console.log("Push notification permission denied");
+                                    // console.log("Push notification permission denied");
                                 }
                             });
                         }
                     });
                 });
             } else {
-                console.log("Push notifications not supported in this browser");
+                // console.log("Push notifications not supported in this browser");
             }
             {% endif %}
 
@@ -1973,7 +1973,7 @@ if (header) {
         setInterval(updateTimestamps, 30000);
         updateTimestamps();
 
-        console.log('Base.html script finished loading');
+        // console.log('Base.html script finished loading');
 
         // Handle zoom for all site containers to stretch the entire site
             function handleSiteZoom() {
@@ -2036,7 +2036,7 @@ if (header) {
             const desktopResults = document.getElementById('desktop-search-results');
             const mobileResults = document.getElementById('mobile-search-results');
 
-            console.log('Collection Search Initialized:', {
+            // console.log('Collection Search Initialized:', {
                 desktopInput: !!desktopInput,
                 mobileInput: !!mobileInput,
                 desktopResults: !!desktopResults,
@@ -2047,31 +2047,31 @@ if (header) {
             const SEARCH_DELAY = 300; // milliseconds
 
             function performSearch(query, resultsContainer) {
-                console.log('performSearch called:', { query, hasContainer: !!resultsContainer });
+                // console.log('performSearch called:', { query, hasContainer: !!resultsContainer });
 
                 if (query.length < 2) {
                     resultsContainer.classList.add('hidden');
-                    console.log('Query too short, hiding results');
+                    // console.log('Query too short, hiding results');
                     return;
                 }
 
                 // Show loading state
-                console.log('Showing loading state');
+                // console.log('Showing loading state');
                 resultsContainer.innerHTML = '<div class="p-4 text-center"><div class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div><span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Searching...</span></div>';
                 resultsContainer.classList.remove('hidden');
-                console.log('Results container visible:', !resultsContainer.classList.contains('hidden'));
+                // console.log('Results container visible:', !resultsContainer.classList.contains('hidden'));
 
                 // Fetch search results
                 const searchUrl = `/api/search-collections/?q=${encodeURIComponent(query)}`;
-                console.log('Fetching from:', searchUrl);
+                // console.log('Fetching from:', searchUrl);
 
                 fetch(searchUrl)
                     .then(response => {
-                        console.log('Search response status:', response.status);
+                        // console.log('Search response status:', response.status);
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Search results:', data);
+                        // console.log('Search results:', data);
                         if (data.results && data.results.length > 0) {
                             const html = data.results.map(collection => `
                                 <a href="/collection/${collection.slug || collection.address}/"
@@ -2091,10 +2091,10 @@ if (header) {
                                 </a>
                             `).join('');
                             resultsContainer.innerHTML = html;
-                            console.log('Results rendered:', data.results.length, 'collections');
+                            // console.log('Results rendered:', data.results.length, 'collections');
                         } else {
                             resultsContainer.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">No collections found</div>';
-                            console.log('No results found');
+                            // console.log('No results found');
                         }
                     })
                     .catch(error => {
@@ -2109,12 +2109,12 @@ if (header) {
                     return;
                 }
 
-                console.log('Setting up search input:', { inputId: input.id, resultsId: results.id });
+                // console.log('Setting up search input:', { inputId: input.id, resultsId: results.id });
 
                 input.addEventListener('input', (e) => {
                     clearTimeout(searchTimeout);
                     const query = e.target.value.trim();
-                    console.log('Input event triggered:', query);
+                    // console.log('Input event triggered:', query);
 
                     if (query.length < 2) {
                         results.classList.add('hidden');
@@ -2128,7 +2128,7 @@ if (header) {
 
                 input.addEventListener('focus', (e) => {
                     const query = e.target.value.trim();
-                    console.log('Focus event triggered:', query);
+                    // console.log('Focus event triggered:', query);
                     if (query.length >= 2 && !results.classList.contains('hidden')) {
                         performSearch(query, results);
                     }
@@ -2137,7 +2137,7 @@ if (header) {
                 // Close results when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!input.contains(e.target) && !results.contains(e.target)) {
-                        console.log('Click outside search, hiding results');
+                        // console.log('Click outside search, hiding results');
                         results.classList.add('hidden');
                     }
                 });
@@ -2145,16 +2145,16 @@ if (header) {
                 // Handle keyboard navigation
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
-                        console.log('Escape key pressed, hiding results');
+                        // console.log('Escape key pressed, hiding results');
                         results.classList.add('hidden');
                         input.blur();
                     }
                 });
             }
 
-            console.log('Setting up desktop search...');
+            // console.log('Setting up desktop search...');
             setupSearchInput(desktopInput, desktopResults);
-            console.log('Setting up mobile search...');
+            // console.log('Setting up mobile search...');
             setupSearchInput(mobileInput, mobileResults);
     });
 

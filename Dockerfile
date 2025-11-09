@@ -31,8 +31,15 @@ RUN apt-get update && apt-get install -y \
 # Install Poetry
 RUN pip install --upgrade pip setuptools wheel && \
     pip install poetry==$POETRY_VERSION
+FROM python:3.12-slim as builder
 
-# Set working directory
+RUN apt-get update && apt-get install -y \
+    gcc g++ postgresql-client libpq-dev curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install poetry==2.2.1
+
 WORKDIR /app
 
 # Copy dependency files
@@ -51,15 +58,20 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/usr/local/bin:$PATH"
+COPY pyproject.toml poetry.lock ./
 
-# Install runtime dependencies
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction --no-ansi --no-root
+
+FROM python:3.12-slim
+
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     libpq-dev \
     curl \
+    postgresql-client libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
 # Copy installed Python packages from builder
@@ -70,9 +82,13 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
 # Create necessary directories
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . .
+
 RUN mkdir -p staticfiles media logs
 
-# Expose port
 EXPOSE 8000
 
 # Health check
@@ -89,3 +105,4 @@ CMD ["gunicorn", "traitkeeper.wsgi:application", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "--log-level", "info"]
+CMD ["gunicorn", "traitkeeper.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]

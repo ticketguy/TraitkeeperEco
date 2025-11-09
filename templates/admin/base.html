@@ -184,7 +184,7 @@
 <script defer>
         // Define filterNotifications globally so it's available for onchange
         window.filterNotifications = function(select, device) {
-            console.log(`Filtering notifications for ${device}, selected severity: ${select.value}`); // Debug: Confirm function is called
+            // console.log(`Filtering notifications for ${device}, selected severity: ${select.value}`); // Debug: Confirm function is called
             const severity = select.value.toLowerCase(); // Ensure selected value is lowercase
             const container = document.getElementById(`notifications-list-${device}`);
             if (!container) {
@@ -192,12 +192,12 @@
                 return;
             }
             const notifications = container.getElementsByClassName('notification-item');
-            console.log(`Found ${notifications.length} notifications in ${device} dropdown`); // Debug: Confirm notifications are found
+            // console.log(`Found ${notifications.length} notifications in ${device} dropdown`); // Debug: Confirm notifications are found
 
             let visibleCount = 0;
             for (let notification of notifications) {
                 const notificationSeverity = notification.getAttribute('data-severity')?.toLowerCase();
-                console.log(`Comparing notification severity: ${notificationSeverity} with selected: ${severity}`); // Debug: Check severity values
+                // console.log(`Comparing notification severity: ${notificationSeverity} with selected: ${severity}`); // Debug: Check severity values
                 if (!notificationSeverity) {
                     console.warn('Notification missing data-severity attribute:', notification); // Debug: Warn if attribute is missing
                     continue;
@@ -209,7 +209,7 @@
                     notification.style.display = 'none';
                 }
             }
-            console.log(`After filtering, ${visibleCount} notifications are visible`); // Debug: Confirm visible notifications
+            // console.log(`After filtering, ${visibleCount} notifications are visible`); // Debug: Confirm visible notifications
 
             // Show "No notifications" message if no notifications match the filter
             const noNotificationsDiv = container.querySelector('.text-gray-500');
@@ -219,11 +219,11 @@
                     noNotificationsMessage.className = 'px-4 py-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400';
                     noNotificationsMessage.textContent = 'No notifications match this filter';
                     container.appendChild(noNotificationsMessage);
-                    console.log('Added "No notifications match this filter" message'); // Debug: Confirm message added
+                    // console.log('Added "No notifications match this filter" message'); // Debug: Confirm message added
                 }
             } else if (noNotificationsDiv) {
                 noNotificationsDiv.remove();
-                console.log('Removed "No notifications" message'); // Debug: Confirm message removed
+                // console.log('Removed "No notifications" message'); // Debug: Confirm message removed
             }
         };
 
