@@ -1,12 +1,15 @@
+// TraitKeeper Service Worker - v1
 const CACHE_NAME = 'traitkeeper-cache-v1';
 const urlsToCache = [
   "/",
   "/static/css/styles/main.css",
-  // wallet javascripts
   "/static/js/src/wallet-connection.js",
   "/static/img/Trait-Keeper-Logo-purple-1-unaimated-effect.png",
+  "/static/img/favicon/android-chrome-192x192.png",
+  "/static/img/favicon/android-chrome-512x512.png"
 ];
 
+// Install event - cache essential files
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -25,15 +28,39 @@ self.addEventListener('install', function (event) {
         });
       })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
+// Activate event - clean up old caches
+self.addEventListener('activate', function(event) {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  // Claim clients immediately
+  return self.clients.claim();
+});
+
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', function (event) {
   event.respondWith(
     caches.match(event.request)
       .then(function (response) {
+        // Cache hit - return response
         if (response) {
           return response;
         }
+
         return fetch(event.request).then(
           function (response) {
             // Check if we received a valid response
@@ -41,10 +68,7 @@ self.addEventListener('fetch', function (event) {
               return response;
             }
 
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
+            // Clone the response for caching
             var responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
@@ -57,7 +81,15 @@ self.addEventListener('fetch', function (event) {
         );
       }).catch(function (error) {
         console.error('Fetching failed:', error);
-        // You can add fallback content here
+        // Return offline fallback if available
+        return caches.match('/');
       })
   );
+});
+
+// Handle messages from clients
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
