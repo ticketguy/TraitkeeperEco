@@ -1030,9 +1030,60 @@
                             <!-- Dynamic Action Buttons Container -->
                             <div id="modal-action-buttons" class="flex flex-col gap-2">
                                 <!-- Buyer Actions (shown if user doesn't own NFT) -->
-                                <div id="buyer-actions" class="flex items-center gap-2" style="display: none;">
-                                    <button class="btn-outline px-4 py-2 rounded-full text-sm ring-2 ring-primary hover:ring-4 transition-all" onclick="window.handleMakeOfferClick(event)">Make Offer</button>
-                                    <button id="buy-now-btn" class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors" style="display: none;">Buy Now</button>
+                                <div id="buyer-actions" class="flex flex-col gap-2" style="display: none;">
+                                    <div class="flex items-center gap-2">
+                                        <button id="toggle-modal-offer-form" class="btn-outline px-4 py-2 rounded-full text-sm ring-2 ring-primary hover:ring-4 transition-all">Make Offer</button>
+                                        <button id="buy-now-btn" class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors" style="display: none;">Buy Now</button>
+                                    </div>
+
+                                    <!-- Make Offer Form (Hidden by default) -->
+                                    <div id="modal-offer-form" class="hidden mt-2 p-4 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border-2 border-primary/30 rounded-xl shadow-lg animate-scale-in">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-sm font-bold text-text-light dark:text-text-dark">Make an Offer</h4>
+                                            <button id="close-modal-offer-form" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+
+                                        <form id="modal-offer-form-submit" class="space-y-3" onsubmit="return handleModalOfferSubmit(event)">
+                                            <div>
+                                                <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">Your Offer (SOL)</label>
+                                                <input type="number"
+                                                       step="0.01"
+                                                       min="0.01"
+                                                       name="offer_amount"
+                                                       placeholder="0.00"
+                                                       required
+                                                       class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                                                    Expiry (Days)
+                                                </label>
+                                                <select name="expiry_days"
+                                                        class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
+                                                    <option value="1">1 Day</option>
+                                                    <option value="3" selected>3 Days</option>
+                                                    <option value="7">7 Days</option>
+                                                    <option value="14">14 Days</option>
+                                                    <option value="30">30 Days</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="flex gap-2">
+                                                <button type="submit"
+                                                        class="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                                                    Submit Offer
+                                                </button>
+                                                <button type="button"
+                                                        id="cancel-modal-offer"
+                                                        class="px-4 py-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark transition-colors">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
 
                                 <!-- Owner Actions (shown if user owns NFT) -->
@@ -1284,10 +1335,15 @@
                 </select>
             </div>
 
-            <!-- Trait Filters -->
+            <!-- Trait Filters (Collapsible) -->
             <div>
-                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Filter by Traits</label>
-                <div class="space-y-2" id="mobile-trait-filters">
+                <button type="button" id="toggle-mobile-trait-filters" class="w-full flex justify-between items-center text-sm font-semibold mb-2 text-text-light dark:text-text-dark py-2 px-3 bg-primary/10 dark:bg-primary/20 rounded-lg hover:bg-primary/15 dark:hover:bg-primary/25 transition-colors">
+                    <span>Filter by Traits</span>
+                    <svg id="trait-filter-chevron" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="mobile-trait-filters-panel" class="hidden space-y-2 mt-2">
                     {% regroup traits by trait_name as grouped_traits %}
                     {% for group in grouped_traits %}
                     <div>
@@ -1556,6 +1612,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Mobile Trait Filters Toggle
+    const toggleTraitFiltersBtn = document.getElementById('toggle-mobile-trait-filters');
+    const traitFiltersPanel = document.getElementById('mobile-trait-filters-panel');
+    const traitFilterChevron = document.getElementById('trait-filter-chevron');
+
+    if (toggleTraitFiltersBtn && traitFiltersPanel) {
+        toggleTraitFiltersBtn.addEventListener('click', () => {
+            traitFiltersPanel.classList.toggle('hidden');
+            if (traitFiltersPanel.classList.contains('hidden')) {
+                traitFilterChevron.style.transform = 'rotate(0deg)';
+            } else {
+                traitFilterChevron.style.transform = 'rotate(180deg)';
+            }
+        });
+    }
+
     // Clear Filters Button
     const clearFiltersBtn = document.getElementById('mobile-clear-filters');
     if (clearFiltersBtn) {
@@ -1782,6 +1854,9 @@ document.addEventListener("DOMContentLoaded", function () {
     async function openNftModal(nftCardElement) {
         const nftId = nftCardElement.dataset.nftId;
         if (!nftId || !nftModal) return;
+
+        // Store current NFT mint for modal offer form
+        window.currentNftMint = nftId;
 
         nftModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -2273,6 +2348,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // === NFT Modal Offer Form Handling ===
+    const toggleModalOfferBtn = document.getElementById('toggle-modal-offer-form');
+    const closeModalOfferBtn = document.getElementById('close-modal-offer-form');
+    const cancelModalOfferBtn = document.getElementById('cancel-modal-offer');
+    const modalOfferForm = document.getElementById('modal-offer-form');
+
+    if (toggleModalOfferBtn && modalOfferForm) {
+        toggleModalOfferBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalOfferForm.classList.toggle('hidden');
+            if (!modalOfferForm.classList.contains('hidden')) {
+                const amountInput = modalOfferForm.querySelector('input[name="offer_amount"]');
+                if (amountInput) {
+                    setTimeout(() => amountInput.focus(), 100);
+                }
+            }
+        });
+    }
+
+    if (closeModalOfferBtn && modalOfferForm) {
+        closeModalOfferBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalOfferForm.classList.add('hidden');
+        });
+    }
+
+    if (cancelModalOfferBtn && modalOfferForm) {
+        cancelModalOfferBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalOfferForm.classList.add('hidden');
+        });
+    }
 });
 
 // Handle offer form submission
@@ -2331,6 +2439,86 @@ function handleOfferSubmit(event, nftMintAddress) {
             if (overlay) {
                 overlay.classList.add('hidden');
                 overlay.classList.remove('flex');
+            }
+        } else {
+            alert('Error: ' + (data.message || 'Failed to submit offer'));
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting offer:', error);
+        alert('Failed to submit offer. Please try again.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    });
+
+    return false;
+}
+
+// Handle modal offer form submission
+function handleModalOfferSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const offerAmount = formData.get('offer_amount');
+    const expiryDays = formData.get('expiry_days');
+
+    // Get NFT mint from current modal state (stored when modal opens)
+    const nftMintAddress = window.currentNftMint || '';
+
+    // Basic validation
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+        alert('Please enter a valid offer amount');
+        return false;
+    }
+
+    if (!nftMintAddress) {
+        alert('Error: NFT information not found');
+        return false;
+    }
+
+    // Check if user is authenticated
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    if (!isAuthenticated) {
+        alert('Please log in to make an offer');
+        return false;
+    }
+
+    // Prepare offer data
+    const offerData = {
+        nft_mint: nftMintAddress,
+        amount: parseFloat(offerAmount),
+        expiry_days: parseInt(expiryDays),
+        csrfmiddlewaretoken: document.querySelector('[name=csrfmiddlewaretoken]')?.value
+    };
+
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    // Submit offer via AJAX
+    fetch('/marketplace/api/make-offer/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': offerData.csrfmiddlewaretoken
+        },
+        body: JSON.stringify(offerData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Offer submitted successfully! Amount: ${offerAmount} SOL`);
+            form.reset();
+
+            // Close the modal offer form
+            const modalOfferForm = document.getElementById('modal-offer-form');
+            if (modalOfferForm) {
+                modalOfferForm.classList.add('hidden');
             }
         } else {
             alert('Error: ' + (data.message || 'Failed to submit offer'));
