@@ -97,6 +97,12 @@
     <!-- PWA manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
 
+    <!-- PWA theme colors -->
+    <meta name="theme-color" content="#9945FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TraitKeeper">
+
     <!-- Schema.org structured data for SEO -->
     <script type="application/ld+json">
     {
@@ -752,6 +758,39 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
     </div>
     {% endif %}
 
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-[9999] space-y-2 max-w-sm"></div>
+
+    <!-- PWA Install Prompt -->
+    <div id="pwa-install-prompt" class="hidden fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[9998] w-[90%] max-w-md animate-slide-up">
+        <div class="bg-gradient-to-r from-primary/95 to-primary-dark/95 backdrop-blur-lg text-white rounded-2xl shadow-2xl p-4 border-2 border-white/20">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 mt-1">
+                    <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Install TraitKeeper</h3>
+                    <p class="text-sm text-white/90 mb-3">Add TraitKeeper to your home screen for quick access and a better experience!</p>
+                    <div class="flex gap-2">
+                        <button id="pwa-install-btn" class="flex-1 bg-white text-primary font-semibold py-2 px-4 rounded-lg hover:bg-white/90 transition-all transform hover:scale-105 shadow-lg">
+                            Install
+                        </button>
+                        <button id="pwa-dismiss-btn" class="flex-1 bg-white/20 backdrop-blur-sm font-semibold py-2 px-4 rounded-lg hover:bg-white/30 transition-all">
+                            Maybe Later
+                        </button>
+                    </div>
+                </div>
+                <button id="pwa-close-btn" class="flex-shrink-0 hover:bg-white/20 rounded-full p-1 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main id="main-content" class="flex-1 pt-16 bg-background-light dark:bg-background-dark animate-fade-in">
 
@@ -1183,7 +1222,101 @@ if (header) {
             });
         }
 
-        
+        // PWA Install Prompt
+        let deferredPrompt;
+        const installPrompt = document.getElementById('pwa-install-prompt');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const dismissBtn = document.getElementById('pwa-dismiss-btn');
+        const closeBtn = document.getElementById('pwa-close-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+
+            // Check if user has dismissed before
+            const dismissed = localStorage.getItem('pwa-install-dismissed');
+            const installedBefore = localStorage.getItem('pwa-installed');
+
+            // Show install prompt if not dismissed and not installed before
+            if (!dismissed && !installedBefore && installPrompt) {
+                setTimeout(() => {
+                    installPrompt.classList.remove('hidden');
+                }, 3000); // Show after 3 seconds
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) {
+                    return;
+                }
+
+                // Show the install prompt
+                deferredPrompt.prompt();
+
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    localStorage.setItem('pwa-installed', 'true');
+                    if (window.showToast) {
+                        window.showToast('App installed successfully! Check your home screen.', 'success');
+                    }
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+
+                // Hide the prompt
+                if (installPrompt) {
+                    installPrompt.classList.add('hidden');
+                }
+
+                // Clear the deferredPrompt
+                deferredPrompt = null;
+            });
+        }
+
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                if (installPrompt) {
+                    installPrompt.classList.add('hidden');
+                }
+                // Remember dismissal for 7 days
+                const dismissedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
+                localStorage.setItem('pwa-install-dismissed', dismissedUntil.toString());
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (installPrompt) {
+                    installPrompt.classList.add('hidden');
+                }
+            });
+        }
+
+        // Check if app is already installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            localStorage.setItem('pwa-installed', 'true');
+            if (installPrompt) {
+                installPrompt.classList.add('hidden');
+            }
+            if (window.showToast) {
+                window.showToast('TraitKeeper installed successfully!', 'success');
+            }
+        });
+
+        // Clear dismissal if time has passed
+        const dismissedUntil = localStorage.getItem('pwa-install-dismissed');
+        if (dismissedUntil && Date.now() > parseInt(dismissedUntil)) {
+            localStorage.removeItem('pwa-install-dismissed');
+        }
+
+
         // Main script execution
             console.log('DOMContentLoaded fired for base.html script'); // Debug log
 
@@ -2024,6 +2157,65 @@ if (header) {
             console.log('Setting up mobile search...');
             setupSearchInput(mobileInput, mobileResults);
     });
+
+    // === Toast Notification System ===
+    window.showToast = function(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification transform translate-x-full transition-all duration-300 ease-out';
+
+        // Toast colors based on type
+        const colors = {
+            success: 'bg-green-500 dark:bg-green-600',
+            error: 'bg-red-500 dark:bg-red-600',
+            warning: 'bg-yellow-500 dark:bg-yellow-600',
+            info: 'bg-blue-500 dark:bg-blue-600'
+        };
+
+        // Toast icons
+        const icons = {
+            success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>',
+            error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>',
+            warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>',
+            info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>'
+        };
+
+        toast.innerHTML = `
+            <div class="${colors[type] || colors.info} text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[280px] max-w-sm">
+                <div class="flex-shrink-0">
+                    ${icons[type] || icons.info}
+                </div>
+                <div class="flex-1 text-sm font-medium">
+                    ${message}
+                </div>
+                <button onclick="this.closest('.toast-notification').remove()" class="flex-shrink-0 ml-2 hover:opacity-80">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Slide in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full');
+            toast.classList.add('translate-x-0');
+        }, 10);
+
+        // Auto remove
+        if (duration > 0) {
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        return toast;
+    };
 
     </script>
     {% block extra_js %}
