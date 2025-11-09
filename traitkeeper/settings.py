@@ -70,6 +70,25 @@ SECURE_SSL_REDIRECT = str_to_bool(os.getenv('SECURE_SSL_REDIRECT', 'False'))
 # Indicates that the app is behind a proxy and what header to trust for HTTPS.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# CSRF trusted origins for production (for AJAX requests)
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+
+# Additional security headers for production
+if not DEBUG:
+    # HTTP Strict Transport Security (HSTS)
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = str_to_bool(os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True'))
+    SECURE_HSTS_PRELOAD = str_to_bool(os.getenv('SECURE_HSTS_PRELOAD', 'True'))
+
+    # Additional security headers
+    SECURE_CONTENT_TYPE_NOSNIFF = str_to_bool(os.getenv('SECURE_CONTENT_TYPE_NOSNIFF', 'True'))
+    SECURE_BROWSER_XSS_FILTER = str_to_bool(os.getenv('SECURE_BROWSER_XSS_FILTER', 'True'))
+    X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
+
+    # Cookie security
+    SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
+    CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
+
 # -----------------------------------------------------------------------------
 # Application Definition
 # -----------------------------------------------------------------------------
