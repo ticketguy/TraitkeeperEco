@@ -1,0 +1,154 @@
+{% extends 'base.html'%}
+{% load static %}
+
+{% block title %}Academy | TraitKeeper{% endblock %}
+
+{% block content %}
+<section id="academy">
+    <h1 class="academy-title">TraitKeeper Academy</h1>
+    <p class="tagline">Welcome to TraitKeeper Academy, Empowering you for Market Success.</p>
+
+    <div class="container">
+        <h2 class="section-header-academy">Featured Courses</h2>
+        <div class="featured-courses">
+            {% for course in featured_courses %}
+            <div class="course-card featured-course" data-course="{{ course.slug }}">
+                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=Featured+Course');"></div>
+                <div class="course-content">
+                    <span class="featured-badge">Featured</span>
+                    <div class="course-title">{{course.title}}</div>
+                    <div class="course-description">{{course.description}}</div>
+                    <div class="course-meta">
+                        <div class="course-difficulty">
+                            <span class="difficulty-dot {{course.difficulty|lower}}"></span>
+                            {{course.difficulty}}
+                        </div>
+                        <div>{{course.get_lesson_count}} lessons</div>
+                    </div>
+                    <a href="{{course.get_absolute_url}}" class="start-button">Start Course</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+
+
+        <h2 class="section-header">All Courses</h2>
+        <div class="course-grid">
+            {% for course in other_courses %}
+            <div class="course-card" data-course="{{ course.slug }}">
+                <div class="course-image" style="background-image: url('https://via.placeholder.com/300x200?text=Course');"></div>
+                <div class="course-content">
+                    <div class="course-title">{{course.title}}</div>
+                    <div class="course-description">{{course.description}}</div>
+                    <div class="course-meta">
+                        <div class="course-difficulty">
+                            <span class="difficulty-dot {{course.difficulty|lower}}"></span>
+                            {{course.difficulty}}
+                        </div>
+                        <div>{{course.get_lesson_count}} lessons</div>
+                    </div>
+                    <a href="{{course.get_absolute_url}}" class="start-button">Start Course</a>
+                </div>
+            </div>
+            {% empty %}
+            <p>No courses available at the moment</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination controls -->
+        {% if is_paginated %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const courseContent = document.getElementById('course-content');
+        const courseCards = document.querySelectorAll('.course-card');
+
+        courseCards.forEach(card => {
+            card.querySelector('.start-button').addEventListener('click', function() {
+                const courseName = card.dataset.course;
+                loadCourseContent(courseName);
+            });
+        });
+
+        function loadCourseContent(courseName) {
+            // Hide all components
+            document.querySelectorAll('.component').forEach(comp => comp.classList.remove('active'));
+            
+            // Show course content
+            courseContent.style.display = 'block';
+
+            // Load course content based on the selected course
+            switch(courseName) {
+                case 'traitkeeper-fundamentals':
+                    courseContent.innerHTML = `
+                        <h2>TraitKeeper Fundamentals</h2>
+                        <p>Welcome to the TraitKeeper Fundamentals course. In this course, you'll learn:</p>
+                        <ul>
+                            <li>Basic concepts of NFT traits</li>
+                            <li>How TraitKeeper manages and stores trait information</li>
+                            <li>Navigating the TraitKeeper interface</li>
+                        </ul>
+                        <button onclick="startLesson('fundamentals-lesson1')">Start Lesson 1</button>
+                    `;
+                    break;
+                case 'advanced-trait-analysis':
+                    courseContent.innerHTML = `
+                        <h2>Advanced Trait Analysis</h2>
+                        <p>Welcome to the Advanced Trait Analysis course. Topics covered include:</p>
+                        <ul>
+                            <li>Deep dive into trait rarity</li>
+                            <li>Market trend analysis for traits</li>
+                            <li>Predicting trait value fluctuations</li>
+                        </ul>
+                        <button onclick="startLesson('advanced-lesson1')">Start Lesson 1</button>
+                    `;
+                    break;
+                case 'trait-marketplace':
+                    courseContent.innerHTML = `
+                        <h2>NFT Trait Marketplace</h2>
+                        <p>Welcome to the NFT Trait Marketplace course. You'll learn about:</p>
+                        <ul>
+                            <li>Understanding the trait marketplace ecosystem</li>
+                            <li>Strategies for buying and selling traits</li>
+                            <li>Maximizing value in trait trades</li>
+                        </ul>
+                        <button onclick="startLesson('marketplace-lesson1')">Start Lesson 1</button>
+                    `;
+                    break;
+            }
+        }
+
+        function startLesson(lessonId) {
+            // This function would load the specific lesson content
+            // For now, we'll just log a message
+            console.log(`Starting lesson: ${lessonId}`);
+        }
+
+        // Existing tour functionality remains the same
+    });
+</script>
+{% endblock %}

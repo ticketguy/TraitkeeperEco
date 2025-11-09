@@ -3,6 +3,7 @@
 ## 5-Minute Setup Guide
 
 ### Prerequisites
+
 - Ubuntu/Debian server with root access
 - Domain name pointed to your server
 - Docker and Docker Compose installed
@@ -12,6 +13,7 @@
 ## ⚡ Quick Deploy (Fastest Path to Production)
 
 ### Step 1: Generate Secrets (2 minutes)
+
 ```bash
 # Run the secrets generator
 ./generate_production_secrets.sh
@@ -20,6 +22,7 @@
 ```
 
 ### Step 2: Configure Environment (3 minutes)
+
 ```bash
 # Copy production template
 cp .env.production .env
@@ -38,6 +41,7 @@ nano .env
 ```
 
 ### Step 3: Start Services (5 minutes)
+
 ```bash
 # Build and start
 docker-compose up -d --build
@@ -60,6 +64,7 @@ docker-compose exec web python manage.py collectstatic --noinput
 ```
 
 ### Step 4: Setup Nginx & SSL (10 minutes)
+
 ```bash
 # Install Nginx and Certbot
 sudo apt install nginx certbot python3-certbot-nginx
@@ -77,6 +82,7 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 
 ### Step 5: Verify (2 minutes)
+
 ```bash
 # Check deployment
 docker-compose exec web python manage.py check --deploy
@@ -97,6 +103,7 @@ docker-compose ps
 Before going live, verify these settings in your `.env` file:
 
 ### Security Settings ⚠️
+
 ```env
 DEBUG=False                    # ❌ MUST be False!
 SECRET_KEY=<strong-random-key> # ❌ MUST be changed from default!
@@ -105,6 +112,7 @@ PROTOCOL=https                 # ✅ MUST be https
 ```
 
 ### Domain & CORS
+
 ```env
 ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
@@ -112,6 +120,7 @@ DOMAIN_NAME=yourdomain.com
 ```
 
 ### SSL/Security
+
 ```env
 SECURE_SSL_REDIRECT=True       # ✅ Redirect HTTP to HTTPS
 SESSION_COOKIE_SECURE=True     # ✅ Secure cookies
@@ -119,6 +128,7 @@ CSRF_COOKIE_SECURE=True        # ✅ Secure CSRF cookies
 ```
 
 ### Database
+
 ```env
 POSTGRES_DB=traitkeeper_production
 POSTGRES_USER=traitkeeper_prod
@@ -126,6 +136,7 @@ POSTGRES_PASSWORD=<strong-password>  # ❌ MUST be changed!
 ```
 
 ### Push Notifications
+
 ```env
 VAPID_PUBLIC_KEY=<generated-key>     # ❌ MUST generate!
 VAPID_PRIVATE_KEY=<generated-key>    # ❌ MUST generate!
@@ -137,8 +148,10 @@ VAPID_ADMIN_EMAIL=admin@yourdomain.com
 ## 🔧 Common Issues & Quick Fixes
 
 ### Issue: VAPID Keys Invalid
+
 **Symptom:** Push notifications not working
 **Fix:**
+
 ```bash
 docker-compose exec web python3 generate_vapid_keys.py
 # Copy output to .env and restart
@@ -146,16 +159,20 @@ docker-compose restart
 ```
 
 ### Issue: Static Files Not Loading
+
 **Symptom:** No CSS/JavaScript on site
 **Fix:**
+
 ```bash
 docker-compose exec web python manage.py collectstatic --noinput
 sudo systemctl restart nginx
 ```
 
 ### Issue: Database Connection Error
+
 **Symptom:** Can't connect to database
 **Fix:**
+
 ```bash
 # Check PostgreSQL is running
 docker-compose ps postgres
@@ -165,8 +182,10 @@ docker-compose logs postgres
 ```
 
 ### Issue: 502 Bad Gateway
+
 **Symptom:** Nginx can't reach application
 **Fix:**
+
 ```bash
 # Check Gunicorn is running
 docker-compose ps web
@@ -181,18 +200,21 @@ docker-compose restart web
 ## 📊 Post-Deployment Tasks
 
 ### High Priority (Do Today)
+
 - [ ] Setup database backups (see PRODUCTION_DEPLOYMENT.md section 8)
 - [ ] Configure monitoring (Sentry recommended - section 9)
 - [ ] Test all features on production
 - [ ] Remove console.log statements (section 10)
 
 ### Medium Priority (Do This Week)
+
 - [ ] Setup log rotation
 - [ ] Configure uptime monitoring
 - [ ] Add resource limits to Docker containers
 - [ ] Setup Redis authentication
 
 ### Low Priority (Do This Month)
+
 - [ ] Configure CDN for static files
 - [ ] Setup staging environment
 - [ ] Implement CI/CD pipeline
@@ -203,6 +225,7 @@ docker-compose restart web
 ## 🛠️ Useful Commands
 
 ### Service Management
+
 ```bash
 docker-compose ps              # Check service status
 docker-compose logs -f         # Follow logs
@@ -212,6 +235,7 @@ docker-compose up -d           # Start all services
 ```
 
 ### Django Management
+
 ```bash
 # Run migrations
 docker-compose exec web python manage.py migrate
@@ -227,6 +251,7 @@ docker-compose exec web python manage.py check --deploy
 ```
 
 ### Database Operations
+
 ```bash
 # Backup database
 docker exec traitkeeper-postgres pg_dump -U postgres traitkeeper_production > backup.sql
@@ -243,23 +268,27 @@ docker-compose exec postgres psql -U postgres traitkeeper_production
 ## 📞 Getting Help
 
 **Documentation:**
+
 - Full deployment guide: `PRODUCTION_DEPLOYMENT.md`
 - Environment variables: `.env.production`
 - Project README: `README.md`
 
 **Resources:**
-- Django Deployment: https://docs.djangoproject.com/en/5.0/howto/deployment/
-- Docker Best Practices: https://docs.docker.com/develop/dev-best-practices/
-- Let's Encrypt: https://letsencrypt.org/getting-started/
+
+- Django Deployment: <https://docs.djangoproject.com/en/5.0/howto/deployment/>
+- Docker Best Practices: <https://docs.docker.com/develop/dev-best-practices/>
+- Let's Encrypt: <https://letsencrypt.org/getting-started/>
 
 **Issues:**
-- GitHub: https://github.com/ticketguy/TraitkeeperEco/issues
+
+- GitHub: <https://github.com/ticketguy/TraitkeeperEco/issues>
 
 ---
 
 ## 🎯 Summary
 
 ### What's Been Configured
+
 ✅ Comprehensive environment configuration (80+ variables)
 ✅ Production security headers (HSTS, X-Frame, etc.)
 ✅ CSRF protection with trusted origins
@@ -272,9 +301,11 @@ docker-compose exec postgres psql -U postgres traitkeeper_production
 ✅ API integrations (Magic Eden, Tensor, RPC)
 
 ### Current Deployment Status
+
 **Readiness: 95/100** - Ready for production after completing critical items
 
 ### Critical Items (Do Before Going Live)
+
 1. ✅ Generate production SECRET_KEY
 2. ✅ Generate VAPID keys
 3. ⚠️ Update .env with production values
@@ -282,6 +313,7 @@ docker-compose exec postgres psql -U postgres traitkeeper_production
 5. ⚠️ Run deployment check
 
 ### Recommended Items (Do Within 24 Hours)
+
 1. Setup database backups
 2. Configure error monitoring (Sentry)
 3. Setup uptime monitoring

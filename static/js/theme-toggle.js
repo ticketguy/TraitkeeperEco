@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const themeToggleMobile = document.getElementById("theme-toggle-mobile");
   const htmlElement = document.documentElement;
 
-  console.log("Theme toggle JS loaded, buttons found:", {
+  // console.log("Theme toggle JS loaded, buttons found:", {
     desktop: !!themeToggle,
     mobile: !!themeToggleMobile
   });
@@ -34,26 +34,26 @@ document.addEventListener("DOMContentLoaded", function () {
       event.stopPropagation(); // Prevent event from bubbling
       event.preventDefault(); // Prevent default button behavior
     }
-    console.log("Theme toggle clicked!");
+    // console.log("Theme toggle clicked!");
     const isDarkMode = htmlElement.classList.contains("dark");
 
     if (isDarkMode) {
       htmlElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
       updateToggleIcons(false);
-      console.log("Switched to light mode");
+      // console.log("Switched to light mode");
     } else {
       htmlElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
       updateToggleIcons(true);
-      console.log("Switched to dark mode");
+      // console.log("Switched to dark mode");
     }
   }
 
   // Add click listeners to both desktop and mobile toggle buttons
   if (themeToggle) {
     themeToggle.addEventListener("click", toggleTheme, true); // Use capture phase
-    console.log("Desktop theme toggle listener attached");
+    // console.log("Desktop theme toggle listener attached");
   } else {
     console.error("Desktop theme toggle button not found!");
   }
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       toggleTheme(e);
     }, true);
-    console.log("Mobile theme toggle listener attached (click + touchend)");
+    // console.log("Mobile theme toggle listener attached (click + touchend)");
   } else {
     console.warn("Mobile theme toggle button not found!");
   }

@@ -5,7 +5,7 @@
 
 // Test the discriminator computation
 async function verifyDiscriminators() {
-    console.log('🔍 Verifying Quest Instruction Discriminators...\n');
+    // console.log('🔍 Verifying Quest Instruction Discriminators...\n');
 
     const expectedDiscriminators = {
         claim_quest_reward: [0x49, 0x7b, 0xbf, 0xce, 0x3f, 0x7f, 0xf7, 0x0c],
@@ -26,23 +26,23 @@ async function verifyDiscriminators() {
         const matches = computed.every((byte, i) => byte === expected[i]);
 
         if (matches) {
-            console.log(`✅ ${method}: VALID`);
-            console.log(`   Hex: ${Array.from(computed).map(b => b.toString(16).padStart(2, '0')).join('')}`);
+            // console.log(`✅ ${method}: VALID`);
+            // console.log(`   Hex: ${Array.from(computed).map(b => b.toString(16).padStart(2, '0')).join('')}`);
         } else {
-            console.log(`❌ ${method}: MISMATCH`);
-            console.log(`   Expected: [${expected.map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
-            console.log(`   Computed: [${Array.from(computed).map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
+            // console.log(`❌ ${method}: MISMATCH`);
+            // console.log(`   Expected: [${expected.map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
+            // console.log(`   Computed: [${Array.from(computed).map(b => '0x' + b.toString(16).padStart(2, '0')).join(', ')}]`);
             allPassed = false;
         }
     }
 
-    console.log('\n' + '='.repeat(50));
+    // console.log('\n' + '='.repeat(50));
     if (allPassed) {
-        console.log('✅ ALL DISCRIMINATORS VERIFIED - PRODUCTION READY');
+        // console.log('✅ ALL DISCRIMINATORS VERIFIED - PRODUCTION READY');
     } else {
-        console.log('❌ VERIFICATION FAILED - DO NOT USE IN PRODUCTION');
+        // console.log('❌ VERIFICATION FAILED - DO NOT USE IN PRODUCTION');
     }
-    console.log('='.repeat(50));
+    // console.log('='.repeat(50));
 
     return allPassed;
 }

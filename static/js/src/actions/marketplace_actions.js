@@ -16,7 +16,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Marketplace Actions Script Loaded"); // Debug log
+  // console.log("Marketplace Actions Script Loaded"); // Debug log
 
   // --- Configuration & Elements ---
   const config = window.traitkeeperConfig || {}; // Get config from global scope
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
       options.body = JSON.stringify(data);
     }
 
-    console.log(
+    // console.log(
       `Calling API: ${method} ${endpoint}`,
       data ? `with data: ${JSON.stringify(data)}` : ""
     );
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         result = await response.json();
-        console.log(`API Response from ${endpoint}:`, result);
+        // console.log(`API Response from ${endpoint}:`, result);
       } else {
         const text = await response.text();
         console.error("Non-JSON response received:", text);
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    console.log("Make Offer clicked for NFT:", nftId);
+    // console.log("Make Offer clicked for NFT:", nftId);
 
     // Simple prompt (Replace with a dedicated offer modal UI)
     const bidAmountStr = prompt(
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       // Check if Solana transaction utilities are available
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log("Using Solana on-chain transaction signing...");
+        // console.log("Using Solana on-chain transaction signing...");
 
         // Use the new transaction flow
         const result = await window.solanaTransaction.executeMarketplaceAction(
@@ -254,10 +254,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let endpoint;
     if (isDirectSell) {
       endpoint = apiEndpoints.buyDirect;
-      console.log("Calling direct buy endpoint");
+      // console.log("Calling direct buy endpoint");
     } else if (isSellIntent) {
       endpoint = apiEndpoints.acceptAsk;
-      console.log("Calling accept asking price endpoint");
+      // console.log("Calling accept asking price endpoint");
     } else {
       alert("This item isn't currently listed for immediate purchase.");
       return;
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       // Check if Solana transaction utilities are available
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing for purchase..."
         );
 
@@ -803,7 +803,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing to accept bid..."
         );
 
@@ -854,7 +854,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing to reject bid..."
         );
 
@@ -904,7 +904,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing to cancel bid..."
         );
 
@@ -955,7 +955,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing to set sell intent..."
         );
 
@@ -1108,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing to cancel auction..."
         );
 
@@ -1204,7 +1204,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        console.log(
+        // console.log(
           "Using Solana on-chain transaction signing for counter-offer..."
         );
 
@@ -1245,5 +1245,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  console.log("Marketplace Actions Script Initialized");
+  // console.log("Marketplace Actions Script Initialized");
 }); // End DOMContentLoaded
