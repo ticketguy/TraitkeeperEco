@@ -1,0 +1,453 @@
+# ==================================================
+# TraitKeeper Production Docker Compose Configuration
+# ==================================================
+# This file includes:
+# - Resource limits (CPU/Memory)
+# - Production-optimized settings
+# - Enhanced security
+# - Logging configuration
+# - Auto-restart policies
+# ==================================================
+#
+# Usage:
+#   docker-compose -f docker-compose.prod.yml up -d
+#   OR
+#   Set COMPOSE_FILE=docker-compose.prod.yml in .env
+# ==================================================
+
+services:
+  # ===================================================================
+  # SHARED INFRASTRUCTURE
+  # ===================================================================
+
+  # PostgreSQL Database (Shared by all processes)
+  postgres:
+    image: postgres:15-alpine
+    container_name: traitkeeper-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Production optimizations
+      POSTGRES_MAX_CONNECTIONS: 200
+      POSTGRES_SHARED_BUFFERS: 256MB
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Optional: PostgreSQL configuration overrides
+      # - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache (Shared by all processes)
+  redis:
+    image: redis:7-alpine
+    container_name: traitkeeper-redis
+    # Production: Use authentication
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ===================================================================
+  # WEB SERVER (User-facing)
+  # ===================================================================
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-web
+    env_file:
+      - .env
+    environment:
+      RUN_BACKGROUND_TASKS: "false"  # Web server only, no background tasks
+      # Production environment
+      DJANGO_SETTINGS_MODULE: traitkeeper.settings
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      # Optional: Logs volume
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🌐 Web: Waiting for database...' &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        echo '🚀 Web: Starting gunicorn with 8 workers...' &&
+        gunicorn traitkeeper.wsgi:application
+          --bind 0.0.0.0:8000
+          --workers 8
+          --worker-class gthread
+          --threads 4
+          --worker-tmp-dir /dev/shm
+          --timeout 120
+          --max-requests 1000
+          --max-requests-jitter 100
+          --access-logfile -
+          --error-logfile -
+          --log-level info
+          --access-logformat '%({X-Real-IP}i)s %(l)s %(u)s %(t)s \"%(r)s\" %(s)s %(b)s \"%(f)s\" \"%(a)s\" %(D)s'
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits - Main web server gets more resources
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ===================================================================
+  # INDEXING SERVICES
+  # ===================================================================
+
+  # Live WebSocket Indexer (Real-time transaction processing)
+  indexer-live:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-live
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🔴 Live Indexer: Starting WebSocket listener...' &&
+        python manage.py run_live_indexer
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_live_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "15m"
+        max-file: "5"
+
+  # Scheduled/Historical Indexer (Periodic polling for historical data)
+  indexer-scheduled:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-scheduled
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏰ Scheduled Indexer: Starting periodic polling...' &&
+        python manage.py run_scheduled_indexer
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_scheduled_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "15m"
+        max-file: "5"
+
+  # ===================================================================
+  # ANALYTICS SERVICES
+  # ===================================================================
+
+  # Vitality Analytics Service (Vitality calculations + future metrics/trends)
+  vitality-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitality-analytics
+    env_file:
+      - .env
+    environment:
+      RUN_BACKGROUND_TASKS: "true"  # Needed for vitality task manager
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '📊 Vitality Analytics: Starting vitality analytics services...' &&
+        python manage.py run_vitality_analytics_service
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_vitality_analytics_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # ===================================================================
+  # MONITORING SERVICES
+  # ===================================================================
+
+  # System Health Monitor (Performance metrics, anomaly detection, alerts)
+  health:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-health
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🏥 Health: Starting system health monitoring...' &&
+        python manage.py run_health_service
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_health_service' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # Config Listener (Watches for provider config changes)
+  config-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-config-listener
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    command: >
+      sh -c "
+        echo '⚙️  Config Listener: Starting...' &&
+        python manage.py listen_for_config_updates
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  traitkeeper-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==================================================
+# Resource Allocation Summary
+# ==================================================
+# Total Limits (maximum):
+#   CPU: 13.5 cores
+#   Memory: 13.26 GB
+#
+# Total Reservations (guaranteed):
+#   CPU: 3.3 cores
+#   Memory: 3.5 GB
+#
+# ==================================================
+# Service Resource Breakdown
+# ==================================================
+# postgres:        2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
+# redis:           1 CPU / 1GB RAM (limits)    | 0.25 CPU / 256MB (reserved)
+# web:             4 CPU / 4GB RAM (limits)    | 1.0 CPU / 1GB (reserved)
+# indexer-live:    2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
+# indexer-sched:   1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
+# vitality:        1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
+# health:          0.5 CPU / 512MB RAM (limits)| 0.1 CPU / 128MB (reserved)
+# config:          0.5 CPU / 256MB RAM (limits)| 0.1 CPU / 64MB (reserved)
+# ==================================================
+#
+# Recommended Production Server:
+#   Minimum: 8 cores, 16GB RAM
+#   Recommended: 16 cores, 32GB RAM
+#   Optimal: 24+ cores, 64GB+ RAM
+# ==================================================
