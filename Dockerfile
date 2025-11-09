@@ -1,61 +1,34 @@
-# ---------- Builder Stage ----------
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim as builder
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-
-# Install build dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    build-essential \
-    libpq-dev \
-    curl \
+    gcc g++ postgresql-client libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip, setuptools, wheel
 RUN pip install --upgrade pip setuptools wheel
+RUN pip install poetry==2.2.1
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements.txt .
-RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
+COPY pyproject.toml poetry.lock ./
 
-# Copy project files
-COPY . .
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction --no-ansi --no-root
 
-# ---------- Final Stage ----------
 FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
-# Install runtime dependencies
 RUN apt-get update && apt-get install -y \
-    libpq5 \
-    curl \
+    postgresql-client libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy installed Python packages from builder
-COPY --from=builder /install /usr/local
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy project files
-COPY --from=builder /app /app
+COPY . .
 
-# Create staticfiles and media directories
-RUN mkdir -p /app/staticfiles /app/media
+RUN mkdir -p staticfiles media logs
 
-# Expose port
 EXPOSE 8000
 
-# Default command
-CMD ["gunicorn", "traitkeeper.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "traitkeeper.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
