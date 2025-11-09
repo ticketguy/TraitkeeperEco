@@ -1372,39 +1372,9 @@
             </button>
         </div>
 
-        <!-- Mobile Traits Content -->
+        <!-- Mobile Traits Content - Placeholder (switches to desktop view) -->
         <div id="mobile-traits-content" class="mobile-tab-panel hidden">
-            <div class="space-y-2 max-h-[60vh] overflow-y-auto">
-                {% regroup traits by trait_name as trait_groups %}
-                {% for trait_group in trait_groups %}
-                <div class="trait-mobile-item bg-gradient-to-r from-purple-50 to-green-50 dark:from-purple-900/20 dark:to-green-900/20 rounded-lg overflow-hidden border border-purple-200 dark:border-purple-700/30">
-                    <button class="trait-mobile-toggle w-full px-3 py-2 flex justify-between items-center text-left">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-3 h-3 trait-mobile-chevron transition-transform text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
-                            </svg>
-                            <span class="font-bold text-sm text-text-light dark:text-text-dark">{{ trait_group.grouper }}</span>
-                            <span class="text-xs px-1.5 py-0.5 bg-purple-200 dark:bg-purple-700/50 text-purple-700 dark:text-purple-300 rounded-full">{{ trait_group.list|length }}</span>
-                        </div>
-                    </button>
-                    <div class="trait-mobile-panel hidden px-3 pb-2 space-y-1.5">
-                        {% for trait in trait_group.list %}
-                        <div class="flex justify-between items-center text-xs py-1.5 px-2 bg-white/60 dark:bg-gray-800/40 rounded">
-                            <span class="font-medium text-text-light dark:text-text-dark truncate flex-1">{{ trait.trait_value }}</span>
-                            <div class="flex items-center gap-2 ml-2">
-                                {% with score=trait.performance_score|default:50.0 %}
-                                <span class="font-bold text-xs {% if score > 75 %}text-green-500{% elif score < 40 %}text-red-500{% else %}text-yellow-500{% endif %}">{{ score|floatformat:0 }}</span>
-                                <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                    <div class="h-full {% if score > 75 %}bg-green-500{% elif score < 40 %}bg-red-500{% else %}bg-yellow-500{% endif %} rounded-full" style="width: {{ score }}%"></div>
-                                </div>
-                                {% endwith %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+            <p class="text-sm text-center text-text-secondary-light dark:text-text-secondary-dark py-4">Switching to Traits tab...</p>
         </div>
 
         <!-- Mobile Activity Content -->
@@ -1590,24 +1560,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            // For activity and about, also switch desktop tab and close modal
-            if (tabName === 'activity' || tabName === 'about') {
-                switchTab(tabName);
+            // Switch desktop tab based on which mobile tab is clicked
+            if (tabName === 'nfts') {
+                // Switch back to Items view on desktop
+                switchTab('nfts');
+            } else if (tabName === 'traits') {
+                // Switch to Traits view on desktop and close modal
+                switchTab('traits');
                 closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
-            }
-        });
-    });
-
-    // Mobile Traits Accordion
-    document.querySelectorAll('.trait-mobile-toggle').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const panel = toggle.nextElementSibling;
-            const chevron = toggle.querySelector('.trait-mobile-chevron');
-            panel.classList.toggle('hidden');
-            if (panel.classList.contains('hidden')) {
-                chevron.style.transform = 'rotate(0deg)';
-            } else {
-                chevron.style.transform = 'rotate(90deg)';
+            } else if (tabName === 'activity') {
+                // Switch to Activity and close modal
+                switchTab('activity');
+                closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            } else if (tabName === 'about') {
+                // Switch to About and close modal
+                switchTab('about');
+                closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
             }
         });
     });
