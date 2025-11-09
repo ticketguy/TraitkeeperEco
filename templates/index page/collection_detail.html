@@ -714,6 +714,53 @@
                             </span>
                             <span class="performance-value">{{ nft.performance_score|floatformat:1|default:"N/A" }}</span>
                         </div>
+
+                        <!-- Card Overlay Form -->
+                        <div class="nft-overlay-form absolute inset-0 bg-black/90 backdrop-blur-md hidden flex-col justify-center items-center p-4 animate-scale-in"
+                             data-nft-id="{{ nft.mint_address }}">
+                            <button class="close-overlay absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+
+                            <div class="w-full space-y-3">
+                                <h4 class="text-white text-sm font-bold text-center mb-2">{{ nft.name|default:nft.mint_address|slice:":20" }}</h4>
+
+                                <!-- Buy Now Option (if available) -->
+                                {% if nft.buy_price %}
+                                <button class="buy-now-btn w-full py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors"
+                                        data-nft-id="{{ nft.mint_address }}"
+                                        data-price="{{ nft.buy_price }}">
+                                    Buy Now - {{ nft.buy_price|floatformat:2 }} SOL
+                                </button>
+                                <div class="text-center text-white/60 text-xs">or</div>
+                                {% endif %}
+
+                                <!-- Make Offer Form -->
+                                <form class="space-y-2" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0.01"
+                                           name="offer_amount"
+                                           placeholder="Your Offer (SOL)"
+                                           required
+                                           class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white/50 backdrop-blur-sm">
+
+                                    <select name="expiry_days"
+                                            class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white backdrop-blur-sm">
+                                        <option value="1">1 Day</option>
+                                        <option value="3" selected>3 Days</option>
+                                        <option value="7">7 Days</option>
+                                        <option value="14">14 Days</option>
+                                        <option value="30">30 Days</option>
+                                    </select>
+
+                                    <button type="submit"
+                                            class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                                        Submit Offer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <h3 class="font-semibold text-lg text-text-light dark:text-text-dark truncate">{{ nft.name|default:nft.mint_address|slice:":16" }}</h3>
@@ -728,55 +775,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Inline Offer Form (Hidden by default) -->
-                <div class="offer-form-inline hidden mt-2 p-4 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border-2 border-primary/30 rounded-xl shadow-lg animate-scale-in"
-                     data-nft-id="{{ nft.mint_address }}">
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-sm font-bold text-text-light dark:text-text-dark">Make Offer</h4>
-                        <button class="close-offer-form text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <form class="space-y-3" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
-                        <div>
-                            <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">Your Offer (SOL)</label>
-                            <input type="number"
-                                   step="0.01"
-                                   min="0.01"
-                                   name="offer_amount"
-                                   placeholder="0.00"
-                                   required
-                                   class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
-                                Expiry (Days)
-                            </label>
-                            <select name="expiry_days"
-                                    class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
-                                <option value="1">1 Day</option>
-                                <option value="3" selected>3 Days</option>
-                                <option value="7">7 Days</option>
-                                <option value="14">14 Days</option>
-                                <option value="30">30 Days</option>
-                            </select>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="submit"
-                                    class="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                                Submit Offer
-                            </button>
-                            <button type="button"
-                                    class="close-offer-form px-4 py-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
             {% empty %}
@@ -2202,7 +2200,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// === Inline Offer Form Handling ===
+// === NFT Card Overlay Form Handling ===
 document.addEventListener('DOMContentLoaded', function() {
     // Handle Make Offer button clicks
     document.querySelectorAll('.make-offer-btn').forEach(btn => {
@@ -2211,39 +2209,67 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
 
             const nftId = this.getAttribute('data-nft-id');
-            const wrapper = this.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
+            const card = this.closest('.nft-card');
+            const overlay = card.querySelector('.nft-overlay-form');
 
-            // Close any other open forms
-            document.querySelectorAll('.offer-form-inline').forEach(form => {
-                if (form !== offerForm) {
+            // Close any other open overlays
+            document.querySelectorAll('.nft-overlay-form').forEach(form => {
+                if (form !== overlay) {
                     form.classList.add('hidden');
+                    form.classList.remove('flex');
                 }
             });
 
-            // Toggle this form
-            if (offerForm) {
-                offerForm.classList.toggle('hidden');
+            // Show this overlay
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
 
                 // Focus on amount input when opened
-                if (!offerForm.classList.contains('hidden')) {
-                    const amountInput = offerForm.querySelector('input[name="offer_amount"]');
-                    if (amountInput) {
-                        setTimeout(() => amountInput.focus(), 100);
-                    }
+                const amountInput = overlay.querySelector('input[name="offer_amount"]');
+                if (amountInput) {
+                    setTimeout(() => amountInput.focus(), 100);
                 }
             }
         });
     });
 
-    // Handle close form buttons
-    document.querySelectorAll('.close-offer-form').forEach(btn => {
+    // Handle close overlay buttons
+    document.querySelectorAll('.close-overlay').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const wrapper = this.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
-            if (offerForm) {
-                offerForm.classList.add('hidden');
+            e.stopPropagation();
+            const overlay = this.closest('.nft-overlay-form');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
+        });
+    });
+
+    // Handle Buy Now buttons
+    document.querySelectorAll('.buy-now-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const nftId = this.getAttribute('data-nft-id');
+            const price = this.getAttribute('data-price');
+
+            if (confirm(`Buy this NFT for ${price} SOL?`)) {
+                // TODO: Implement buy now functionality
+                alert('Buy Now functionality - integrate with your Solana wallet');
+                console.log('Buy NFT:', nftId, 'Price:', price);
+            }
+        });
+    });
+
+    // Close overlay when clicking outside
+    document.querySelectorAll('.nft-overlay-form').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                this.classList.remove('flex');
             }
         });
     });
@@ -2300,11 +2326,11 @@ function handleOfferSubmit(event, nftMintAddress) {
             alert(`Offer submitted successfully! Amount: ${offerAmount} SOL`);
             form.reset();
 
-            // Close the form
-            const wrapper = form.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
-            if (offerForm) {
-                offerForm.classList.add('hidden');
+            // Close the overlay
+            const overlay = form.closest('.nft-overlay-form');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
             }
         } else {
             alert('Error: ' + (data.message || 'Failed to submit offer'));
