@@ -714,6 +714,53 @@
                             </span>
                             <span class="performance-value">{{ nft.performance_score|floatformat:1|default:"N/A" }}</span>
                         </div>
+
+                        <!-- Card Overlay Form -->
+                        <div class="nft-overlay-form absolute inset-0 bg-black/90 backdrop-blur-md hidden flex-col justify-center items-center p-4 animate-scale-in"
+                             data-nft-id="{{ nft.mint_address }}">
+                            <button class="close-overlay absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+
+                            <div class="w-full space-y-3">
+                                <h4 class="text-white text-sm font-bold text-center mb-2">{{ nft.name|default:nft.mint_address|slice:":20" }}</h4>
+
+                                <!-- Buy Now Option (if available) -->
+                                {% if nft.buy_price %}
+                                <button class="buy-now-btn w-full py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors"
+                                        data-nft-id="{{ nft.mint_address }}"
+                                        data-price="{{ nft.buy_price }}">
+                                    Buy Now - {{ nft.buy_price|floatformat:2 }} SOL
+                                </button>
+                                <div class="text-center text-white/60 text-xs">or</div>
+                                {% endif %}
+
+                                <!-- Make Offer Form -->
+                                <form class="space-y-2" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0.01"
+                                           name="offer_amount"
+                                           placeholder="Your Offer (SOL)"
+                                           required
+                                           class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white/50 backdrop-blur-sm">
+
+                                    <select name="expiry_days"
+                                            class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white backdrop-blur-sm">
+                                        <option value="1">1 Day</option>
+                                        <option value="3" selected>3 Days</option>
+                                        <option value="7">7 Days</option>
+                                        <option value="14">14 Days</option>
+                                        <option value="30">30 Days</option>
+                                    </select>
+
+                                    <button type="submit"
+                                            class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                                        Submit Offer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <h3 class="font-semibold text-lg text-text-light dark:text-text-dark truncate">{{ nft.name|default:nft.mint_address|slice:":16" }}</h3>
@@ -728,55 +775,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Inline Offer Form (Hidden by default) -->
-                <div class="offer-form-inline hidden mt-2 p-4 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border-2 border-primary/30 rounded-xl shadow-lg animate-scale-in"
-                     data-nft-id="{{ nft.mint_address }}">
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-sm font-bold text-text-light dark:text-text-dark">Make Offer</h4>
-                        <button class="close-offer-form text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <form class="space-y-3" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
-                        <div>
-                            <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">Your Offer (SOL)</label>
-                            <input type="number"
-                                   step="0.01"
-                                   min="0.01"
-                                   name="offer_amount"
-                                   placeholder="0.00"
-                                   required
-                                   class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
-                                Expiry (Days)
-                            </label>
-                            <select name="expiry_days"
-                                    class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
-                                <option value="1">1 Day</option>
-                                <option value="3" selected>3 Days</option>
-                                <option value="7">7 Days</option>
-                                <option value="14">14 Days</option>
-                                <option value="30">30 Days</option>
-                            </select>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="submit"
-                                    class="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                                Submit Offer
-                            </button>
-                            <button type="button"
-                                    class="close-offer-form px-4 py-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
             {% empty %}
@@ -1201,9 +1199,9 @@
     </button>
     <button id="open-filters-mobile" type="button">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
-        <span>Filters</span>
+        <span>Menu</span>
     </button>
 </div>
 
@@ -1247,18 +1245,23 @@
 <div id="mobile-filters-modal" class="mobile-modal-container">
     <div class="mobile-modal-content">
         <div class="mobile-modal-handle"></div>
-        <h3 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Filters & View</h3>
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold text-text-light dark:text-text-dark bg-gradient-to-r from-purple-600 to-green-400 bg-clip-text text-transparent">Menu</h3>
+            <button id="mobile-clear-filters" class="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-all">
+                Clear Filters
+            </button>
+        </div>
 
         <!-- Mobile Tabs -->
         <div class="mobile-tabs">
-            <button class="mobile-tab-btn active" data-mobile-tab="items">Items</button>
+            <button class="mobile-tab-btn active" data-mobile-tab="nfts">Items</button>
             <button class="mobile-tab-btn" data-mobile-tab="traits">Traits</button>
             <button class="mobile-tab-btn" data-mobile-tab="activity">Activity</button>
             <button class="mobile-tab-btn" data-mobile-tab="about">About</button>
         </div>
 
-        <!-- Mobile Filters Content -->
-        <div id="mobile-filters-content">
+        <!-- Mobile Items Filters Content -->
+        <div id="mobile-items-content" class="mobile-tab-panel">
             <!-- Search Input -->
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Search NFTs</label>
@@ -1311,6 +1314,51 @@
             <button id="apply-mobile-filters" class="w-full mt-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all">
                 Apply Filters
             </button>
+        </div>
+
+        <!-- Mobile Traits Content -->
+        <div id="mobile-traits-content" class="mobile-tab-panel hidden">
+            <div class="space-y-2 max-h-[60vh] overflow-y-auto">
+                {% regroup traits by trait_name as trait_groups %}
+                {% for trait_group in trait_groups %}
+                <div class="trait-mobile-item bg-gradient-to-r from-purple-50 to-green-50 dark:from-purple-900/20 dark:to-green-900/20 rounded-lg overflow-hidden border border-purple-200 dark:border-purple-700/30">
+                    <button class="trait-mobile-toggle w-full px-3 py-2 flex justify-between items-center text-left">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-3 h-3 trait-mobile-chevron transition-transform text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <span class="font-bold text-sm text-text-light dark:text-text-dark">{{ trait_group.grouper }}</span>
+                            <span class="text-xs px-1.5 py-0.5 bg-purple-200 dark:bg-purple-700/50 text-purple-700 dark:text-purple-300 rounded-full">{{ trait_group.list|length }}</span>
+                        </div>
+                    </button>
+                    <div class="trait-mobile-panel hidden px-3 pb-2 space-y-1.5">
+                        {% for trait in trait_group.list %}
+                        <div class="flex justify-between items-center text-xs py-1.5 px-2 bg-white/60 dark:bg-gray-800/40 rounded">
+                            <span class="font-medium text-text-light dark:text-text-dark truncate flex-1">{{ trait.trait_value }}</span>
+                            <div class="flex items-center gap-2 ml-2">
+                                {% with score=trait.performance_score|default:50.0 %}
+                                <span class="font-bold text-xs {% if score > 75 %}text-green-500{% elif score < 40 %}text-red-500{% else %}text-yellow-500{% endif %}">{{ score|floatformat:0 }}</span>
+                                <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full {% if score > 75 %}bg-green-500{% elif score < 40 %}bg-red-500{% else %}bg-yellow-500{% endif %} rounded-full" style="width: {{ score }}%"></div>
+                                </div>
+                                {% endwith %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mobile Activity Content -->
+        <div id="mobile-activity-content" class="mobile-tab-panel hidden">
+            <p class="text-sm text-center text-text-secondary-light dark:text-text-secondary-dark py-4">Switch to Activity tab to view</p>
+        </div>
+
+        <!-- Mobile About Content -->
+        <div id="mobile-about-content" class="mobile-tab-panel hidden">
+            <p class="text-sm text-center text-text-secondary-light dark:text-text-secondary-dark py-4">Switch to About tab to view</p>
         </div>
     </div>
 </div>
@@ -1460,6 +1508,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Mobile Tab Switching
     const mobileTabBtns = document.querySelectorAll('.mobile-tab-btn');
+    const mobileTabPanels = {
+        'nfts': document.getElementById('mobile-items-content'),
+        'traits': document.getElementById('mobile-traits-content'),
+        'activity': document.getElementById('mobile-activity-content'),
+        'about': document.getElementById('mobile-about-content')
+    };
+
     mobileTabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabName = btn.getAttribute('data-mobile-tab');
@@ -1468,13 +1523,59 @@ document.addEventListener("DOMContentLoaded", function () {
             mobileTabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Switch to the corresponding desktop tab
-            switchTab(tabName);
+            // Show/hide mobile panels
+            Object.keys(mobileTabPanels).forEach(key => {
+                if (mobileTabPanels[key]) {
+                    if (key === tabName) {
+                        mobileTabPanels[key].classList.remove('hidden');
+                    } else {
+                        mobileTabPanels[key].classList.add('hidden');
+                    }
+                }
+            });
 
-            // Close mobile modal
-            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            // For activity and about, also switch desktop tab and close modal
+            if (tabName === 'activity' || tabName === 'about') {
+                switchTab(tabName);
+                closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            }
         });
     });
+
+    // Mobile Traits Accordion
+    document.querySelectorAll('.trait-mobile-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const panel = toggle.nextElementSibling;
+            const chevron = toggle.querySelector('.trait-mobile-chevron');
+            panel.classList.toggle('hidden');
+            if (panel.classList.contains('hidden')) {
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                chevron.style.transform = 'rotate(90deg)';
+            }
+        });
+    });
+
+    // Clear Filters Button
+    const clearFiltersBtn = document.getElementById('mobile-clear-filters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            // Clear search
+            if (mobileSearchInput) mobileSearchInput.value = '';
+            if (desktopSearchInput) desktopSearchInput.value = '';
+
+            // Reset sort
+            if (mobileSortSelect) mobileSortSelect.value = 'trait_perf_desc';
+            if (desktopSortSelect) desktopSortSelect.value = 'trait_perf_desc';
+
+            // Uncheck all traits
+            document.querySelectorAll('input[name="mobile-trait"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="trait"]').forEach(cb => cb.checked = false);
+
+            // Apply cleared filters via AJAX
+            applyFiltersAjax();
+        });
+    }
 
     // Mobile Search Input - Sync with desktop
     const mobileSearchInput = document.getElementById('mobile-search-input');
@@ -1496,6 +1597,74 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // AJAX Filter Function
+    function applyFiltersAjax() {
+        const searchQuery = desktopSearchInput ? desktopSearchInput.value : '';
+        const sortBy = desktopSortSelect ? desktopSortSelect.value : 'trait_perf_desc';
+        const selectedTraits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+
+        // Build URL with query params
+        const url = new URL(window.location.href);
+        url.searchParams.set('q', searchQuery);
+        url.searchParams.set('sort_by', sortBy);
+        url.searchParams.delete('trait'); // Clear existing traits
+
+        selectedTraits.forEach(trait => {
+            url.searchParams.append('trait', trait);
+        });
+
+        // Update browser URL without reload
+        window.history.pushState({}, '', url);
+
+        // Show loading indicator
+        const grid = document.getElementById('nfts-grid');
+        if (grid) {
+            grid.style.opacity = '0.5';
+            grid.style.pointerEvents = 'none';
+        }
+
+        // Fetch filtered results
+        fetch(url.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Parse response and update grid
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newGrid = doc.getElementById('nfts-grid');
+            const loadMoreBtn = doc.getElementById('load-more-nfts');
+
+            if (newGrid && grid) {
+                grid.innerHTML = newGrid.innerHTML;
+                grid.style.opacity = '1';
+                grid.style.pointerEvents = 'auto';
+            }
+
+            // Update Load More button
+            const currentLoadMore = document.getElementById('load-more-nfts');
+            if (currentLoadMore && currentLoadMore.parentElement) {
+                if (loadMoreBtn) {
+                    currentLoadMore.parentElement.innerHTML = loadMoreBtn.parentElement.innerHTML;
+                } else {
+                    currentLoadMore.parentElement.remove();
+                }
+            }
+
+            // Close mobile modal
+            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+        })
+        .catch(error => {
+            console.error('Filter error:', error);
+            if (grid) {
+                grid.style.opacity = '1';
+                grid.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
     // Apply Mobile Filters Button
     const applyFiltersBtn = document.getElementById('apply-mobile-filters');
     if (applyFiltersBtn) {
@@ -1514,14 +1683,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (desktopCb) desktopCb.checked = true;
             });
 
-            // Submit the desktop form
-            const collectionFilterForm = document.getElementById('collection-filter');
-            if (collectionFilterForm) {
-                collectionFilterForm.submit();
-            }
-
-            // Close modal
-            closeMobileModal(mobileFiltersModal, mobileFiltersBackdrop);
+            // Apply filters via AJAX
+            applyFiltersAjax();
         });
     }
 
@@ -2037,7 +2200,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// === Inline Offer Form Handling ===
+// === NFT Card Overlay Form Handling ===
 document.addEventListener('DOMContentLoaded', function() {
     // Handle Make Offer button clicks
     document.querySelectorAll('.make-offer-btn').forEach(btn => {
@@ -2046,39 +2209,67 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
 
             const nftId = this.getAttribute('data-nft-id');
-            const wrapper = this.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
+            const card = this.closest('.nft-card');
+            const overlay = card.querySelector('.nft-overlay-form');
 
-            // Close any other open forms
-            document.querySelectorAll('.offer-form-inline').forEach(form => {
-                if (form !== offerForm) {
+            // Close any other open overlays
+            document.querySelectorAll('.nft-overlay-form').forEach(form => {
+                if (form !== overlay) {
                     form.classList.add('hidden');
+                    form.classList.remove('flex');
                 }
             });
 
-            // Toggle this form
-            if (offerForm) {
-                offerForm.classList.toggle('hidden');
+            // Show this overlay
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
 
                 // Focus on amount input when opened
-                if (!offerForm.classList.contains('hidden')) {
-                    const amountInput = offerForm.querySelector('input[name="offer_amount"]');
-                    if (amountInput) {
-                        setTimeout(() => amountInput.focus(), 100);
-                    }
+                const amountInput = overlay.querySelector('input[name="offer_amount"]');
+                if (amountInput) {
+                    setTimeout(() => amountInput.focus(), 100);
                 }
             }
         });
     });
 
-    // Handle close form buttons
-    document.querySelectorAll('.close-offer-form').forEach(btn => {
+    // Handle close overlay buttons
+    document.querySelectorAll('.close-overlay').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const wrapper = this.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
-            if (offerForm) {
-                offerForm.classList.add('hidden');
+            e.stopPropagation();
+            const overlay = this.closest('.nft-overlay-form');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
+        });
+    });
+
+    // Handle Buy Now buttons
+    document.querySelectorAll('.buy-now-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const nftId = this.getAttribute('data-nft-id');
+            const price = this.getAttribute('data-price');
+
+            if (confirm(`Buy this NFT for ${price} SOL?`)) {
+                // TODO: Implement buy now functionality
+                alert('Buy Now functionality - integrate with your Solana wallet');
+                console.log('Buy NFT:', nftId, 'Price:', price);
+            }
+        });
+    });
+
+    // Close overlay when clicking outside
+    document.querySelectorAll('.nft-overlay-form').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                this.classList.remove('flex');
             }
         });
     });
@@ -2135,11 +2326,11 @@ function handleOfferSubmit(event, nftMintAddress) {
             alert(`Offer submitted successfully! Amount: ${offerAmount} SOL`);
             form.reset();
 
-            // Close the form
-            const wrapper = form.closest('.nft-card-wrapper');
-            const offerForm = wrapper.querySelector('.offer-form-inline');
-            if (offerForm) {
-                offerForm.classList.add('hidden');
+            // Close the overlay
+            const overlay = form.closest('.nft-overlay-form');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
             }
         } else {
             alert('Error: ' + (data.message || 'Failed to submit offer'));
