@@ -295,6 +295,11 @@ jobs:
           fi
 
       - name: Notify deployment status
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author
         if: always()
         uses: 8398a7/action-slack@v3
         with:
