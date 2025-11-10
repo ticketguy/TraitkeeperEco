@@ -760,7 +760,7 @@
             <div class="nft-card-wrapper relative">
                 <div class="nft-card group text-left bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-xl p-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1" data-nft-id="{{ nft.mint_address }}">
                     <div class="relative overflow-hidden rounded-lg mb-4">
-                        <img src="{{ nft.image_url }}" alt="{{ nft.name }}" class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
+                        <img src="{{ nft.image_url }}" alt="{{ nft.name }}" {% if forloop.counter > 10 %}loading="lazy"{% endif %} class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
 
                         <div id="performance-badge-{{ nft.mint_address }}"
                             class="performance-badge absolute top-2 right-2 flex items-center gap-1 bg-brand-black/50 backdrop-blur-sm text-brand-white text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -1011,7 +1011,7 @@
             {% for event in events %}
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b border-gray-200 dark:border-gray-800">
                 <div class="col-span-2 flex items-center space-x-4">
-                    <img src="{{ event.nft_image_url|default:'/static/img/nft-default.png' }}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
+                    <img src="{{ event.nft_image_url|default:'/static/img/nft-default.png' }}" loading="lazy" class="w-12 h-12 rounded-md object-cover" alt="NFT">
                     <div class="flex flex-col">
                         <span class="font-medium">{{ event.nft_name|default:event.nft_mint|slice:":8" }}</span>
                         {% if event.nft_mint %}
@@ -1452,7 +1452,7 @@
 
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -1460,7 +1460,10 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.style.overflow = '';
     document.documentElement.style.overflow = '';
 
-    AOS.init({ duration: 600, once: true, delay: 100 });
+    // Initialize AOS only if loaded
+    if (typeof AOS !== 'undefined') {
+        AOS.init({ duration: 600, once: true, delay: 100 });
+    }
 
     // --- Configuration & Elements ---
     const collectionAddress = "{{ collection.address|escapejs }}";
@@ -2055,7 +2058,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return `
             <div class="nft-card group text-left bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 fade-in" data-nft-id="${nft.mint_address}">
                 <div class="relative overflow-hidden rounded-lg mb-3">
-                    <img src="${nft.image_url || '/static/img/nft-default.png'}" alt="${nft.name || 'NFT Image'}" class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
+                    <img src="${nft.image_url || '/static/img/nft-default.png'}" alt="${nft.name || 'NFT Image'}" loading="lazy" class="w-full h-auto object-cover aspect-square transition-transform duration-300 group-hover:scale-105">
                     <div class="performance-badge absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full" title="Performance Score">
                         <span class="performance-icon">${performanceIcon}</span>
                         <span class="performance-value">${!isNaN(currentScore) ? currentScore.toFixed(1) : 'N/A'}</span>
@@ -2130,7 +2133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return `
             <div class="activity-item grid grid-cols-5 gap-4 items-center py-6 border-b dark:border-gray-800 fade-in">
                 <div class="col-span-2 flex items-center space-x-4">
-                    <img src="${event.nft_image_url || '/static/img/nft-default.png'}" class="w-12 h-12 rounded-md object-cover" alt="NFT">
+                    <img src="${event.nft_image_url || '/static/img/nft-default.png'}" loading="lazy" class="w-12 h-12 rounded-md object-cover" alt="NFT">
                     <div class="flex flex-col">
                         <span class="font-medium truncate">${nftName}</span>
                         ${solscanLink}
