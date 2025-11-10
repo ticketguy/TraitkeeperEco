@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
 
+    <!-- Preload critical Font Awesome web fonts -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,6 +44,22 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon/favicon-32x32.png' %}">
 
     <style>
+        /* Override Font Awesome font loading to use swap */
+        @font-face {
+            font-family: "Font Awesome 6 Free";
+            font-style: normal;
+            font-weight: 900;
+            font-display: swap;
+            src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2) format("woff2");
+        }
+        @font-face {
+            font-family: "Font Awesome 6 Brands";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-brands-400.woff2) format("woff2");
+        }
+
         * { font-family: 'Inter', sans-serif; }
 
         /* Gradient Background */
@@ -339,6 +358,9 @@
                                 <img id="preview-image-display"
                                      src="{% static 'img/placeholder-nft.png' %}"
                                      alt="Collection Preview"
+                                     width="512"
+                                     height="512"
+                                     fetchpriority="high"
                                      class="w-full h-full object-cover pulse-subtle">
                             </div>
 
