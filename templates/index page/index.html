@@ -381,14 +381,16 @@
                                data-slide-index="{{ forloop.counter0 }}">
                                 <div class="relative w-full h-[400px]">
                                     <!-- Main Background Image -->
-                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                         alt="{{ collection.name }}" 
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                         alt="{{ collection.name }}"
+                                         {% if not forloop.first %}loading="lazy"{% endif %}
                                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                                    
+
                                     <!-- Badge Image -->
-                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                         alt="" 
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                         alt=""
+                                         loading="lazy"
                                          class="w-16 h-16 rounded-full absolute top-6 right-6 border-4 border-white/50 shadow-lg">
 
                                     <!-- Content Overlay -->
@@ -638,6 +640,7 @@
                                             <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">{{ forloop.counter }}</span>
                                             <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
                                                  alt="{{ collection.name }}"
+                                                 loading="lazy"
                                                  class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
                                             <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
                                         </a>
@@ -681,12 +684,12 @@
             <div id="collections-carousel" class="flex transition-transform duration-500 ease-in-out gap-4 xs:gap-6">
                 </div>
             
-            <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+            <button id="carousel-prev" aria-label="Previous collection" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </button>
-            <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+            <button id="carousel-next" aria-label="Next collection" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -764,6 +767,7 @@
                     class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-gradient-to-r from-primary to-accent-light text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge shadow-lg">
                     🔥 Trending</div>
                 <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
+                    loading="lazy"
                     class="w-full h-28 xs:h-32 sm:h-36 object-cover">
                 <div class="p-2 xs:p-3 sm:p-4">
                     <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">{{ nft.name }}</h3>
@@ -1558,8 +1562,9 @@
                                         <div class="flex-1 p-1 xs:p-2">
                                             <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
                                                 <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${index + 1}</span>
-                                                <img src="${collection.image_url || '/static/img/collection-default.png'}" 
-                                                     alt="${collection.name}" 
+                                                <img src="${collection.image_url || '/static/img/collection-default.png'}"
+                                                     alt="${collection.name}"
+                                                     loading="lazy"
                                                      class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
                                                 <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">${collection.name}</span>
                                             </div>
@@ -1942,7 +1947,9 @@
                              data-collection-performance="${(collection.performance_score || 0).toFixed(1)}"
                              data-collection-address="${collection.address}">
                             <img src="${encodeURI(collection.image_url || '/static/img/collection-default.png')}"
-                                 alt="${encodeURIComponent(collection.name)}" class="w-full h-full object-cover absolute inset-0">
+                                 alt="${encodeURIComponent(collection.name)}"
+                                 loading="lazy"
+                                 class="w-full h-full object-cover absolute inset-0">
                             <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/80"></div>
                             <div class="absolute bottom-0 left-0 p-3 xs:p-4 sm:p-5 z-10">
                                 <h3 class="text-sm xs:text-base sm:text-lg font-bold text-white drop-shadow-lg shadow-black/80 leading-tight">

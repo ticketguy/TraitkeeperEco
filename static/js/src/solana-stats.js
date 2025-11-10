@@ -4,15 +4,24 @@
 let previousPrice = null;
 let rateLimitBackoff = 0; // Track rate limit backoff time
 let lastRequestTime = 0; // Track last request timestamp
+let isRequestInProgress = false; // Prevent concurrent requests
 
 // Function to fetch and update Solana price and TPS
 function updateSolanaStats() {
+    // Prevent concurrent requests
+    if (isRequestInProgress) {
+        console.log('Request already in progress, skipping...');
+        return;
+    }
+
     // Check if we're in a backoff period
     const now = Date.now();
     if (rateLimitBackoff > 0 && now - lastRequestTime < rateLimitBackoff) {
         console.log('Rate limited, waiting before next request...');
         return;
     }
+
+    isRequestInProgress = true;
     // console.log("Running updateSolanaStats");
 
     // Find ALL DOM elements (both desktop and mobile)
@@ -108,6 +117,9 @@ function updateSolanaStats() {
             console.error('Error fetching Solana stats:', error);
             priceElements.forEach(el => el.textContent = 'Error');
             tpsElements.forEach(el => el.textContent = 'TPS: Error');
+        })
+        .finally(() => {
+            isRequestInProgress = false;
         });
 }
 
@@ -143,5 +155,9 @@ function initializeSolanaStats(retries = 3, delay = 1000) {
 // Run initialization with retries (only on DOMContentLoaded to avoid duplicate calls)
 document.addEventListener("DOMContentLoaded", () => {
     // console.log("DOMContentLoaded event fired in solana-stats.js, running initializeSolanaStats");
-    initializeSolanaStats();
+    // Add random jitter (0-5s) to prevent multiple tabs hitting API simultaneously
+    const jitter = Math.random() * 5000;
+    setTimeout(() => {
+        initializeSolanaStats();
+    }, jitter);
 });
