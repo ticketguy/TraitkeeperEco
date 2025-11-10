@@ -28,7 +28,7 @@ def notifications_view(request):
         'unread_notifications_count': unread_count,
         'notification_prefs': notification_prefs,
     }
-    return context
+    return render(request, 'notifications/notifications.html', context)
 
 @login_required
 @csrf_exempt

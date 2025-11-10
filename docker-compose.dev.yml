@@ -62,6 +62,7 @@ services:
       - .:/app  # Hot reload for code changes
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
+      - ./logs:/var/log/traitkeeper
     ports:
       - "8000:8000"
     depends_on:

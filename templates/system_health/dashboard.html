@@ -1,364 +1,673 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Health Dashboard - TraitKeeper</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         primary: '#800080',
                         'primary-dark': '#660066',
                         'primary-light': '#9933cc',
+                        'brand-purple': '#800080',
                     }
                 }
             }
         }
     </script>
+
     <style>
-        @keyframes pulse-primary {
+        /* ==================================================
+         * SYSTEM HEALTH DASHBOARD - RESPONSIVE OPTIMIZATIONS
+         * ================================================== */
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        /* Prevent horizontal scroll */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(30, 30, 46, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(128, 0, 128, 0.2);
+        }
+
+        .glass-light {
+            background: rgba(128, 0, 128, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(128, 0, 128, 0.1);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a0a2e 100%);
+        }
+
+        .glow-border {
+            box-shadow: 0 0 20px rgba(128, 0, 128, 0.3);
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Disable hover lift on mobile for better touch experience */
+        @media (min-width: 768px) {
+            .hover-lift:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px rgba(128, 0, 128, 0.2);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(128, 0, 128, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(128, 0, 128, 0.6); }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 10px #f59e0b;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-critical {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .pulse-primary {
-            animation: pulse-primary 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        .metric-card {
+            position: relative;
+            overflow: hidden;
         }
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(128, 0, 128, 0.1), transparent);
+            transition: left 0.5s;
         }
-        .gradient-animate {
-            background-size: 200% 200%;
-            animation: gradient-shift 8s ease infinite;
+
+        .metric-card:hover::before {
+            left: 100%;
+        }
+
+        /* Chart container - responsive heights */
+        .chart-container {
+            position: relative;
+            height: 250px; /* Smaller on mobile */
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 350px; /* Larger on desktop */
+            }
+        }
+
+        /* ==================================================
+         * MOBILE-SPECIFIC OPTIMIZATIONS
+         * ================================================== */
+
+        @media (max-width: 767px) {
+            /* Reduce padding on mobile */
+            .max-w-7xl {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Stack grid items on mobile */
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Smaller font sizes on mobile */
+            h1 {
+                font-size: 1.25rem !important;
+            }
+
+            h2 {
+                font-size: 1.125rem !important;
+            }
+
+            h3 {
+                font-size: 1rem !important;
+            }
+
+            /* Compact metric cards */
+            .metric-card {
+                padding: 1rem !important;
+            }
+
+            /* Smaller badges and indicators */
+            .status-indicator {
+                width: 10px;
+                height: 10px;
+            }
+
+            /* Compact navigation */
+            nav .h-16 {
+                height: 3.5rem !important;
+            }
+
+            /* Better spacing for buttons */
+            button, a.button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* ==================================================
+         * TABLET OPTIMIZATIONS
+         * ================================================== */
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+            /* 2-column layout for tablets */
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        /* ==================================================
+         * RESPONSIVE TABLES
+         * ================================================== */
+
+        @media (max-width: 640px) {
+            /* Make tables scrollable on mobile */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 0.5rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        /* ==================================================
+         * MODAL RESPONSIVE SIZING
+         * ================================================== */
+
+        .modal-content {
+            width: min(90vw, 600px);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 640px) {
+            .modal-content {
+                width: 95vw;
+                max-height: 90vh;
+                padding: 1rem !important;
+            }
+        }
+
+        /* ==================================================
+         * PERFORMANCE OPTIMIZATIONS
+         * ================================================== */
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-    <div class="min-h-screen">
-        <!-- Alert Notification Bar (Sticky) -->
-        <div id="alert-notification-bar" class="hidden sticky top-0 z-50 bg-red-900 border-b-2 border-red-500 backdrop-blur-sm shadow-lg cursor-pointer transition-all duration-300 hover:bg-red-800" onclick="scrollToAlerts()">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl animate-pulse">🚨</span>
-                        <div>
-                            <p class="font-bold text-white" id="alert-bar-title">System Alerts Active</p>
-                            <p class="text-sm text-red-100" id="alert-bar-message">Click to view details</p>
-                        </div>
+
+<body class="gradient-bg min-h-screen text-gray-100">
+
+    <!-- Top Navigation Bar -->
+    <nav class="glass sticky top-0 z-50 border-b border-primary/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-heartbeat text-primary text-2xl"></i>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                            System Health
+                        </h1>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <span id="alert-bar-count" class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-bold">0</span>
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                    <span id="overall-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold glass-light">
+                        <span class="status-indicator status-healthy"></span>
+                        Loading...
+                    </span>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <span id="last-updated" class="text-sm text-gray-400">Loading...</span>
+                    <button onclick="refreshDashboard()" class="px-4 py-2 glass-light hover:glass rounded-lg text-sm font-medium transition-all hover-lift">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                    <button onclick="toggleShareModal()" class="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg text-sm font-medium transition-all hover-lift">
+                        <i class="fas fa-share-alt mr-2"></i>Share Stats
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- System Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- CPU Card -->
+            <div class="glass rounded-2xl p-6 hover-lift metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">CPU Usage</p>
+                        <p id="cpu-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                    </div>
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-microchip text-3xl text-primary"></i>
+                    </div>
+                </div>
+                <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="cpu-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="cpu-status" class="text-xs text-gray-500 mt-2">Initializing...</p>
+            </div>
+
+            <!-- Memory Card -->
+            <div class="glass rounded-2xl p-6 hover-lift metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Memory</p>
+                        <p id="memory-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                    </div>
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-memory text-3xl text-primary"></i>
+                    </div>
+                </div>
+                <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="memory-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="memory-status" class="text-xs text-gray-500 mt-2">Initializing...</p>
+            </div>
+
+            <!-- Disk Card -->
+            <div class="glass rounded-2xl p-6 hover-lift metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Disk Usage</p>
+                        <p id="disk-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                    </div>
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-hdd text-3xl text-primary"></i>
+                    </div>
+                </div>
+                <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="disk-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="disk-status" class="text-xs text-gray-500 mt-2">Initializing...</p>
+            </div>
+
+            <!-- Active Tasks Card -->
+            <div class="glass rounded-2xl p-6 hover-lift metric-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Active Tasks</p>
+                        <p id="tasks-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                    </div>
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-tasks text-3xl text-primary"></i>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm mt-4">
+                    <span class="text-gray-400">Failed (24h)</span>
+                    <span id="tasks-failed" class="font-semibold text-red-400">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Docker Services & Transaction Health -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Docker Services -->
+            <div class="lg:col-span-2 glass rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-100 flex items-center">
+                        <i class="fab fa-docker text-primary mr-3"></i>
+                        Docker Services
+                    </h2>
+                    <span id="services-summary" class="text-sm text-gray-400">--</span>
+                </div>
+                <div id="docker-services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Services populated by JavaScript -->
+                    <div class="text-center py-8 text-gray-400 col-span-full">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Loading services...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Health -->
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-bolt text-primary mr-3"></i>
+                    Transactions
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 glass-light rounded-lg">
+                        <span class="text-sm text-gray-400">Stuck</span>
+                        <span id="tx-stuck" class="font-bold text-lg">--</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 glass-light rounded-lg">
+                        <span class="text-sm text-gray-400">Failure Rate</span>
+                        <span id="tx-failure-rate" class="font-bold text-lg">--%</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 glass-light rounded-lg">
+                        <span class="text-sm text-gray-400">Avg Time</span>
+                        <span id="tx-avg-time" class="font-bold text-lg">--ms</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 glass-light rounded-lg">
+                        <span class="text-sm text-gray-400">Status</span>
+                        <span id="tx-status" class="font-bold text-lg">--</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Header -->
-        <header class="bg-[#800080]/20 border-b border-[#800080]/30 backdrop-blur-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-[#800080]">🏥 System Health Dashboard</h1>
-                    <div class="flex items-center space-x-4">
-                        <span id="last-updated" class="text-sm text-[#9933cc]">Loading...</span>
-                        <button onclick="refreshData()" class="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-primary/30">
-                            🔄 Refresh
-                        </button>
+        <!-- Marketplace & Vitality Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Marketplace Stats -->
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-store text-primary mr-3"></i>
+                    Marketplace (24h)
+                </h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="marketplace-sales">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Sales</p>
                     </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Overall Status -->
-            <div id="overall-status" class="mb-8 p-6 bg-gray-800/80 rounded-lg border-l-4 border-primary shadow-lg shadow-primary/20 backdrop-blur-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-semibold mb-2 text-[#9933cc]">Ecosystem Status</h2>
-                        <p id="status-message" class="text-[#9933cc]/80">Checking system health...</p>
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="marketplace-volume">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Volume</p>
                     </div>
-                    <div id="status-indicator" class="w-16 h-16 rounded-full shadow-lg"></div>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- CPU -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-[#9933cc]">CPU Usage</h3>
-                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💻</span>
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="marketplace-listings">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Active Listings</p>
                     </div>
-                    <p id="cpu-value" class="text-3xl font-bold text-[#800080]">--</p>
-                    <div id="cpu-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="cpu-fill" class="h-full transition-all duration-500 bg-primary"></div>
-                    </div>
-                </div>
-
-                <!-- Memory -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-[#9933cc]">Memory Usage</h3>
-                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">🧠</span>
-                    </div>
-                    <p id="memory-value" class="text-3xl font-bold text-[#800080]">--</p>
-                    <div id="memory-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="memory-fill" class="h-full transition-all duration-500 bg-primary"></div>
-                    </div>
-                </div>
-
-                <!-- Disk -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-[#9933cc]">Disk Usage</h3>
-                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">💾</span>
-                    </div>
-                    <p id="disk-value" class="text-3xl font-bold text-[#800080]">--</p>
-                    <div id="disk-bar" class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div id="disk-fill" class="h-full transition-all duration-500 bg-primary"></div>
-                    </div>
-                </div>
-
-                <!-- Active Tasks -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 group">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-sm font-medium text-[#9933cc]">Active Tasks</h3>
-                        <span class="text-2xl group-hover:scale-110 transition-transform duration-300">⚙️</span>
-                    </div>
-                    <p id="tasks-value" class="text-3xl font-bold text-[#800080]">--</p>
-                    <p id="tasks-failed" class="text-sm text-[#9933cc] mt-2">Failed (24h): --</p>
-                </div>
-            </div>
-
-            <!-- Docker Services Status -->
-            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-[#9933cc]">🐳 Docker Services</h2>
-                    <span id="services-summary" class="text-sm text-[#9933cc]/80">Loading...</span>
-                </div>
-                <div id="docker-services-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Services will be populated by JavaScript -->
-                    <div class="flex items-center justify-center p-8 text-[#9933cc] col-span-full">
-                        Loading services...
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="marketplace-traders">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Traders</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Transaction Health & Marketplace -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- Transaction Health (NEW) -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
-                    <h2 class="text-xl font-semibold mb-4 text-[#9933cc]">⚡ Transaction Health</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Stuck Transactions</span>
-                            <span id="tx-stuck" class="font-semibold text-gray-100">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Failure Rate (24h)</span>
-                            <span id="tx-failure-rate" class="font-semibold text-gray-100">--%</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Avg Confirmation</span>
-                            <span id="tx-avg-time" class="font-semibold text-gray-100">--ms</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Status</span>
-                            <span id="tx-status" class="font-semibold text-green-400">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Marketplace Stats -->
-                <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 hover:border-primary/50 transition-all duration-300">
-                    <h2 class="text-xl font-semibold mb-4 text-[#9933cc]">📊 Marketplace (24h)</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Sales</span>
-                            <span id="marketplace-sales" class="font-semibold text-gray-100">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Volume</span>
-                            <span id="marketplace-volume" class="font-semibold text-gray-100">-- SOL</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-[#9933cc]/80">Active Listings</span>
-                            <span id="marketplace-listings" class="font-semibold text-gray-100">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Unique Traders</span>
-                            <span id="marketplace-traders" class="font-semibold">--</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vitality Calculation System -->
-            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-[#9933cc]">🧮 Vitality Calculation System</h2>
-                    <span id="vitality-status-badge" class="px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium">
+            <!-- Vitality System -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-100 flex items-center">
+                        <i class="fas fa-chart-line text-primary mr-3"></i>
+                        Vitality System
+                    </h2>
+                    <span id="vitality-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold glass-light">
+                        <span class="status-indicator status-healthy"></span>
                         Active
                     </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- NFT Vitality Calculations -->
-                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-[#9933cc]/80">NFT Calculations (24h)</h3>
-                            <span class="text-xl">📈</span>
-                        </div>
-                        <p id="vitality-nft-count" class="text-2xl font-bold text-gray-100">--</p>
-                        <p id="vitality-nft-avg-time" class="text-xs text-gray-400 mt-1">Avg: --ms</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="vitality-nft-count">--</p>
+                        <p class="text-xs text-gray-400 mt-1">NFT Calcs (24h)</p>
                     </div>
-
-                    <!-- Collection Vitality Calculations -->
-                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-[#9933cc]/80">Collection Calculations (24h)</h3>
-                            <span class="text-xl">📊</span>
-                        </div>
-                        <p id="vitality-collection-count" class="text-2xl font-bold text-gray-100">--</p>
-                        <p id="vitality-collection-avg-time" class="text-xs text-gray-400 mt-1">Avg: --ms</p>
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="vitality-collection-count">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Collection Calcs</p>
                     </div>
-
-                    <!-- Failed Calculations -->
-                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-[#9933cc]/80">Failed Calculations (24h)</h3>
-                            <span class="text-xl">❌</span>
-                        </div>
-                        <p id="vitality-failed-count" class="text-2xl font-bold text-gray-100">--</p>
-                        <p id="vitality-failure-rate" class="text-xs text-gray-400 mt-1">Rate: --%</p>
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-red-400" id="vitality-failed-count">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Failed</p>
                     </div>
-
-                    <!-- System Load -->
-                    <div class="bg-gray-900/50 rounded-lg p-4 border border-[#800080]/20">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-[#9933cc]/80">Calculation Queue</h3>
-                            <span class="text-xl">⏳</span>
-                        </div>
-                        <p id="vitality-queue-size" class="text-2xl font-bold text-gray-100">--</p>
-                        <p id="vitality-queue-status" class="text-xs text-gray-400 mt-1">Status: --</p>
+                    <div class="text-center p-4 glass-light rounded-xl">
+                        <p class="text-3xl font-bold text-primary" id="vitality-queue-size">--</p>
+                        <p class="text-xs text-gray-400 mt-1">Queue</p>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Recent Calculation Activity -->
-                <div class="mt-6 bg-gray-900/30 rounded-lg p-4 border border-[#800080]/10">
-                    <h3 class="text-sm font-semibold text-[#9933cc] mb-3">Recent Calculation Activity</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div>
-                            <p class="text-xs text-gray-400">Perception Index</p>
-                            <p id="calc-perception" class="text-lg font-semibold text-gray-100">--</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-400">Trait Performance</p>
-                            <p id="calc-trait" class="text-lg font-semibold text-gray-100">--</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-400">Market Momentum</p>
-                            <p id="calc-momentum" class="text-lg font-semibold text-gray-100">--</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-400">Collection Health</p>
-                            <p id="calc-health" class="text-lg font-semibold text-gray-100">--</p>
-                        </div>
+        <!-- Active Alerts -->
+        <div class="glass rounded-2xl p-6 mb-8" id="alerts-section">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-100 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-primary mr-3"></i>
+                    Active Alerts
+                </h2>
+                <span id="alert-count-badge" class="px-3 py-1 rounded-full text-xs font-semibold glass-light">
+                    Loading...
+                </span>
+            </div>
+            <div id="alerts-container">
+                <!-- Alerts populated by JavaScript -->
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading alerts...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users & NFTs Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-users text-primary mr-3"></i>
+                    User Statistics
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">Total Users</span>
+                        <span id="users-total" class="font-bold text-lg">--</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">Active (24h)</span>
+                        <span id="users-active" class="font-bold text-lg text-green-400">--</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">New (24h)</span>
+                        <span id="users-new" class="font-bold text-lg text-blue-400">--</span>
                     </div>
                 </div>
             </div>
 
-            <!-- User Stats & Encrypted Secrets -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-                <!-- User Stats -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <h2 class="text-xl font-semibold mb-4">👥 Users</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Total Users</span>
-                            <span id="users-total" class="font-semibold">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Active (24h)</span>
-                            <span id="users-active" class="font-semibold">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">New (24h)</span>
-                            <span id="users-new" class="font-semibold">--</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">NFTs Tracked</span>
-                            <span id="nfts-tracked" class="font-semibold">--</span>
-                        </div>
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-images text-primary mr-3"></i>
+                    NFT Data
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">Total NFTs</span>
+                        <span id="nfts-tracked" class="font-bold text-lg">--</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">Collections</span>
+                        <span id="collections-total" class="font-bold text-lg">--</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 glass-light rounded-lg">
+                        <span class="text-gray-400">Active Collections</span>
+                        <span id="collections-active" class="font-bold text-lg text-green-400">--</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Active Alerts - Redesigned -->
-            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10 mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-[#9933cc]">🚨 Active System Alerts</h2>
-                    <div id="alert-count-badge" class="px-3 py-1 bg-[#800080]/50 text-[#9933cc] rounded-full text-sm font-medium">
-                        Loading...
+        <!-- Error Logs Link -->
+        <div class="glass rounded-2xl p-6 hover-lift cursor-pointer" onclick="window.location.href='{% url 'system_health:error_logs' %}'">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-file-alt text-3xl text-primary"></i>
                     </div>
-                </div>
-                <div id="alerts-container" class="space-y-3">
-                    <!-- Placeholder will be replaced by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Error Logs Link Card -->
-            <div class="bg-gray-800/90 rounded-lg p-6 border border-[#800080]/30 shadow-lg shadow-primary/10">
-                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 class="text-xl font-semibold text-[#9933cc] mb-2">📋 System Error Logs</h2>
-                        <p class="text-sm text-gray-400">View detailed error logs and system warnings</p>
-                    </div>
-                    <div class="bg-[#800080]/10 p-4 rounded-full">
-                        <svg class="w-8 h-8 text-[#800080]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                        <h3 class="text-lg font-bold text-gray-100">System Error Logs</h3>
+                        <p class="text-sm text-gray-400 mt-1">View detailed error logs and system warnings</p>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <a href="{% url 'system_health:error_logs' %}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-all duration-300 shadow-lg shadow-primary/30">
-                        <span>View Full Error Logs</span>
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                    </a>
+                <i class="fas fa-arrow-right text-2xl text-primary"></i>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="glass rounded-2xl max-w-2xl w-full p-8 glow-border">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-100 flex items-center">
+                    <i class="fas fa-share-nodes text-primary mr-3"></i>
+                    Share System Health
+                </h2>
+                <button onclick="toggleShareModal()" class="text-gray-400 hover:text-gray-100">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <p class="text-gray-400 mb-6">Generate a public link to share system health statistics. Sensitive data will be excluded.</p>
+
+            <div class="space-y-4 mb-6">
+                <div class="flex items-center space-x-3 p-4 glass-light rounded-lg">
+                    <input type="checkbox" id="share-performance" checked class="w-5 h-5 text-primary rounded">
+                    <label for="share-performance" class="text-gray-300">System Performance (CPU, Memory, Disk)</label>
+                </div>
+                <div class="flex items-center space-x-3 p-4 glass-light rounded-lg">
+                    <input type="checkbox" id="share-services" checked class="w-5 h-5 text-primary rounded">
+                    <label for="share-services" class="text-gray-300">Service Status</label>
+                </div>
+                <div class="flex items-center space-x-3 p-4 glass-light rounded-lg">
+                    <input type="checkbox" id="share-marketplace" checked class="w-5 h-5 text-primary rounded">
+                    <label for="share-marketplace" class="text-gray-300">Marketplace Stats</label>
+                </div>
+                <div class="flex items-center space-x-3 p-4 glass-light rounded-lg">
+                    <input type="checkbox" id="share-uptime" checked class="w-5 h-5 text-primary rounded">
+                    <label for="share-uptime" class="text-gray-300">System Uptime</label>
                 </div>
             </div>
-        </main>
+
+            <div class="flex items-center space-x-4">
+                <button onclick="generateShareLink()" class="flex-1 px-6 py-3 bg-primary hover:bg-primary-dark rounded-lg font-semibold transition-all hover-lift">
+                    <i class="fas fa-link mr-2"></i>
+                    Generate Share Link
+                </button>
+                <button onclick="copyShareLink()" id="copy-btn" class="px-6 py-3 glass-light hover:glass rounded-lg font-semibold transition-all hover-lift" disabled>
+                    <i class="fas fa-copy mr-2"></i>
+                    Copy Link
+                </button>
+            </div>
+
+            <div id="share-link-container" class="mt-6 hidden">
+                <div class="p-4 glass-light rounded-lg">
+                    <p class="text-sm text-gray-400 mb-2">Share Link:</p>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="share-link-input" readonly class="flex-1 bg-transparent border border-primary/30 rounded px-3 py-2 text-sm text-gray-300 font-mono">
+                        <button onclick="copyShareLink()" class="px-4 py-2 bg-primary hover:bg-primary-dark rounded transition-all">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-clock mr-1"></i>
+                        Link expires in 24 hours
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // API base URL
         const API_BASE = '/system-health/api';
+        let shareToken = null;
 
-        // Fetch and display ecosystem health
+        // Fetch ecosystem health
         async function fetchEcosystemHealth() {
             try {
                 const response = await fetch(`${API_BASE}/ecosystem/latest/`);
                 const data = await response.json();
 
-                // Update status
-                updateOverallStatus(data.status);
+                // Update overall status
+                const statusBadge = document.getElementById('overall-status-badge');
+                const statusMap = {
+                    'HEALTHY': { class: 'status-healthy', text: 'All Systems Operational' },
+                    'WARNING': { class: 'status-warning', text: 'Minor Issues Detected' },
+                    'CRITICAL': { class: 'status-critical', text: 'Critical Issues' },
+                    'ERROR': { class: 'status-critical', text: 'System Errors' }
+                };
+                const status = statusMap[data.status] || statusMap['ERROR'];
+                statusBadge.innerHTML = `<span class="status-indicator ${status.class}"></span>${status.text}`;
 
-                // Update system resources
-                updateResource('cpu', data.system_resources.cpu_percent);
-                updateResource('memory', data.system_resources.memory_percent);
-                updateResource('disk', data.system_resources.disk_percent);
+                // Update metrics
+                updateMetric('cpu', data.system_resources.cpu_percent);
+                updateMetric('memory', data.system_resources.memory_percent);
+                updateMetric('disk', data.system_resources.disk_percent);
 
                 // Update tasks
                 document.getElementById('tasks-value').textContent = data.tasks.active;
-                document.getElementById('tasks-failed').textContent = `Failed (24h): ${data.tasks.failed_24h}`;
+                document.getElementById('tasks-failed').textContent = data.tasks.failed_24h;
 
                 // Update marketplace
                 document.getElementById('marketplace-sales').textContent = data.marketplace.sales_24h;
@@ -374,167 +683,181 @@
 
                 // Update timestamp
                 const timestamp = new Date(data.timestamp);
-                document.getElementById('last-updated').textContent = `Last updated: ${timestamp.toLocaleTimeString()}`;
+                document.getElementById('last-updated').textContent = `Updated ${timestamp.toLocaleTimeString()}`;
 
             } catch (error) {
                 console.error('Error fetching ecosystem health:', error);
             }
         }
 
-        // Fetch and display transaction health (NEW)
+        // Update metric display
+        function updateMetric(type, value) {
+            const valueEl = document.getElementById(`${type}-value`);
+            const barEl = document.getElementById(`${type}-bar`);
+            const statusEl = document.getElementById(`${type}-status`);
+
+            valueEl.textContent = `${value.toFixed(1)}%`;
+            barEl.style.width = `${value}%`;
+
+            let statusText = 'Optimal';
+            let statusClass = 'text-green-400';
+
+            if (value > 80) {
+                statusText = 'High Usage';
+                statusClass = 'text-red-400';
+            } else if (value > 60) {
+                statusText = 'Moderate';
+                statusClass = 'text-yellow-400';
+            }
+
+            statusEl.textContent = statusText;
+            statusEl.className = `text-xs mt-2 ${statusClass}`;
+        }
+
+        // Fetch transaction health
         async function fetchTransactionHealth() {
             try {
                 const response = await fetch(`${API_BASE}/transaction-health/`);
                 const data = await response.json();
 
-                // Update transaction metrics
                 document.getElementById('tx-stuck').textContent = data.stuck_transactions || 0;
                 document.getElementById('tx-failure-rate').textContent = `${(data.failure_rate_24h || 0).toFixed(1)}%`;
                 document.getElementById('tx-avg-time').textContent = data.avg_confirmation_time_ms
                     ? `${Math.round(data.avg_confirmation_time_ms)}ms`
                     : 'N/A';
 
-                // Update status with color
                 const statusEl = document.getElementById('tx-status');
                 const status = data.status || 'unknown';
                 statusEl.textContent = status.toUpperCase();
 
-                // Color coding
-                if (status === 'healthy') {
-                    statusEl.className = 'font-semibold text-green-400';
-                } else if (status === 'warning') {
-                    statusEl.className = 'font-semibold text-yellow-400';
-                } else if (status === 'critical') {
-                    statusEl.className = 'font-semibold text-red-400';
-                } else {
-                    statusEl.className = 'font-semibold text-gray-400';
-                }
+                const statusColors = {
+                    'healthy': 'text-green-400',
+                    'warning': 'text-yellow-400',
+                    'critical': 'text-red-400'
+                };
+                statusEl.className = `font-bold text-lg ${statusColors[status] || 'text-gray-400'}`;
 
             } catch (error) {
                 console.error('Error fetching transaction health:', error);
-                // Set error state
-                document.getElementById('tx-status').textContent = 'ERROR';
-                document.getElementById('tx-status').className = 'font-semibold text-red-400';
             }
         }
 
-        // Fetch and display vitality calculation metrics
+        // Fetch vitality metrics
         async function fetchVitalityMetrics() {
             try {
                 const response = await fetch(`${API_BASE}/vitality-metrics/`);
                 const data = await response.json();
 
-                // Update vitality calculation counts
                 document.getElementById('vitality-nft-count').textContent = data.nft_calculations_24h || 0;
                 document.getElementById('vitality-collection-count').textContent = data.collection_calculations_24h || 0;
                 document.getElementById('vitality-failed-count').textContent = data.failed_calculations_24h || 0;
                 document.getElementById('vitality-queue-size').textContent = data.queue_size || 0;
 
-                // Update average times
-                document.getElementById('vitality-nft-avg-time').textContent = data.nft_avg_time_ms
-                    ? `Avg: ${Math.round(data.nft_avg_time_ms)}ms`
-                    : 'Avg: N/A';
-                document.getElementById('vitality-collection-avg-time').textContent = data.collection_avg_time_ms
-                    ? `Avg: ${Math.round(data.collection_avg_time_ms)}ms`
-                    : 'Avg: N/A';
-
-                // Update failure rate
-                const failureRate = data.failure_rate_24h || 0;
-                document.getElementById('vitality-failure-rate').textContent = `Rate: ${failureRate.toFixed(1)}%`;
-
-                // Update queue status
-                const queueStatus = data.queue_status || 'idle';
-                document.getElementById('vitality-queue-status').textContent = `Status: ${queueStatus}`;
-
-                // Update recent calculation activity
-                document.getElementById('calc-perception').textContent = data.recent_calculations?.perception_index || '--';
-                document.getElementById('calc-trait').textContent = data.recent_calculations?.trait_performance || '--';
-                document.getElementById('calc-momentum').textContent = data.recent_calculations?.market_momentum || '--';
-                document.getElementById('calc-health').textContent = data.recent_calculations?.collection_health || '--';
-
-                // Update status badge
                 const badge = document.getElementById('vitality-status-badge');
-                if (failureRate > 10) {
-                    badge.textContent = 'Degraded';
-                    badge.className = 'px-3 py-1 bg-yellow-900/50 text-yellow-200 rounded-full text-sm font-medium';
-                } else if (failureRate > 25) {
-                    badge.textContent = 'Critical';
-                    badge.className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium animate-pulse';
+                const failureRate = data.failure_rate_24h || 0;
+
+                if (failureRate > 25) {
+                    badge.innerHTML = '<span class="status-indicator status-critical"></span>Critical';
+                } else if (failureRate > 10) {
+                    badge.innerHTML = '<span class="status-indicator status-warning"></span>Degraded';
                 } else {
-                    badge.textContent = 'Active';
-                    badge.className = 'px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium';
+                    badge.innerHTML = '<span class="status-indicator status-healthy"></span>Active';
                 }
 
             } catch (error) {
                 console.error('Error fetching vitality metrics:', error);
-                // Set error state
-                document.getElementById('vitality-status-badge').textContent = 'Error';
-                document.getElementById('vitality-status-badge').className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium';
             }
         }
 
-        // Fetch and display active alerts
+        // Fetch Docker services
+        async function fetchDockerServices() {
+            try {
+                const response = await fetch(`${API_BASE}/services/`);
+                const data = await response.json();
+
+                document.getElementById('services-summary').textContent = `${data.running} / ${data.total} running`;
+
+                const container = document.getElementById('docker-services-grid');
+                const statusIcons = {
+                    'running': '<i class="fas fa-check-circle text-green-400"></i>',
+                    'starting': '<i class="fas fa-spinner fa-spin text-yellow-400"></i>',
+                    'unhealthy': '<i class="fas fa-exclamation-circle text-orange-400"></i>',
+                    'not running': '<i class="fas fa-times-circle text-red-400"></i>',
+                    'unknown': '<i class="fas fa-question-circle text-gray-400"></i>'
+                };
+
+                container.innerHTML = data.services.map(service => `
+                    <div class="glass-light rounded-xl p-4 hover-lift">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-100">${service.name}</h3>
+                            <span class="text-2xl">${statusIcons[service.status] || statusIcons['unknown']}</span>
+                        </div>
+                        <p class="text-xs text-gray-400">${service.description}</p>
+                        <div class="mt-3 flex items-center justify-between text-xs">
+                            <span class="text-gray-500">Status</span>
+                            <span class="font-medium capitalize">${service.status}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error fetching Docker services:', error);
+            }
+        }
+
+        // Fetch active alerts
         async function fetchActiveAlerts() {
             try {
                 const response = await fetch(`${API_BASE}/alerts/active/`);
                 const data = await response.json();
 
-                const container = document.getElementById('alerts-container');
                 const badge = document.getElementById('alert-count-badge');
+                const container = document.getElementById('alerts-container');
 
-                // Update count badge
                 if (data.count === 0) {
-                    badge.innerHTML = '<span class="text-green-300">✅ 0 Active</span>';
-                    badge.className = 'px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium';
+                    badge.innerHTML = '<span class="status-indicator status-healthy"></span>0 Active';
+                    container.innerHTML = `
+                        <div class="text-center py-12 glass-light rounded-xl">
+                            <i class="fas fa-check-circle text-5xl text-green-400 mb-4"></i>
+                            <p class="text-lg font-semibold text-green-400">No Active Alerts</p>
+                            <p class="text-sm text-gray-400 mt-2">All systems operating normally</p>
+                        </div>
+                    `;
                 } else {
-                    badge.textContent = `${data.count} Active`;
-                    // Color badge based on highest severity
                     const hasCritical = data.alerts.some(a => a.alert_level === 'CRITICAL');
                     const hasError = data.alerts.some(a => a.alert_level === 'ERROR');
+
                     if (hasCritical) {
-                        badge.className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium animate-pulse';
+                        badge.innerHTML = `<span class="status-indicator status-critical"></span>${data.count} Critical`;
                     } else if (hasError) {
-                        badge.className = 'px-3 py-1 bg-orange-900/50 text-orange-200 rounded-full text-sm font-medium';
+                        badge.innerHTML = `<span class="status-indicator status-warning"></span>${data.count} Active`;
                     } else {
-                        badge.className = 'px-3 py-1 bg-yellow-900/50 text-yellow-200 rounded-full text-sm font-medium';
+                        badge.innerHTML = `<span class="status-indicator status-warning"></span>${data.count} Active`;
                     }
-                }
 
-                if (data.count === 0) {
-                    container.innerHTML = '<div class="text-center p-8 bg-green-900/20 rounded-lg border border-green-500/30"><p class="text-green-400 text-lg font-medium">✅ No active alerts</p><p class="text-green-300/70 text-sm mt-2">All systems operating normally</p></div>';
-                } else {
+                    const levelIcons = {
+                        'INFO': '<i class="fas fa-info-circle text-blue-400"></i>',
+                        'WARNING': '<i class="fas fa-exclamation-triangle text-yellow-400"></i>',
+                        'ERROR': '<i class="fas fa-exclamation-circle text-orange-400"></i>',
+                        'CRITICAL': '<i class="fas fa-fire text-red-400"></i>'
+                    };
+
                     container.innerHTML = data.alerts.map(alert => {
-                        const levelIcons = {
-                            'INFO': '💙',
-                            'WARNING': '⚠️',
-                            'ERROR': '🔥',
-                            'CRITICAL': '🚨'
-                        };
-                        const levelColors = {
-                            'INFO': 'bg-blue-900/30 border-blue-500/50 text-blue-200 hover:bg-blue-900/50',
-                            'WARNING': 'bg-yellow-900/30 border-yellow-500/50 text-yellow-200 hover:bg-yellow-900/50',
-                            'ERROR': 'bg-orange-900/30 border-orange-500/50 text-orange-200 hover:bg-orange-900/50',
-                            'CRITICAL': 'bg-red-900/30 border-red-500/50 text-red-200 hover:bg-red-900/50 animate-pulse'
-                        };
-                        const colorClass = levelColors[alert.alert_level] || 'bg-gray-700 border-gray-500';
-                        const icon = levelIcons[alert.alert_level] || '📢';
-
                         const duration = formatDuration(alert.duration_seconds);
-
                         return `
-                            <div class="${colorClass} border-l-4 p-4 rounded-lg shadow-lg transition-all duration-300 hover:scale-[1.02]">
-                                <div class="flex items-start justify-between">
+                            <div class="glass-light rounded-xl p-6 mb-4 hover-lift">
+                                <div class="flex items-start space-x-4">
+                                    <span class="text-3xl">${levelIcons[alert.alert_level] || levelIcons['INFO']}</span>
                                     <div class="flex-1">
-                                        <div class="flex items-center space-x-2 mb-2">
-                                            <span class="text-2xl">${icon}</span>
+                                        <div class="flex items-center space-x-3 mb-2">
                                             <span class="font-bold text-lg">${alert.alert_level}</span>
-                                            <span class="text-xs opacity-75 bg-black/30 px-2 py-1 rounded">${alert.category}</span>
+                                            <span class="px-2 py-1 bg-primary/20 rounded text-xs">${alert.category}</span>
                                         </div>
-                                        <p class="font-semibold text-lg mb-2">${alert.title}</p>
-                                        <p class="text-sm opacity-90 mb-2">${alert.message}</p>
-                                        <div class="flex items-center space-x-4 text-xs mt-3 opacity-75">
-                                            <span>⏱️ Active for: ${duration}</span>
-                                            ${alert.affected_service ? `<span>🔧 Service: ${alert.affected_service}</span>` : ''}
+                                        <h3 class="font-semibold text-gray-100 mb-2">${alert.title}</h3>
+                                        <p class="text-sm text-gray-400 mb-3">${alert.message}</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>Active: ${duration}</span>
+                                            ${alert.affected_service ? `<span><i class="fas fa-server mr-1"></i>${alert.affected_service}</span>` : ''}
                                         </div>
                                     </div>
                                 </div>
@@ -543,168 +866,8 @@
                     }).join('');
                 }
 
-                // Update notification bar
-                const notificationBar = document.getElementById('alert-notification-bar');
-                const barCount = document.getElementById('alert-bar-count');
-                const barTitle = document.getElementById('alert-bar-title');
-                const barMessage = document.getElementById('alert-bar-message');
-
-                if (data.count > 0) {
-                    notificationBar.classList.remove('hidden');
-                    barCount.textContent = data.count;
-
-                    const hasCritical = data.alerts.some(a => a.alert_level === 'CRITICAL');
-                    if (hasCritical) {
-                        barTitle.textContent = '🚨 Critical System Alerts!';
-                        barMessage.textContent = `${data.count} alert${data.count > 1 ? 's' : ''} require immediate attention - Click to view`;
-                    } else {
-                        barTitle.textContent = 'System Alerts Active';
-                        barMessage.textContent = `${data.count} active alert${data.count > 1 ? 's' : ''} - Click to view details`;
-                    }
-                } else {
-                    notificationBar.classList.add('hidden');
-                }
-
             } catch (error) {
                 console.error('Error fetching alerts:', error);
-                document.getElementById('alert-count-badge').textContent = 'Error';
-                document.getElementById('alert-count-badge').className = 'px-3 py-1 bg-red-900/50 text-red-200 rounded-full text-sm font-medium';
-            }
-        }
-
-        // Scroll to alerts section
-        function scrollToAlerts() {
-            const alertsSection = document.querySelector('#alerts-container').parentElement;
-            alertsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // Update overall status
-        function updateOverallStatus(status) {
-            const statusBox = document.getElementById('overall-status');
-            const indicator = document.getElementById('status-indicator');
-            const message = document.getElementById('status-message');
-
-            const statusConfig = {
-                'HEALTHY': {
-                    border: 'border-green-500',
-                    bg: 'bg-green-500',
-                    text: 'All systems operational',
-                    indicator: 'pulse-green'
-                },
-                'WARNING': {
-                    border: 'border-yellow-500',
-                    bg: 'bg-yellow-500',
-                    text: 'System experiencing minor issues',
-                    indicator: ''
-                },
-                'CRITICAL': {
-                    border: 'border-red-500',
-                    bg: 'bg-red-500',
-                    text: 'Critical issues detected - immediate attention required',
-                    indicator: ''
-                },
-                'ERROR': {
-                    border: 'border-red-500',
-                    bg: 'bg-red-500',
-                    text: 'System errors detected',
-                    indicator: ''
-                }
-            };
-
-            const config = statusConfig[status] || statusConfig['ERROR'];
-
-            statusBox.className = `mb-8 p-6 bg-gray-800 rounded-lg border-l-4 ${config.border}`;
-            indicator.className = `w-16 h-16 rounded-full ${config.bg} ${config.indicator}`;
-            message.textContent = config.text;
-        }
-
-        // Update resource bars
-        function updateResource(type, value) {
-            const valueEl = document.getElementById(`${type}-value`);
-            const fillEl = document.getElementById(`${type}-fill`);
-
-            valueEl.textContent = `${value.toFixed(1)}%`;
-            fillEl.style.width = `${value}%`;
-
-            // Color coding
-            let colorClass = 'bg-green-500';
-            if (value > 80) colorClass = 'bg-red-500';
-            else if (value > 60) colorClass = 'bg-yellow-500';
-
-            fillEl.className = `h-full transition-all duration-500 ${colorClass}`;
-        }
-
-        // Fetch and display Docker services
-        async function fetchDockerServices() {
-            try {
-                const response = await fetch(`${API_BASE}/services/`);
-                const data = await response.json();
-
-                const container = document.getElementById('docker-services-list');
-                const summary = document.getElementById('services-summary');
-
-                // Update summary
-                summary.textContent = `${data.running} of ${data.total} running`;
-
-                // Status colors
-                const statusColors = {
-                    'running': 'border-green-500 bg-green-900/20',
-                    'starting': 'border-yellow-500 bg-yellow-900/20',
-                    'unhealthy': 'border-orange-500 bg-orange-900/20',
-                    'not running': 'border-red-500 bg-red-900/20',
-                    'unknown': 'border-gray-500 bg-gray-900/20'
-                };
-
-                const statusIcons = {
-                    'running': '✅',
-                    'starting': '🔄',
-                    'unhealthy': '⚠️',
-                    'not running': '❌',
-                    'unknown': '❓'
-                };
-
-                // Render services
-                container.innerHTML = data.services.map(service => {
-                    const colorClass = statusColors[service.status] || statusColors['unknown'];
-                    const icon = statusIcons[service.status] || statusIcons['unknown'];
-
-                    return `
-                        <div class="flex flex-col p-4 bg-gray-900 rounded-lg border-l-4 ${colorClass}">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-semibold">${service.name}</span>
-                                <span class="text-xl">${icon}</span>
-                            </div>
-                            <span class="text-sm text-gray-400 mb-2">${service.description}</span>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-500">Status</span>
-                                <span class="font-medium capitalize">${service.status}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Error fetching Docker services:', error);
-                document.getElementById('docker-services-list').innerHTML = `
-                    <div class="col-span-full text-center text-red-400 p-4">
-                        Failed to load services. Error: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        // Update service status (legacy function for old services display)
-        function updateService(service, isHealthy) {
-            const el = document.getElementById(`service-${service}`);
-            if (!el) return; // Element may not exist if using new Docker services display
-            const badge = el.querySelector('.status-badge');
-
-            if (isHealthy) {
-                badge.textContent = '✅ Running';
-                badge.className = 'status-badge text-green-400 font-medium';
-            } else {
-                badge.textContent = '❌ Down';
-                badge.className = 'status-badge text-red-400 font-medium';
             }
         }
 
@@ -715,22 +878,103 @@
             return `${Math.floor(seconds / 3600)}h`;
         }
 
+        // Toggle share modal
+        function toggleShareModal() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        // Generate share link
+        async function generateShareLink() {
+            const options = {
+                performance: document.getElementById('share-performance').checked,
+                services: document.getElementById('share-services').checked,
+                marketplace: document.getElementById('share-marketplace').checked,
+                uptime: document.getElementById('share-uptime').checked,
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/share/generate/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(options)
+                });
+
+                const data = await response.json();
+                shareToken = data.token;
+
+                const shareUrl = `${window.location.origin}/system-health/share/${shareToken}/`;
+                document.getElementById('share-link-input').value = shareUrl;
+                document.getElementById('share-link-container').classList.remove('hidden');
+                document.getElementById('copy-btn').disabled = false;
+
+            } catch (error) {
+                console.error('Error generating share link:', error);
+                alert('Failed to generate share link. Please try again.');
+            }
+        }
+
+        // Copy share link
+        function copyShareLink() {
+            const input = document.getElementById('share-link-input');
+            input.select();
+            document.execCommand('copy');
+
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+            }, 2000);
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         // Refresh all data
-        async function refreshData() {
+        async function refreshDashboard() {
             await Promise.all([
                 fetchEcosystemHealth(),
                 fetchTransactionHealth(),
                 fetchVitalityMetrics(),
-                fetchActiveAlerts(),
-                fetchDockerServices()
+                fetchDockerServices(),
+                fetchActiveAlerts()
             ]);
         }
 
         // Initial load
-        refreshData();
+        refreshDashboard();
 
         // Auto-refresh every 30 seconds
-        setInterval(refreshData, 30000);
+        setInterval(refreshDashboard, 30000);
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('share-modal');
+                if (!modal.classList.contains('hidden')) {
+                    toggleShareModal();
+                }
+            }
+        });
     </script>
+
 </body>
 </html>

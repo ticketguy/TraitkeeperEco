@@ -6,19 +6,55 @@
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 <!-- Inline critical CSS for immediate rendering -->
 <style>
-    /* Sidebar Styles */
+    /* ==================================================
+     * ADMIN RESPONSIVE DESIGN SYSTEM
+     * ================================================== */
+
+    :root {
+        --admin-header-height: 64px;
+        --admin-sidebar-width: 260px;
+        --admin-sidebar-collapsed: 70px;
+        --admin-primary: #800080;
+        --admin-primary-dark: #660066;
+    }
+
+    /* Horizontal scroll prevention */
+    html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar Styles - RESPONSIVE */
     .sidebar {
         position: fixed;
-        top: 64px;
+        top: var(--admin-header-height);
         left: 0;
-        height: calc(100vh - 64px);
-        width: 250px;
-        background: linear-gradient(180deg, #800080 0%, #660066 100%);
+        height: calc(100vh - var(--admin-header-height));
+        width: var(--admin-sidebar-width);
+        background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
         transform: translateX(-100%);
-        transition: transform 0.2s ease;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 40;
         overflow-y: auto;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        overflow-x: hidden;
+        box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2);
+        /* Smooth scrolling */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.3) transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 3px;
     }
 
     .sidebar.open {
@@ -26,20 +62,29 @@
     }
 
     .sidebar-collapsed {
-        width: 60px;
+        width: var(--admin-sidebar-collapsed);
     }
 
     .sidebar-collapsed .sidebar-text {
         display: none;
     }
 
+    .sidebar-collapsed .sidebar-logo {
+        display: none;
+    }
+
+    .sidebar-collapsed .sidebar-icon-only {
+        display: block !important;
+    }
+
     .sidebar-overlay {
         position: fixed;
-        top: 64px;
+        top: var(--admin-header-height);
         left: 0;
         width: 100%;
-        height: calc(100vh - 64px);
-        background: rgba(0, 0, 0, 0.5);
+        height: calc(100vh - var(--admin-header-height));
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
         display: none;
         z-index: 35;
     }
@@ -48,36 +93,52 @@
         display: block;
     }
 
+    /* Desktop sidebar behavior */
     @media (min-width: 1024px) {
         .sidebar {
             transform: translateX(0);
         }
         .main-content {
-            margin-left: 250px;
-            transition: margin-left 0.2s ease;
+            margin-left: var(--admin-sidebar-width);
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .main-content.expanded {
-            margin-left: 60px;
+            margin-left: var(--admin-sidebar-collapsed);
         }
         .sidebar-overlay {
             display: none !important;
         }
     }
 
+    /* Sidebar link styles */
     .sidebar-link {
-        transition: background 0.15s ease;
+        transition: all 0.2s ease;
+        position: relative;
     }
 
     .sidebar-link:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(2px);
     }
 
     .sidebar-link.active {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.2);
         border-left: 4px solid #fff;
     }
 
-    /* Modern Card Styles - Reduced animations */
+    .sidebar-link.active::before {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 60%;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 2px 0 0 2px;
+    }
+
+    /* Modern Card Styles - RESPONSIVE */
     .modern-card {
         background: #fff;
         border: 1px solid rgba(128, 0, 128, 0.1);
@@ -89,8 +150,10 @@
         border: 1px solid rgba(128, 0, 128, 0.2);
     }
 
-    .modern-card:hover {
-        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.1);
+    @media (min-width: 768px) {
+        .modern-card:hover {
+            box-shadow: 0 4px 12px rgba(128, 0, 128, 0.1);
+        }
     }
 
     /* Gradient Text */
@@ -101,37 +164,185 @@
         background-clip: text;
     }
 
-    /* Quick Access Cards - Minimal animations */
+    /* Quick Access Cards - RESPONSIVE */
     .quick-access-card {
-        transition: box-shadow 0.2s ease;
+        transition: all 0.2s ease;
+        min-height: 180px;
     }
 
-    .quick-access-card:hover {
-        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.15);
+    @media (max-width: 767px) {
+        .quick-access-card {
+            min-height: 140px;
+        }
+        /* Disable hover animations on mobile */
+        .quick-access-card:active {
+            transform: scale(0.98);
+        }
     }
 
-    /* Sidebar toggle button */
+    @media (min-width: 768px) {
+        .quick-access-card:hover {
+            box-shadow: 0 8px 20px rgba(128, 0, 128, 0.15);
+            transform: translateY(-2px);
+        }
+    }
+
+    /* Sidebar toggle buttons - RESPONSIVE */
     .sidebar-toggle {
         position: fixed;
-        top: 70px;
-        left: 10px;
+        top: 75px;
+        left: 15px;
         z-index: 45;
-        background: #800080;
+        background: linear-gradient(135deg, #800080, #660066);
         color: white;
         border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         cursor: pointer;
         display: none;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(128, 0, 128, 0.4);
     }
 
     @media (min-width: 1024px) {
         .sidebar-toggle {
             display: flex;
+        }
+    }
+
+    /* Mobile floating action button */
+    .mobile-sidebar-toggle {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 50;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #800080, #660066);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 4px 20px rgba(128, 0, 128, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mobile-sidebar-toggle:active {
+        transform: scale(0.95);
+    }
+
+    @media (min-width: 1024px) {
+        .mobile-sidebar-toggle {
+            display: none;
+        }
+    }
+
+    /* ==================================================
+     * MOBILE RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
+
+    @media (max-width: 767px) {
+        /* Reduce header sizes */
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        h2 {
+            font-size: 1.25rem !important;
+        }
+
+        h3 {
+            font-size: 1.125rem !important;
+        }
+
+        /* Compact stat cards */
+        .stat-card {
+            padding: 1rem !important;
+        }
+
+        .stat-card p {
+            font-size: 1.75rem !important;
+        }
+
+        /* Adjust quick access card padding */
+        .quick-access-card {
+            padding: 1rem !important;
+        }
+
+        /* Compact main content padding */
+        .main-content {
+            padding-top: 1rem !important;
+        }
+
+        .main-content .max-w-7xl {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+
+        /* Stack platform applications */
+        .platform-apps-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    /* ==================================================
+     * TABLET RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+        /* 2-column layouts for tablets */
+        .lg\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .lg\:grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+
+    /* ==================================================
+     * TOUCH TARGET OPTIMIZATION
+     * ================================================== */
+
+    @media (max-width: 1023px) {
+        /* Minimum touch targets (WCAG AAA) */
+        .sidebar-link,
+        button,
+        a {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Larger interactive areas on mobile */
+        .sidebar-link {
+            padding: 0.875rem 1rem !important;
+        }
+    }
+
+    /* ==================================================
+     * PERFORMANCE OPTIMIZATIONS
+     * ================================================== */
+
+    /* Reduce motion for accessibility */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
         }
     }
 </style>
@@ -145,12 +356,12 @@
 
 <!-- Sidebar -->
 <aside id="admin-sidebar" class="sidebar">
-    <div class="p-6">
-        <div class="flex items-center mb-6">
-            <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper" class="h-8 sidebar-text">
-            <i class="fas fa-shield-alt text-white text-2xl" style="display: none;"></i>
+    <div class="p-4 lg:p-6">
+        <div class="flex items-center justify-center mb-4 lg:mb-6">
+            <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper" class="h-8 sidebar-logo sidebar-text">
+            <i class="fas fa-shield-alt text-white text-2xl sidebar-icon-only" style="display: none;"></i>
         </div>
-        <h3 class="text-white font-semibold text-sm mb-4 flex items-center sidebar-text">
+        <h3 class="text-white font-semibold text-xs lg:text-sm mb-3 lg:mb-4 flex items-center sidebar-text">
             <i class="fas fa-compass mr-2"></i>
             Quick Navigation
         </h3>
@@ -213,36 +424,36 @@
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <!-- Main Content -->
-<div class="main-content transition-all duration-300 pt-4">
-    <!-- Sidebar Toggle Button -->
-    <button onclick="toggleSidebar()" class="lg:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+<div class="main-content transition-all duration-300 pt-2 lg:pt-4">
+    <!-- Mobile Sidebar Toggle Button (Floating) -->
+    <button onclick="toggleSidebar()" class="mobile-sidebar-toggle lg:hidden" aria-label="Toggle Sidebar">
         <i class="fas fa-bars text-xl"></i>
     </button>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 space-y-4 lg:space-y-8">
         <!-- Dashboard Header -->
-        <div class="modern-card rounded-2xl p-8 shadow-lg">
-            <div class="flex items-center justify-between">
+        <div class="modern-card rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold gradient-text mb-2">
-                        <i class="fas fa-tachometer-alt mr-2"></i>
-                        Admin Dashboard
+                    <h1 class="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2 flex items-center">
+                        <i class="fas fa-tachometer-alt mr-2 text-lg sm:text-2xl"></i>
+                        <span>Admin Dashboard</span>
                     </h1>
-                    <p class="text-gray-600 dark:text-gray-400">Welcome back! Here's your platform overview.</p>
+                    <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Welcome back! Here's your platform overview.</p>
                 </div>
                 <div class="hidden md:block">
                     <div class="text-right">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Last Login</p>
-                        <p class="text-lg font-semibold text-purple-600">{{ user.last_login|date:"M d, H:i" }}</p>
+                        <p class="text-base lg:text-lg font-semibold text-purple-600">{{ user.last_login|date:"M d, H:i" }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Quick Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             <!-- Total Users -->
-            <div class="modern-card stat-card rounded-xl p-6 shadow-lg">
+            <div class="modern-card stat-card rounded-lg lg:rounded-xl p-4 sm:p-5 lg:p-6 shadow-lg">
                 <div class="flex items-center justify-between mb-4">
                     <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-3 rounded-xl">
                         <i class="fas fa-users text-white text-2xl"></i>
@@ -303,16 +514,16 @@
         </div>
 
         <!-- Quick Access Section -->
-        <div class="modern-card rounded-2xl p-8 shadow-lg">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold gradient-text flex items-center">
-                    <i class="fas fa-bolt mr-2"></i>
-                    Quick Access
+        <div class="modern-card rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+                <h2 class="text-xl sm:text-2xl font-bold gradient-text flex items-center">
+                    <i class="fas fa-bolt mr-2 text-lg sm:text-2xl"></i>
+                    <span>Quick Access</span>
                 </h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Essential tools at your fingertips</p>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Essential tools at your fingertips</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 <!-- System Health -->
                 <a href="{% url 'system_health:dashboard' %}" class="quick-access-card group bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-700 shadow-md">
                     <div class="flex items-start justify-between mb-4">
@@ -412,14 +623,14 @@
         </div>
 
         <!-- Pending Collections Summary -->
-        <div class="modern-card rounded-2xl p-8 shadow-lg">
-            <div class="flex items-center justify-between mb-6">
+        <div class="modern-card rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div>
-                    <h2 class="text-2xl font-bold gradient-text flex items-center">
-                        <i class="fas fa-list-alt mr-2"></i>
-                        Pending Collections Overview
+                    <h2 class="text-xl sm:text-2xl font-bold gradient-text flex items-center">
+                        <i class="fas fa-list-alt mr-2 text-lg sm:text-2xl"></i>
+                        <span>Pending Collections</span>
                     </h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quick overview of pending NFT submissions</p>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Quick overview of pending NFT submissions</p>
                 </div>
                 <a href="{% url 'admin_panel:pending_collections' %}" class="hidden md:flex items-center bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
                     <span>View All</span>
@@ -501,14 +712,14 @@
         </div>
 
         <!-- Platform Applications Grid -->
-        <div class="modern-card rounded-2xl p-8 shadow-lg">
-            <h2 class="text-2xl font-bold gradient-text mb-6 flex items-center">
-                <i class="fas fa-folder mr-2"></i>
-                Platform Applications
+        <div class="modern-card rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg">
+            <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-3 sm:mb-4 lg:mb-6 flex items-center">
+                <i class="fas fa-folder mr-2 text-lg sm:text-2xl"></i>
+                <span>Platform Applications</span>
             </h2>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">Manage data across all platform modules</p>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">Manage data across all platform modules</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 platform-apps-grid">
                 {% for app in app_list %}
                     {% if app.app_label %}
                     <a href="{% url 'admin:app_list' app_label=app.app_label %}" class="group flex items-center justify-between p-5 bg-white dark:bg-gray-800/50 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-lg transition-all duration-300">

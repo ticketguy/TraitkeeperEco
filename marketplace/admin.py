@@ -16,6 +16,13 @@ from .vitality_models import (
     VitalityPriceComparison,
     MinimumBidThreshold
 )
+from .perception_models import (
+    PerceptionSnapshot,
+    PerceptionGraphNode,
+    PerceptionGraphEdge,
+    PerceptionAggregation,
+    ParallelLinesWebhookLog
+)
 
 # Your custom admin site.
 from traitkeeper.admin_site import admin_site
@@ -591,3 +598,370 @@ class BidAdmin(admin.ModelAdmin):
         return obj.is_auction_bid
     is_auction_bid.boolean = True
     is_auction_bid.short_description = "Auction Bid"
+
+# ==========================================
+# PARALLEL LINES PERCEPTION ENGINE ADMIN
+# ==========================================
+
+@admin.register(PerceptionSnapshot, site=admin_site)
+class PerceptionSnapshotAdmin(admin.ModelAdmin):
+    """
+    Admin interface for viewing Perception data from Parallel Lines.
+    """
+    list_display = (
+        'entity_display',
+        'entity_type',
+        'perception_index_display',
+        'confidence_score',
+        'manipulation_risk',
+        'timestamp',
+        'source_type'
+    )
+    list_filter = (
+        
+        'source_type',
+        'timestamp',
+        'submind_hidden_sentiment',
+        'language_tone'
+    )
+    search_fields = (
+        'collection__display_name',
+        'nft__mint_address',
+        'trait_value__value',
+        'perception_graph_id'
+    )
+    readonly_fields = (
+        'entity_display',
+        'perception_index',
+        'submind_raw_score',
+        'submind_hidden_sentiment',
+        'manipulation_probability',
+        'behavioral_pattern_flags',
+        'emotional_resonance',
+        'language_tone',
+        'community_awareness_score',
+        'perception_graph_id',
+        'confidence_score',
+        'data_sources',
+        'sample_size',
+        'timestamp',
+        'received_at',
+        'source_type',
+        'raw_payload'
+    )
+    date_hierarchy = 'timestamp'
+    
+    fieldsets = (
+        ("Entity Information", {
+            'fields': ('collection', 'nft', 'trait_value')
+        }),
+        ("Perception Index", {
+            'fields': ('perception_index', 'confidence_score')
+        }),
+        ("Submind Layer (Raw Signals)", {
+            'fields': (
+                'submind_raw_score',
+                'submind_hidden_sentiment',
+                'manipulation_probability',
+                'behavioral_pattern_flags'
+            ),
+            'classes': ('collapse',)
+        }),
+        ("IntuOne Layer (Structured Interpretation)", {
+            'fields': (
+                'emotional_resonance',
+                'language_tone',
+                'community_awareness_score'
+            ),
+            'classes': ('collapse',)
+        }),
+        ("Perception Graph", {
+            'fields': ('perception_graph_id',),
+            'classes': ('collapse',)
+        }),
+        ("Data Quality", {
+            'fields': ('data_sources', 'sample_size'),
+            'classes': ('collapse',)
+        }),
+        ("Metadata", {
+            'fields': ('timestamp', 'received_at', 'source_type'),
+            'classes': ('collapse',)
+        }),
+        ("Raw Payload", {
+            'fields': ('raw_payload',),
+            'classes': ('collapse',)
+        })
+    )
+
+    def entity_display(self, obj):
+        """Display the entity this perception data is for."""
+        entity = obj.entity
+        if not entity:
+            return "N/A"
+        return str(entity)
+    entity_display.short_description = "Entity"
+
+    def entity_type(self, obj):
+        """Display entity type."""
+        return obj.entity_type.upper()
+    entity_type.short_description = "Type"
+
+    def perception_index_display(self, obj):
+        """Display perception index with color coding."""
+        score = obj.perception_index
+        if score >= 0.7:
+            color = 'green'
+        elif score >= 0.4:
+            color = 'orange'
+        else:
+            color = 'red'
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{:.3f}</span>',
+            color,
+            score
+        )
+    perception_index_display.short_description = "Perception Index"
+
+    def manipulation_risk(self, obj):
+        """Display manipulation probability with warning."""
+        if obj.manipulation_probability is None:
+            return "N/A"
+        prob = obj.manipulation_probability
+        if prob > 0.7:
+            return format_html('<span style="color: red; font-weight: bold;">⚠️ HIGH ({:.2f})</span>', prob)
+        elif prob > 0.4:
+            return format_html('<span style="color: orange;">MEDIUM ({:.2f})</span>', prob)
+        else:
+            return format_html('<span style="color: green;">LOW ({:.2f})</span>', prob)
+    manipulation_risk.short_description = "Manipulation Risk"
+
+
+@admin.register(PerceptionGraphNode, site=admin_site)
+class PerceptionGraphNodeAdmin(admin.ModelAdmin):
+    """
+    Admin interface for viewing Perception Graph nodes.
+    """
+    list_display = (
+        'node_id',
+        'label',
+        'node_type',
+        'influence_score',
+        'sentiment',
+        'graph_id'
+    )
+    list_filter = ('node_type', 'sentiment', 'graph_id')
+    search_fields = ('node_id', 'label', 'graph_id')
+    readonly_fields = (
+        'graph_id',
+        'node_id',
+        'node_type',
+        'label',
+        'influence_score',
+        'sentiment',
+        'metadata',
+        'created_at',
+        'updated_at'
+    )
+
+    fieldsets = (
+        ("Node Information", {
+            'fields': ('graph_id', 'node_id', 'node_type', 'label')
+        }),
+        ("Metrics", {
+            'fields': ('influence_score', 'sentiment')
+        }),
+        ("Metadata", {
+            'fields': ('metadata', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(PerceptionGraphEdge, site=admin_site)
+class PerceptionGraphEdgeAdmin(admin.ModelAdmin):
+    """
+    Admin interface for viewing Perception Graph edges.
+    """
+    list_display = (
+        'source_node',
+        'edge_type',
+        'target_node',
+        'weight',
+        'sentiment',
+        'graph_id'
+    )
+    list_filter = ('edge_type', 'sentiment', 'graph_id')
+    search_fields = ('graph_id', 'source_node__label', 'target_node__label')
+    readonly_fields = (
+        'graph_id',
+        'source_node',
+        'target_node',
+        'edge_type',
+        'weight',
+        'sentiment',
+        'metadata',
+        'created_at'
+    )
+
+    fieldsets = (
+        ("Edge Information", {
+            'fields': ('graph_id', 'source_node', 'edge_type', 'target_node')
+        }),
+        ("Metrics", {
+            'fields': ('weight', 'sentiment')
+        }),
+        ("Metadata", {
+            'fields': ('metadata', 'created_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(PerceptionAggregation, site=admin_site)
+class PerceptionAggregationAdmin(admin.ModelAdmin):
+    """
+    Admin interface for viewing aggregated perception metrics.
+    """
+    list_display = (
+        'entity_display',
+        'period',
+        'period_start',
+        'avg_perception_index',
+        'perception_volatility',
+        'sample_count'
+    )
+    list_filter = ('period', 'period_start')
+    search_fields = (
+        'collection__display_name',
+        'nft__mint_address',
+        'trait_value__value'
+    )
+    readonly_fields = (
+        'collection',
+        'nft',
+        'trait_value',
+        'period',
+        'period_start',
+        'period_end',
+        'avg_perception_index',
+        'min_perception_index',
+        'max_perception_index',
+        'perception_volatility',
+        'avg_manipulation_probability',
+        'sample_count',
+        'calculated_at'
+    )
+    date_hierarchy = 'period_start'
+
+    fieldsets = (
+        ("Entity", {
+            'fields': ('collection', 'nft', 'trait_value')
+        }),
+        ("Aggregation Period", {
+            'fields': ('period', 'period_start', 'period_end')
+        }),
+        ("Aggregated Metrics", {
+            'fields': (
+                'avg_perception_index',
+                'min_perception_index',
+                'max_perception_index',
+                'perception_volatility',
+                'avg_manipulation_probability',
+                'sample_count'
+            )
+        }),
+        ("Metadata", {
+            'fields': ('calculated_at',)
+        })
+    )
+
+    def entity_display(self, obj):
+        """Display the entity."""
+        entity = obj.collection or obj.nft or obj.trait_value
+        return str(entity) if entity else "N/A"
+    entity_display.short_description = "Entity"
+
+
+@admin.register(ParallelLinesWebhookLog, site=admin_site)
+class ParallelLinesWebhookLogAdmin(admin.ModelAdmin):
+    """
+    Admin interface for monitoring Parallel Lines webhook calls.
+    """
+    list_display = (
+        'received_at',
+        'endpoint',
+        'status',
+        'snapshots_created',
+        'processing_time_display',
+        'error_preview'
+    )
+    list_filter = ('status', 'endpoint', 'received_at')
+    search_fields = ('endpoint', 'error_message')
+    readonly_fields = (
+        'received_at',
+        'endpoint',
+        'method',
+        'headers',
+        'payload',
+        'status',
+        'error_message',
+        'snapshots_created',
+        'processing_time_ms',
+        'perception_snapshot'
+    )
+    date_hierarchy = 'received_at'
+
+    fieldsets = (
+        ("Request Information", {
+            'fields': ('received_at', 'endpoint', 'method')
+        }),
+        ("Processing Results", {
+            'fields': (
+                'status',
+                'snapshots_created',
+                'processing_time_ms',
+                'perception_snapshot'
+            )
+        }),
+        ("Error Details", {
+            'fields': ('error_message',),
+            'classes': ('collapse',)
+        }),
+        ("Request Data", {
+            'fields': ('headers', 'payload'),
+            'classes': ('collapse',)
+        })
+    )
+
+    actions = ['retry_failed_webhooks']
+
+    def processing_time_display(self, obj):
+        """Display processing time with color coding."""
+        if not obj.processing_time_ms:
+            return "N/A"
+        ms = obj.processing_time_ms
+        if ms < 100:
+            color = 'green'
+        elif ms < 500:
+            color = 'orange'
+        else:
+            color = 'red'
+        return format_html(
+            '<span style="color: {};">{} ms</span>',
+            color,
+            ms
+        )
+    processing_time_display.short_description = "Processing Time"
+
+    def error_preview(self, obj):
+        """Show preview of error message."""
+        if not obj.error_message:
+            return "✅"
+        return obj.error_message[:50] + "..." if len(obj.error_message) > 50 else obj.error_message
+    error_preview.short_description = "Error"
+
+    def retry_failed_webhooks(self, request, queryset):
+        """Retry failed webhook processing."""
+        # TODO: Implement retry logic
+        self.message_user(request, "Retry functionality coming soon.", level='warning')
+    retry_failed_webhooks.short_description = "Retry failed webhook processing"

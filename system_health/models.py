@@ -263,3 +263,45 @@ class SystemAlert(models.Model):
         if not self.is_resolved:
             return (timezone.now() - self.triggered_at).total_seconds()
         return (self.resolved_at - self.triggered_at).total_seconds()
+
+
+class HealthShareToken(models.Model):
+    """
+    Token for sharing system health stats publicly.
+    Sensitive data is excluded from shared stats.
+    """
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    # Share options
+    include_performance = models.BooleanField(default=True, help_text="Include CPU, Memory, Disk stats")
+    include_services = models.BooleanField(default=True, help_text="Include service status")
+    include_marketplace = models.BooleanField(default=True, help_text="Include marketplace stats")
+    include_uptime = models.BooleanField(default=True, help_text="Include system uptime")
+
+    # Usage tracking
+    view_count = models.IntegerField(default=0)
+    last_accessed = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Health Share Token"
+        verbose_name_plural = "Health Share Tokens"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['token', 'expires_at']),
+        ]
+
+    def __str__(self):
+        return f"Share Token {self.token[:8]}... (expires {self.expires_at})"
+
+    @property
+    def is_valid(self) -> bool:
+        """Check if token is still valid"""
+        return timezone.now() < self.expires_at
+
+    def increment_view_count(self):
+        """Increment view count and update last accessed time"""
+        self.view_count += 1
+        self.last_accessed = timezone.now()
+        self.save(update_fields=['view_count', 'last_accessed'])

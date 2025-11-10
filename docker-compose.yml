@@ -57,11 +57,13 @@ services:
       - .env
     environment:
       RUN_BACKGROUND_TASKS: "false"  # Web server only, no background tasks
+      LOG_FILE_PATH: "/app/logs/background_tasks.log"  # Use app directory for logs
     ports:
       - "8000:8000"
     volumes:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,12 +75,7 @@ services:
         python manage.py migrate --noinput &&
         python manage.py collectstatic --noinput &&
         echo '🚀 Main App: Starting gunicorn...' &&
-        gunicorn traitkeeper.wsgi:application 
-          --bind 0.0.0.0:8000 
-          --workers 4 
-          --timeout 120 
-          --access-logfile - 
-          --error-logfile -
+        gunicorn traitkeeper.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --worker-class gthread --timeout 180 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -
       "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
@@ -102,6 +99,10 @@ services:
     container_name: traitkeeper-indexer-live
     env_file:
       - .env
+    environment:
+      LOG_FILE_PATH: "/app/logs/indexer_live.log"
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,6 +133,10 @@ services:
     container_name: traitkeeper-indexer-scheduled
     env_file:
       - .env
+    environment:
+      LOG_FILE_PATH: "/app/logs/indexer_scheduled.log"
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -168,6 +173,9 @@ services:
       - .env
     environment:
       RUN_BACKGROUND_TASKS: "true"  # Needed for vitality task manager
+      LOG_FILE_PATH: "/app/logs/vitality_analytics.log"
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -202,6 +210,10 @@ services:
     container_name: traitkeeper-health
     env_file:
       - .env
+    environment:
+      LOG_FILE_PATH: "/app/logs/health.log"
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -232,6 +244,10 @@ services:
     container_name: traitkeeper-config-listener
     env_file:
       - .env
+    environment:
+      LOG_FILE_PATH: "/app/logs/config_listener.log"
+    volumes:
+      - ./logs:/app/logs
     command: >
       sh -c "
         echo '⚙️  Config Listener: Starting...' &&

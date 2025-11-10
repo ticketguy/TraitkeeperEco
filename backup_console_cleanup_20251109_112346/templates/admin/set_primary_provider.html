@@ -1,0 +1,210 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+<!-- Inline critical CSS for immediate rendering, consistent with base.html -->
+<style>
+    .section-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .section-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(128, 0, 128, 0.2);
+    }
+    .glow-button {
+        background: linear-gradient(45deg, #800080, #660066);
+        transition: all 0.2s ease;
+    }
+    .glow-button:hover {
+        box-shadow: 0 0 8px rgba(128, 0, 128, 0.5);
+        transform: scale(1.03);
+    }
+    .section-header {
+        font-family: 'Space Mono', monospace;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: linear-gradient(45deg, #800080, #660066);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .slide-in {
+        animation: slideIn 0.4s ease-out;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    table {
+        font-family: 'Roboto', sans-serif;
+    }
+    th, td {
+        border-bottom: 1px solid rgba(128, 0, 128, 0.1);
+    }
+    tr:hover {
+        background-color: rgba(128, 0, 128, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Header -->
+    <div class="slide-in">
+        <h1 class="section-header text-2xl sm:text-3xl mb-6">Manage RPC Providers</h1>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="slide-in mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100{% elif message.tags == 'error' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100{% else %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100{% endif %} shadow-md transform transition-transform duration-300 hover:scale-105">
+            {{ message|safe }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Current Provider -->
+    <div class="slide-in section-card bg-background-light dark:bg-background-dark rounded-lg p-6 border border-gray-200 dark:border-glass-600">
+        <p class="text-lg font-semibold text-brand-black dark:text-brand-white">
+            Current Primary Provider: <span class="text-brand-purple">{{ current_provider|title }}</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Set Primary Provider Form -->
+        <div class="slide-in section-card bg-background-light dark:bg-background-dark rounded-lg p-6 border border-gray-200 dark:border-glass-600">
+            <h2 class="section-header text-xl mb-4">Set Primary RPC Provider</h2>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="provider" class="block text-sm font-medium text-brand-black dark:text-brand-white">Select Provider:</label>
+                    <select name="provider" id="provider" class="mt-1 block w-full rounded-md border border-border-light dark:border-border-dark bg-accent-light dark:bg-accent-dark text-brand-black dark:text-brand-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 py-2 px-3">
+                        {% for provider in available_providers %}
+                        <option value="{{ provider }}" {% if provider == current_provider %}selected{% endif %}>{{ provider|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" name="action" value="set_provider" class="glow-button text-white px-4 py-2 rounded-lg text-sm w-full sm:w-auto">
+                    Set Primary Provider
+                </button>
+            </form>
+        </div>
+
+        <!-- Add New Provider Form -->
+        <div class="slide-in section-card bg-background-light dark:bg-background-dark rounded-lg p-6 border border-gray-200 dark:border-glass-600">
+            <h2 class="section-header text-xl mb-4">Add New RPC Provider</h2>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="new_provider_name" class="block text-sm font-medium text-brand-black dark:text-brand-white">Provider Name:</label>
+                    <input type="text" name="new_provider_name" id="new_provider_name" class="mt-1 block w-full rounded-md border border-border-light dark:border-border-dark bg-accent-light dark:bg-accent-dark text-brand-black dark:text-brand-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 py-2 px-3" required>
+                </div>
+                <div>
+                    <label for="rpc_url" class="block text-sm font-medium text-brand-black dark:text-brand-white">RPC URL:</label>
+                    <input type="url" name="rpc_url" id="rpc_url" class="mt-1 block w-full rounded-md border border-border-light dark:border-border-dark bg-accent-light dark:bg-accent-dark text-brand-black dark:text-brand-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 py-2 px-3" required>
+                </div>
+                <div>
+                    <label for="ws_url" class="block text-sm font-medium text-brand-black dark:text-brand-white">WebSocket URL (Optional):</label>
+                    <input type="url" name="ws_url" id="ws_url" class="mt-1 block w-full rounded-md border border-border-light dark:border-border-dark bg-accent-light dark:bg-accent-dark text-brand-black dark:text-brand-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 py-2 px-3">
+                </div>
+                <div>
+                    <label for="api_key" class="block text-sm font-medium text-brand-black dark:text-brand-white">API Key (Optional):</label>
+                    <input type="text" name="api_key" id="api_key" class="mt-1 block w-full rounded-md border border-border-light dark:border-border-dark bg-accent-light dark:bg-accent-dark text-brand-black dark:text-brand-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 py-2 px-3">
+                </div>
+                <button type="submit" name="action" value="add_provider" class="glow-button text-white px-4 py-2 rounded-lg text-sm w-full sm:w-auto">
+                    Add New Provider
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Provider List -->
+    <div class="slide-in section-card bg-background-light dark:bg-background-dark rounded-lg p-6 border border-gray-200 dark:border-glass-600">
+        <h2 class="section-header text-xl mb-4">All RPC Providers</h2>
+        {% if all_providers %}
+        <div class="table-container">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+                        <th class="py-3 px-4 text-left text-sm">Name</th>
+                        <th class="py-3 px-4 text-left text-sm">RPC URL</th>
+                        <th class="py-3 px-4 text-left text-sm">WebSocket URL</th>
+                        <th class="py-3 px-4 text-left text-sm">API Key</th>
+                        <th class="py-3 px-4 text-left text-sm">Active</th>
+                        <th class="py-3 px-4 text-left text-sm">Primary</th>
+                        <th class="py-3 px-4 text-left text-sm">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for provider in all_providers %}
+                    <tr class="transition-colors duration-300">
+                        <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">{{ provider.name|title }}</td>
+                        <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm truncate max-w-xs">{{ provider.rpc_url }}</td>
+                        <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm truncate max-w-xs">
+                            {% if provider.ws_url %}
+                            {{ provider.ws_url }}
+                            {% else %}
+                            None
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-brand-black dark:text-brand-white text-sm">
+                            {% if provider.api_key %}
+                            {{ provider.api_key|slice:":4" }}****{{ provider.api_key|slice:"-4:" }}
+                            {% else %}
+                            None
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-sm">
+                            <span class="{% if provider.is_active %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                                {{ provider.is_active|yesno:"Yes,No" }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-sm">
+                            <span class="{% if provider.is_primary %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                                {{ provider.is_primary|yesno:"Yes,No" }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-sm space-x-2">
+                            <a href="{% url 'admin:admin_panel_primaryprovidersetting_change' provider.id %}" class="text-primary hover:text-brand-black dark:hover:text-brand-white">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'admin:admin_panel_primaryprovidersetting_delete' provider.id %}" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 delete-provider" data-provider-name="{{ provider.name }}">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-brand-black/50 dark:text-brand-white/50 text-sm">No providers configured.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JavaScript for Delete Confirmation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add confirmation dialog for delete actions
+    document.querySelectorAll('.delete-provider').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const providerName = this.getAttribute('data-provider-name');
+            const url = this.getAttribute('href');
+            if (confirm(`Are you sure you want to delete the provider "${providerName}"? This action cannot be undone.`)) {
+                window.location.href = url;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

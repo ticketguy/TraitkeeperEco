@@ -1,0 +1,110 @@
+{% extends 'dashboard_base.html'%}
+{% load static %}
+
+{% block title %}Trait dashboard | TraitKeeper{% endblock %}
+
+{% block content %}
+<section id="trait-overview">
+<div class="container">
+
+    <div class="section-header">
+        <h2>Trait Overview</h2>            
+    </div>
+
+<div class="overview-cards">
+            <div class="card">
+                <h2>Total NFTs</h2>
+                <p class="big-number">1,234</p>
+            </div>
+            <div class="card">
+                <h2>Unique Traits</h2>
+                <p class="big-number">78</p>
+            </div>
+            <div class="card">
+                <h2>Rarest Trait</h2>
+                <p class="big-number">Diamond Eyes</p>
+            </div>
+        </div>
+
+    <div class="stats-summary">
+        <div class="stat-item">
+            <h3>Total NFTs</h3>
+            <p id="total-nfts">0</p>
+        </div>
+        <div class="stat-item">
+            <h3>Unique Traits</h3>
+            <p id="unique-traits">0</p>
+        </div>
+        <div class="stat-item">
+            <h3>Rarest Trait</h3>
+            <p id="rarest-trait">N/A</p>
+        </div>
+    </div>
+    
+    <div class="filter-sort">
+        <input type="text" id="nft-search" placeholder="Search NFTs...">
+        <select id="trait-sort">
+            <option value="name">Sort by Name</option>
+            <option value="rarity">Sort by Rarity</option>
+        </select>
+    </div>
+    <div class="nft-grid" id="nftGrid"></div>
+    </div>
+</section>
+
+  <section class="data-visualization">
+            <h2>Data Visualization</h2>
+            <div class="chart-container">
+                <canvas id="nftChart"></canvas>
+            </div>
+            <div id="chartInfo" class="chart-info"></div>
+        </section>
+
+        <section class="recent-activity">
+            <h2>Recent Activity</h2>
+            <ul id="activityFeed">
+                <!-- Activity items will be dynamically added here -->
+            </ul>
+        </section>
+
+        <section class="featured-nft">
+            <h2>Featured NFT</h2>
+            <div class="nft-showcase" id="nftCarousel">
+                <!-- NFT items will be dynamically added here -->
+            </div>
+            <div class="carousel-controls">
+                <button id="prevNFT">&lt; Previous</button>
+                <button id="nextNFT">Next &gt;</button>
+            </div>
+        </section>
+
+        <section class="market-stats">
+            <h2>Market Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card" data-tooltip="The lowest price at which an NFT from this collection is listed for sale">
+                    <h3>Floor Price</h3>
+                    <p class="stat-number">2.5 ETH</p>
+                    <p class="stat-change">+0.3 ETH (24h)</p>
+                </div>
+                <div class="stat-card" data-tooltip="Total value of all trades in the last 7 days">
+                    <h3>Volume Traded</h3>
+                    <p class="stat-number">150 ETH</p>
+                    <p class="stat-period">Last 7 days</p>
+                </div>
+                <div class="stat-card" data-tooltip="Number of unique wallet addresses holding NFTs from this collection">
+                    <h3>Unique Holders</h3>
+                    <p class="stat-number">3,721</p>
+                    <p class="stat-change">+52 (24h)</p>
+                </div>
+                <div class="stat-card" data-tooltip="Total value of all NFTs in the collection at current floor price">
+                    <h3>Market Cap</h3>
+                    <p class="stat-number">25K ETH</p>
+                    <p class="stat-change">$45.2M USD</p>
+                </div>
+            </div>
+        </section>
+  {% endblock %}
+
+  {% block extra_js %}
+<script src="{% static 'js/scripts/dashboard/trait-overview.js' %}"></script>
+{% endblock %}

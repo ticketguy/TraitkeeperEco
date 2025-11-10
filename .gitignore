@@ -25,7 +25,7 @@ venv/
 ENV/
 env/
 .venv
-.tk/
+
 
 # Django
 *.log
@@ -119,3 +119,5 @@ background_tasks.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+Downloads
+Downloads.pub

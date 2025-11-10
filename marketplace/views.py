@@ -13,7 +13,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView # For the class-based view
 
 from .services import MarketplaceService
-from nft_data.models import NFT 
+from .perception_service import perception_service
+from nft_data.models import NFT
 from django.utils import timezone
 from datetime import timedelta
 
@@ -337,3 +338,102 @@ def api_get_nft_offers(request, nft_mint):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+# ==========================================
+# PARALLEL LINES PERCEPTION ENGINE WEBHOOK
+# ==========================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Authentication handled by service
+def api_parallel_lines_webhook(request):
+    """
+    Webhook endpoint for receiving perception data from Parallel Lines.
+
+    Parallel Lines is TraitKeeper's world perception engine - an LLM-based
+    system that analyzes community sentiment, behavioral patterns, and
+    perception across multiple platforms.
+
+    Expected payload structure:
+    {
+        "entity_type": "collection" | "nft" | "trait",
+        "entity_id": "address or ID",
+        "perception_data": {
+            "perception_index": 0.78,  # 0-1 score
+            "timestamp": "2025-01-08T12:34:56Z",
+            "submind": {
+                "raw_score": 0.72,
+                "hidden_sentiment": "positive",
+                "manipulation_probability": 0.12,
+                "behavioral_patterns": {...}
+            },
+            "intuone": {
+                "emotional_resonance": 0.85,
+                "language_tone": "enthusiastic",
+                "community_awareness": 0.76
+            },
+            "perception_graph_id": "graph_123",
+            "confidence": 0.95,
+            "data_sources": ["twitter", "discord"],
+            "sample_size": 5420
+        },
+        "perception_graph": {  # Optional
+            "nodes": [...],
+            "edges": [...]
+        }
+    }
+    """
+    # Use async_to_sync to call async perception service
+    return async_to_sync(_process_parallel_lines_webhook_async)(request)
+
+
+async def _process_parallel_lines_webhook_async(request):
+    """
+    Async handler for Parallel Lines webhook processing.
+    """
+    try:
+        # Parse request
+        payload = request.data if hasattr(request, 'data') else json.loads(request.body)
+        headers = dict(request.headers)
+
+        # Process webhook via perception service
+        success, message, snapshot = await perception_service.process_webhook(
+            payload=payload,
+            headers=headers,
+            endpoint='/api/perception/webhook'
+        )
+
+        if success:
+            return Response({
+                'success': True,
+                'message': message,
+                'perception_index': snapshot.perception_index if snapshot else None,
+                'entity_type': snapshot.entity_type if snapshot else None
+            }, status=status.HTTP_200_OK)
+        else:
+            # Determine appropriate status code based on error message
+            if 'authentication' in message.lower():
+                status_code = status.HTTP_401_UNAUTHORIZED
+            elif 'validation' in message.lower() or 'not found' in message.lower():
+                status_code = status.HTTP_400_BAD_REQUEST
+            else:
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+            return Response({
+                'success': False,
+                'error': message
+            }, status=status_code)
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in Parallel Lines webhook: {e}")
+        return Response({
+            'success': False,
+            'error': 'Invalid JSON payload'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        logger.exception(f"Unexpected error in Parallel Lines webhook: {e}")
+        return Response({
+            'success': False,
+            'error': 'Internal server error'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

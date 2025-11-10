@@ -5,10 +5,35 @@
 
 {% block extra_style %}
 <style>
+    /* ==================================================
+     * INDEX PAGE - RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
 
     main#main-content {
         padding-top: 0 !important;
     }
+
+    /* ==================================================
+     * SCROLL PERFORMANCE OPTIMIZATION
+     * ================================================== */
+
+    /* Enable momentum scrolling on iOS/mobile */
+    body {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent flickering on animated elements */
+    .trait-card,
+    .collection-card,
+    .tilt-card {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    /* ==================================================
+     * HORIZONTAL SCROLL PREVENTION
+     * ================================================== */
+
     .live-x-feed-container {
         box-sizing: border-box;
         width: 100%;
@@ -35,6 +60,7 @@
         white-space: normal;
     }
 
+    /* Reduce tilt effect on mobile for better performance */
     @media (max-width: 767px) {
         .x-post.tilt-card {
             --tilt-max: 5;
@@ -55,14 +81,116 @@
         overflow-x: hidden;
     }
 
-#top-collections-table tr {
-    transition: all 0.2s ease;
-}
+    /* ==================================================
+     * TABLE RESPONSIVE IMPROVEMENTS
+     * ================================================== */
 
-#top-collections-table tr:hover {
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+    #top-collections-table {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto; /* Horizontal scroll on mobile */
+    }
+
+    #top-collections-table tr {
+        transition: all 0.2s ease;
+    }
+
+    /* Disable hover transform on mobile for better touch experience */
+    @media (min-width: 768px) {
+        #top-collections-table tr:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    /* Make table cells more compact on mobile */
+    @media (max-width: 640px) {
+        #top-collections-table td,
+        #top-collections-table th {
+            padding: 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+
+    /* ==================================================
+     * HERO SECTION RESPONSIVE OPTIMIZATION
+     * ================================================== */
+
+    #hero {
+        min-height: 400px; /* Minimum height for very small screens */
+    }
+
+    @media (max-width: 640px) {
+        #hero {
+            height: 60vh !important;
+            max-height: 500px !important;
+        }
+
+        #hero h1 {
+            line-height: 1.2;
+            margin-bottom: 0.5rem !important;
+        }
+
+        #hero p {
+            line-height: 1.4;
+        }
+    }
+
+    /* ==================================================
+     * CAROUSEL RESPONSIVE IMPROVEMENTS
+     * ================================================== */
+
+    /* Ensure carousels don't cause horizontal scroll */
+    .carousel-container,
+    .swiper-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    /* Mobile carousel optimizations */
+    @media (max-width: 640px) {
+        .swiper-slide {
+            min-width: 280px !important; /* Ensure readable cards on mobile */
+        }
+    }
+
+    /* ==================================================
+     * STATS SECTION RESPONSIVE LAYOUT
+     * ================================================== */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        width: 100%;
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr; /* Single column on mobile */
+            gap: 0.75rem;
+        }
+    }
+
+    /* ==================================================
+     * BUTTON AND LINK TOUCH TARGETS
+     * ================================================== */
+
+    @media (max-width: 767px) {
+        /* Ensure all hero buttons are touch-friendly */
+        #hero a,
+        #hero button {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        /* Collection cards should be easily tappable */
+        .collection-card {
+            min-height: 44px;
+        }
+    }
 
 </style>
 {% endblock %}
@@ -241,14 +369,16 @@
                                data-slide-index="{{ forloop.counter0 }}">
                                 <div class="relative w-full h-[400px]">
                                     <!-- Main Background Image -->
-                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                         alt="{{ collection.name }}" 
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                         alt="{{ collection.name }}"
+                                         {% if not forloop.first %}loading="lazy"{% endif %}
                                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                                    
+
                                     <!-- Badge Image -->
-                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}" 
-                                         alt="" 
+                                    <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                         alt=""
+                                         loading="lazy"
                                          class="w-16 h-16 rounded-full absolute top-6 right-6 border-4 border-white/50 shadow-lg">
 
                                     <!-- Content Overlay -->
@@ -290,9 +420,9 @@
                         </div>
 
                         <!-- Navigation Dots -->
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1">
                             {% for collection in featured_collections %}
-                            <button class="carousel-dot w-2 h-2 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-6{% else %}bg-white/50 hover:bg-white/75{% endif %}"
+                            <button class="carousel-dot w-0.5 h-0.5 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-2{% else %}bg-white/50 hover:bg-white/75{% endif %}"
                                     data-slide="{{ forloop.counter0 }}"
                                     aria-label="Go to slide {{ forloop.counter }}">
                             </button>
@@ -389,11 +519,11 @@
                                 // Update dots
                                 document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
                                     if (i === index) {
-                                        dot.classList.add('bg-primary', 'w-6');
-                                        dot.classList.remove('bg-white/50');
+                                        dot.classList.add('bg-primary', 'w-4');
+                                        dot.classList.remove('bg-white/50', 'w-1.5');
                                     } else {
-                                        dot.classList.remove('bg-primary', 'w-6');
-                                        dot.classList.add('bg-white/50');
+                                        dot.classList.remove('bg-primary', 'w-4');
+                                        dot.classList.add('bg-white/50', 'w-1.5');
                                     }
                                 });
                                 
@@ -498,6 +628,7 @@
                                             <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">{{ forloop.counter }}</span>
                                             <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
                                                  alt="{{ collection.name }}"
+                                                 loading="lazy"
                                                  class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
                                             <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
                                         </a>
@@ -541,12 +672,12 @@
             <div id="collections-carousel" class="flex transition-transform duration-500 ease-in-out gap-4 xs:gap-6">
                 </div>
             
-            <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+            <button id="carousel-prev" aria-label="Previous collection" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </button>
-            <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
+            <button id="carousel-next" aria-label="Next collection" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 z-10 transition-all duration-200" style="display: none;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -624,6 +755,7 @@
                     class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-gradient-to-r from-primary to-accent-light text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge shadow-lg">
                     🔥 Trending</div>
                 <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
+                    loading="lazy"
                     class="w-full h-28 xs:h-32 sm:h-36 object-cover">
                 <div class="p-2 xs:p-3 sm:p-4">
                     <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">{{ nft.name }}</h3>
@@ -888,80 +1020,95 @@
                 </tbody>
             </table>
         </div>
-        <div class="traits-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4 md:hidden"
+        <!-- Mobile Optimized Card Grid - Compact & Responsive -->
+        <div class="traits-card-container grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:hidden"
             data-aos="fade-up" data-aos-delay="200">
             {% if top_traits %}
             {% for trait in top_traits %}
-            <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
+            <div class="trait-card bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-lg tilt-card cursor-pointer relative transition-shadow duration-300"
                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
                 {% if trait.mint_address %}
                 data-nft-modal
                 data-mint-address="{{ trait.mint_address }}"
                 {% endif %}>
+                <!-- Rank Badge - Smaller on mobile -->
                 <div
-                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
+                    class="absolute top-1 right-1 bg-primary text-white text-[9px] xs:text-[10px] px-1.5 xs:px-2 py-0.5 rounded-full rarity-badge font-semibold z-10">
                     #{{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
+
+                <!-- Image - Reduced height for mobile -->
                 <div
-                    class="trait-image h-28 xs:h-32 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
+                    class="trait-image h-20 xs:h-24 sm:h-28 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
                     <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
-                        class="w-full h-full object-cover">
+                        class="w-full h-full object-cover"
+                        loading="lazy">
                 </div>
-                <div class="p-2 xs:p-3 sm:p-4 flex-1">
-                    <div class="mb-2">
-                        <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">
+
+                <!-- Content - Compact spacing -->
+                <div class="p-1.5 xs:p-2 sm:p-3 flex-1">
+                    <!-- Title section -->
+                    <div class="mb-1.5 xs:mb-2">
+                        <h3 class="text-[11px] xs:text-xs sm:text-sm font-semibold text-text-light dark:text-text-dark truncate leading-tight">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
+                        <p class="text-[9px] xs:text-[10px] text-text-secondary-light dark:text-text-secondary-dark truncate mt-0.5">
                             {{ trait.collection }}
                         </p>
                     </div>
+
+                    <!-- Stats Grid - Compact layout -->
                     <div class="space-y-1">
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-primary">
+                        <!-- Row 1: Score & Avg Sale -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-primary truncate">
                                     {{ trait.performance_score|floatformat:1 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    SCORE</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Score</div>
                             </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.avg_sale_price|floatformat:2 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    AVG SALE</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.premium_score|floatformat:2 }}x</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    PREMIUM</div>
-                            </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.velocity_score|floatformat:2 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    VELOCITY</div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.avg_sale_price|floatformat:1 }}</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Sale</div>
                             </div>
                         </div>
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold">
+
+                        <!-- Row 2: Premium & Velocity -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.premium_score|floatformat:1 }}x</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Premium</div>
+                            </div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.velocity_score|floatformat:1 }}</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Velocity</div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Momentum & Rarity -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold truncate">
                                     {% if trait.momentum_score > 0 %}
-                                    <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    <span class="text-green-400">↑{{ trait.momentum_score|floatformat:1 }}</span>
                                     {% elif trait.momentum_score < 0 %}
-                                    <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    <span class="text-red-400">↓{{ trait.momentum_score|floatformat:1|slice:"1:" }}</span>
                                     {% else %}
-                                    <span class="text-gray-400">→ 0.00</span>
+                                    <span class="text-gray-400">→0</span>
                                     {% endif %}
                                 </div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    MOMENTUM</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Momentum</div>
                             </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.rarity_score|floatformat:1 }}%</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    RARITY</div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.rarity_score|floatformat:0 }}%</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Rarity</div>
                             </div>
                         </div>
                     </div>
@@ -1016,46 +1163,66 @@
 </section>
 
 <!-- NFT Preview Modal (Reused for Collections) -->
-<div id="nft-modal"
-    class="fixed inset-0 bg-black bg-opacity-75 z-[1002] hidden flex items-center justify-center transition-opacity duration-300">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 max-w-[300px] xs:max-w-md w-11/12 max-h-[90vh] overflow-y-auto relative">
-        <button id="close-nft-modal"
-            class="absolute top-1 xs:top-2 right-1 xs:right-2 text-text-light dark:text-text-dark text-lg xs:text-xl"
+<!-- Enhanced Collection Modal -->
+<div id="collection-modal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1002] hidden flex items-center justify-center transition-opacity duration-300">
+    <div class="bg-gradient-to-br from-background-light to-accent-light dark:from-accent-dark dark:to-background-dark rounded-2xl p-4 xs:p-6 max-w-lg w-11/12 max-h-[90vh] overflow-y-auto relative border border-primary/20 shadow-2xl">
+        <button id="close-collection-modal"
+            class="absolute top-2 right-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary text-2xl transition-colors"
             aria-label="Close modal">×</button>
-        <div class="flex items-start mb-3 xs:mb-4">
-            <img id="nft-modal-image" src="" alt="Collection Image"
-                class="w-16 xs:w-20 h-16 xs:h-20 object-cover rounded-lg mr-3 xs:mr-4">
+
+        <!-- Collection Header -->
+        <div class="flex items-start mb-5">
+            <img id="collection-modal-image" src="" alt="Collection Image"
+                class="w-20 h-20 object-cover rounded-xl mr-4 ring-2 ring-primary/30">
             <div class="flex-1">
-                <a id="nft-modal-link" href=""
-                    class="text-base xs:text-lg sm:text-xl font-semibold text-primary hover:underline">
-                    <h3 id="nft-modal-name" class="inline"></h3>
+                <a id="collection-modal-link" href=""
+                    class="text-xl font-bold text-primary hover:underline flex items-center gap-2">
+                    <h3 id="collection-modal-name" class="inline"></h3>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </a>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Click to explore collection</p>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-2 xs:gap-3">
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Holders:</span>
-                <span id="nft-modal-holders"></span>
+
+        <!-- Collection Stats Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Floor Price</span>
+                <span id="collection-modal-floor" class="block text-lg font-bold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Supply/Listed:</span>
-                <span id="nft-modal-supply-listed"></span>
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">24h Change</span>
+                <span id="collection-modal-price-change" class="block text-lg font-bold">--%</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Volume:</span>
-                <span id="nft-modal-volume"></span> SOL
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Volume (24h)</span>
+                <span id="collection-modal-volume" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Market Cap:</span>
-                <span id="nft-modal-market-cap"></span> SOL
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Market Cap</span>
+                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">24h Change:</span>
-                <span id="nft-modal-price-change"></span>%
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Holders</span>
+                <span id="collection-modal-holders" class="block text-base font-semibold text-text-light dark:text-text-dark">--</span>
             </div>
-            <div class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                <span class="block font-semibold text-text-light dark:text-text-dark">Performance:</span>
-                <span id="nft-modal-performance"></span>
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Supply / Listed</span>
+                <span id="collection-modal-supply-listed" class="block text-base font-semibold text-text-light dark:text-text-dark">--</span>
+            </div>
+        </div>
+
+        <!-- Performance Indicator -->
+        <div class="bg-gradient-to-r from-primary/10 to-accent-light/10 dark:from-primary/20 dark:to-accent-dark/20 rounded-lg p-3 border border-primary/30">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-text-light dark:text-text-dark">Performance Score</span>
+                <span id="collection-modal-performance" class="text-2xl font-bold text-primary">--</span>
+            </div>
+            <div class="mt-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div id="collection-modal-performance-bar" class="h-full bg-gradient-to-r from-primary to-accent-light transition-all duration-500" style="width: 0%"></div>
             </div>
         </div>
     </div>
@@ -1063,11 +1230,13 @@
 
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+{% block extra_css %}
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         AOS.init({ duration: 600, once: true });
@@ -1075,8 +1244,22 @@
             max: 15, speed: 400, glare: false, scale: 1.05
         });
 
-        // Particles.js initialization
-        particlesJS('particles-hero', {
+        // Lazy load particles.js after page is interactive (saves 13s+ blocking!)
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadParticles, { timeout: 3000 });
+        } else {
+            setTimeout(loadParticles, 3000);
+        }
+
+        function loadParticles() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+            script.onload = initParticles;
+            document.body.appendChild(script);
+        }
+
+        function initParticles() {
+            particlesJS('particles-hero', {
             particles: {
                 number: { value: 80, density: { enable: true, value_area: 800 } },
                 color: { value: '#ffffff' },
@@ -1096,19 +1279,22 @@
             },
             retina_detect: true
         });
+        }
 
-        // NFT Modal Elements
-        const nftModal = document.getElementById('nft-modal');
-        const closeNftModal = document.getElementById('close-nft-modal');
-        const nftModalImage = document.getElementById('nft-modal-image');
-        const nftModalName = document.getElementById('nft-modal-name');
-        const nftModalLink = document.getElementById('nft-modal-link');
-        const nftModalHolders = document.getElementById('nft-modal-holders');
-        const nftModalSupplyListed = document.getElementById('nft-modal-supply-listed');
-        const nftModalVolume = document.getElementById('nft-modal-volume');
-        const nftModalMarketCap = document.getElementById('nft-modal-market-cap');
-        const nftModalPriceChange = document.getElementById('nft-modal-price-change');
-        const nftModalPerformance = document.getElementById('nft-modal-performance');
+        // Collection Modal Elements
+        const collectionModal = document.getElementById('collection-modal');
+        const closeCollectionModal = document.getElementById('close-collection-modal');
+        const collectionModalImage = document.getElementById('collection-modal-image');
+        const collectionModalName = document.getElementById('collection-modal-name');
+        const collectionModalLink = document.getElementById('collection-modal-link');
+        const collectionModalHolders = document.getElementById('collection-modal-holders');
+        const collectionModalSupplyListed = document.getElementById('collection-modal-supply-listed');
+        const collectionModalVolume = document.getElementById('collection-modal-volume');
+        const collectionModalMarketCap = document.getElementById('collection-modal-market-cap');
+        const collectionModalPriceChange = document.getElementById('collection-modal-price-change');
+        const collectionModalPerformance = document.getElementById('collection-modal-performance');
+        const collectionModalPerformanceBar = document.getElementById('collection-modal-performance-bar');
+        const collectionModalFloor = document.getElementById('collection-modal-floor');
 
         // Hero Carousel
         const heroSection = document.getElementById('hero');
@@ -1141,62 +1327,67 @@
         // Auto-rotate hero slides every 5 seconds
         setInterval(updateHeroCarousel, 5000);
 
-        // Collection Modal with Event Delegation
+        // Enhanced Collection Modal Handler
         document.addEventListener('click', (e) => {
             const card = e.target.closest('[data-collection-modal]');
             if (card) {
-                nftModalImage.src = card.getAttribute('data-collection-image');
-                nftModalName.textContent = card.getAttribute('data-collection-name');
-                nftModalLink.href = `/collection/${card.getAttribute('data-collection-address')}/`;
-                nftModalHolders.textContent = card.getAttribute('data-collection-holders');
-                nftModalSupplyListed.textContent = card.getAttribute('data-collection-supply-listed');
-                nftModalVolume.textContent = card.getAttribute('data-collection-volume');
-                nftModalMarketCap.textContent = card.getAttribute('data-collection-market-cap');
-                nftModalPriceChange.textContent = card.getAttribute('data-collection-price-change');
-                nftModalPerformance.textContent = card.getAttribute('data-collection-performance');
+                const image = card.getAttribute('data-collection-image');
+                const name = decodeURIComponent(card.getAttribute('data-collection-name') || '');
+                const address = card.getAttribute('data-collection-address');
+                const holders = card.getAttribute('data-collection-holders') || '0';
+                const supplyListed = card.getAttribute('data-collection-supply-listed') || '0/0';
+                const volume = parseFloat(card.getAttribute('data-collection-volume') || '0');
+                const marketCap = parseFloat(card.getAttribute('data-collection-market-cap') || '0');
+                const priceChange = parseFloat(card.getAttribute('data-collection-price-change') || '0');
+                const performance = parseFloat(card.getAttribute('data-collection-performance') || '50');
 
-                nftModal.classList.remove('hidden');
+                // Populate modal
+                collectionModalImage.src = image;
+                collectionModalName.textContent = name;
+                collectionModalLink.href = `/collection/${address}/`;
+                collectionModalHolders.textContent = holders;
+                collectionModalSupplyListed.textContent = supplyListed;
+                collectionModalVolume.textContent = volume.toFixed(2);
+                collectionModalMarketCap.textContent = marketCap.toFixed(2);
+                collectionModalFloor.textContent = `${(marketCap / parseInt(supplyListed.split('/')[0] || 1)).toFixed(2)}`;
+
+                // Price change with color
+                collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;
+                collectionModalPriceChange.className = `block text-lg font-bold ${
+                    priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-yellow-500'
+                }`;
+
+                // Performance with color and bar
+                collectionModalPerformance.textContent = performance.toFixed(1);
+                collectionModalPerformanceBar.style.width = `${performance}%`;
+
+                collectionModal.classList.remove('hidden');
                 setTimeout(() => {
-                    nftModal.classList.add('opacity-100');
+                    collectionModal.classList.add('opacity-100');
                 }, 10);
             }
         });
 
-        // NFT Modal with Event Delegation
-        document.addEventListener('click', (e) => {
-            const card = e.target.closest('[data-nft-modal]');
-            if (card) {
-                nftModalImage.src = card.getAttribute('data-nft-image');
-                nftModalName.textContent = card.getAttribute('data-nft-name');
-                nftModalLink.href = '#';
-                nftModalHolders.textContent = '';
-                nftModalSupplyListed.textContent = '';
-                nftModalVolume.textContent = '';
-                nftModalMarketCap.textContent = '';
-                nftModalPriceChange.textContent = '';
-                nftModalPerformance.textContent = '';
-                nftModal.classList.remove('hidden');
+        // Close Collection Modal
+        if (closeCollectionModal) {
+            closeCollectionModal.addEventListener('click', () => {
+                collectionModal.classList.remove('opacity-100');
                 setTimeout(() => {
-                    nftModal.classList.add('opacity-100');
-                }, 10);
-            }
-        });
-
-        closeNftModal.addEventListener('click', () => {
-            nftModal.classList.remove('opacity-100');
-            setTimeout(() => {
-                nftModal.classList.add('hidden');
-            }, 300);
-        });
-
-        nftModal.addEventListener('click', (e) => {
-            if (e.target === nftModal) {
-                nftModal.classList.remove('opacity-100');
-                setTimeout(() => {
-                    nftModal.classList.add('hidden');
+                    collectionModal.classList.add('hidden');
                 }, 300);
-            }
-        });
+            });
+        }
+
+        if (collectionModal) {
+            collectionModal.addEventListener('click', (e) => {
+                if (e.target === collectionModal) {
+                    collectionModal.classList.remove('opacity-100');
+                    setTimeout(() => {
+                        collectionModal.classList.add('hidden');
+                    }, 300);
+                }
+            });
+        }
 
         // Simulate live activity updates
         setInterval(() => {
@@ -1218,11 +1409,11 @@
 
         // Handle site updates
         siteUpdatesSource.onopen = function() {
-            console.log("SSE connection established for site updates");
+            // console.log("SSE connection established for site updates");
         };
 
         siteUpdatesSource.onmessage = function(event) {
-            console.log("Received SSE message for site updates:", event.data);
+            // console.log("Received SSE message for site updates:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1373,8 +1564,9 @@
                                         <div class="flex-1 p-1 xs:p-2">
                                             <div class="flex items-center space-x-1 xs:space-x-2 min-w-0">
                                                 <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${index + 1}</span>
-                                                <img src="${collection.image_url || '/static/img/collection-default.png'}" 
-                                                     alt="${collection.name}" 
+                                                <img src="${collection.image_url || '/static/img/collection-default.png'}"
+                                                     alt="${collection.name}"
+                                                     loading="lazy"
                                                      class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
                                                 <span class="text-[9px] xs:text-[10px] sm:text-xs truncate">${collection.name}</span>
                                             </div>
@@ -1514,7 +1706,7 @@
                                     data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
                                     data-aos="fade-up" data-aos-delay="${index * 100}">
                                     <img src="${post.avatar_url}" alt="User Avatar"
-                                        class="w-5 xs:h-6 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3"
+                                        class="w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 rounded-full mr-1 xs:mr-2 sm:mr-3"
                                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(post.username || 'User')}&background=9333ea&color=fff'">
                                     <div class="flex-1">
                                         <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@${post.username}</span>
@@ -1537,11 +1729,11 @@
 
         // Handle Hero Slides Updates
         heroSlidesSource.onopen = function() {
-            console.log("SSE connection established for hero slides");
+            // console.log("SSE connection established for hero slides");
         };
 
         heroSlidesSource.onmessage = function(event) {
-            console.log("Received SSE message for hero slides:", event.data);
+            // console.log("Received SSE message for hero slides:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1562,11 +1754,11 @@
 
        // Handle Highest Vitality Collections Updates
         highestVitalitySource.onopen = function() {
-            console.log("SSE connection established for highest vitality collections");
+            // console.log("SSE connection established for highest vitality collections");
         };
 
         highestVitalitySource.onmessage = function(event) {
-            console.log("Received SSE message for highest vitality collections:", event.data);
+            // console.log("Received SSE message for highest vitality collections:", event.data);
             const data = JSON.parse(event.data);
 
             if (data.error) {
@@ -1712,7 +1904,7 @@
         
         // --- THIS IS THE SSE UPDATE FUNCTION ---
         window.updateHighestVitalityCarousel = function(newCollections) {
-            console.log("Updating carousel with new data...");
+            // console.log("Updating carousel with new data...");
             
             // 1. Destroy old tilt effects
             const existingTilts = carousel.querySelectorAll('[data-tilt]');
@@ -1757,7 +1949,9 @@
                              data-collection-performance="${(collection.performance_score || 0).toFixed(1)}"
                              data-collection-address="${collection.address}">
                             <img src="${encodeURI(collection.image_url || '/static/img/collection-default.png')}"
-                                 alt="${encodeURIComponent(collection.name)}" class="w-full h-full object-cover absolute inset-0">
+                                 alt="${encodeURIComponent(collection.name)}"
+                                 loading="lazy"
+                                 class="w-full h-full object-cover absolute inset-0">
                             <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/80"></div>
                             <div class="absolute bottom-0 left-0 p-3 xs:p-4 sm:p-5 z-10">
                                 <h3 class="text-sm xs:text-base sm:text-lg font-bold text-white drop-shadow-lg shadow-black/80 leading-tight">

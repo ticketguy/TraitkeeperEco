@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (userInput === confirmationText) {
                  if (confirm('FINAL CONFIRMATION:\nAre you absolutely sure you want to permanently delete your TraitKeeper account?')) {
-                    console.log("Submitting account deletion form..."); 
+                    // console.log("Submitting account deletion form..."); 
                     const deleteForm = document.getElementById('delete-account-form');
                     if(deleteForm) {
                         deleteForm.submit();
@@ -406,13 +406,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert("Error: Delete form not found. Could not delete account.");
                     }
                  } else {
-                    console.log("Account deletion cancelled (final prompt).");
+                    // console.log("Account deletion cancelled (final prompt).");
                  }
             } else if (userInput!== null) { 
                 alert("Confirmation text did not match. Account deletion cancelled.");
-                console.log("Account deletion cancelled (text mismatch).");
+                // console.log("Account deletion cancelled (text mismatch).");
             } else { 
-                 console.log("Account deletion cancelled (prompt cancelled).");
+                 // console.log("Account deletion cancelled (prompt cancelled).");
             }
         });
     }

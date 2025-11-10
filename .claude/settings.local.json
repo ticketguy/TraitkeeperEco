@@ -28,7 +28,18 @@
       "Bash(nul)",
       "Bash(ls:*)",
       "Bash(default:0 }}\"\n    data-volume=\"{{ collection.volume)",
-      "Bash(default:0 }}\"\n    data-sales=\"{{ collection.sales_24h)"
+      "Bash(default:0 }}\"\n    data-sales=\"{{ collection.sales_24h)",
+      "Bash(curl:*)",
+      "Bash(docker logs:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:css:*)",
+      "Bash(.gitignore)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec:*)",
+      "Bash(\"templates/index page/base.html.tmp\")",
+      "Bash(docker restart:*)",
+      "Bash(npm run minify:js:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,16 +2,91 @@
 {% load i18n admin_urls static admin_modify %}
 
 {% block admin_inner_content %}
+<style>
+    /* Mobile Form Optimizations */
+    @media (max-width: 767px) {
+        .form-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .delete-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-actions {
+            flex-direction: column !important;
+            width: 100%;
+        }
+
+        .form-actions > * {
+            width: 100% !important;
+            justify-content: center;
+        }
+
+        .admin-form-container {
+            padding: 1rem !important;
+        }
+
+        fieldset {
+            padding: 0.75rem !important;
+        }
+
+        /* Touch target optimization */
+        button,
+        input[type="submit"],
+        a.inline-flex {
+            min-height: 44px;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+
+        /* Prevent iOS zoom on input focus */
+        input,
+        textarea,
+        select {
+            font-size: 16px !important;
+        }
+
+        /* Better field spacing */
+        .field-box {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-row.multi-field {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    /* Small phones */
+    @media (max-width: 480px) {
+        .form-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .admin-form-container {
+            padding: 0.75rem !important;
+            border-radius: 0.5rem;
+        }
+    }
+</style>
+
 <div class="space-y-6 animate-fade-in">
     <!-- Form Header -->
-    <div class="flex items-center justify-between">
+    <div class="form-header flex items-center justify-between">
         <h2 class="text-2xl font-bold flex items-center">
             <i class="fas fa-edit text-primary mr-2"></i>
             {% if add %}Add{% else %}Edit{% endif %} {{ opts.verbose_name|capfirst }}
         </h2>
-        
+
         {% if has_delete_permission and not is_popup %}
-            <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 shadow-sm hover:shadow-md">
+            <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="delete-btn inline-flex items-center px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 shadow-sm hover:shadow-md">
                 <i class="fas fa-trash mr-1"></i>
                 <span>Delete</span>
             </a>
@@ -42,10 +117,10 @@
     {% endif %}
 
     <!-- Main Form -->
-    <form id="{{ opts.model_name }}_form" method="post" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <form id="{{ opts.model_name }}_form" method="post" enctype="multipart/form-data" class="admin-form-container bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         {% csrf_token %}
         {% block form_top %}{% endblock %}
-        
+
         <div class="grid grid-cols-1 gap-6">
             {% for fieldset in adminform %}
                 <fieldset class="border border-gray-200 rounded-lg p-4">
@@ -53,7 +128,7 @@
                     {% if fieldset.description %}
                         <div class="text-gray-600 mb-4">{{ fieldset.description|safe }}</div>
                     {% endif %}
-                    
+
                     {% for line in fieldset %}
                         <div class="form-row {% if line.errors %}has-error{% endif %} {% if line.fields|length_is:1 %}single-field{% else %}multi-field grid grid-cols-1 md:grid-cols-2 gap-4{% endif %} mb-4">
                             {% for field in line %}
@@ -64,7 +139,7 @@
                                             {% if field.field.field.required %}<span class="text-red-500">*</span>{% endif %}
                                         </label>
                                     </div>
-                                    
+
                                     <div class="field-widget">
                                         {% if field.is_readonly %}
                                             <div class="readonly p-2 bg-gray-100 rounded border border-gray-200">{{ field.contents }}</div>
@@ -98,16 +173,16 @@
             {% block after_related_objects %}{% endblock %}
 
             <!-- Submit Buttons -->
-            <div class="flex items-center space-x-4 mt-6">
-                <input type="submit" value="{% if add %}Add {{ opts.verbose_name }}{% else %}Save changes{% endif %}" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-transform duration-300 transform hover:scale-105 shadow-sm hover:shadow-md">
-                
+            <div class="form-actions flex items-center space-x-4 mt-6">
+                <input type="submit" value="{% if add %}Add {{ opts.verbose_name }}{% else %}Save changes{% endif %}" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-transform duration-300 transform hover:scale-105 shadow-sm hover:shadow-md cursor-pointer">
+
                 {% if not add %}
                     <a href="{% url opts|admin_urlname:'history' original.pk|admin_urlquote %}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-300 shadow-sm hover:shadow-md">
                         <i class="fas fa-history mr-1"></i>
                         <span>History</span>
                     </a>
                 {% endif %}
-                
+
                 <a href="{% url opts|admin_urlname:'changelist' %}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-300 shadow-sm hover:shadow-md">
                     <i class="fas fa-times mr-1"></i>
                     <span>Cancel</span>
