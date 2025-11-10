@@ -999,80 +999,95 @@
                 </tbody>
             </table>
         </div>
-        <div class="traits-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4 md:hidden"
+        <!-- Mobile Optimized Card Grid - Compact & Responsive -->
+        <div class="traits-card-container grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:hidden"
             data-aos="fade-up" data-aos-delay="200">
             {% if top_traits %}
             {% for trait in top_traits %}
-            <div class="trait-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
+            <div class="trait-card bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden shadow-md hover:shadow-lg tilt-card cursor-pointer relative transition-shadow duration-300"
                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
                 {% if trait.mint_address %}
                 data-nft-modal
                 data-mint-address="{{ trait.mint_address }}"
                 {% endif %}>
+                <!-- Rank Badge - Smaller on mobile -->
                 <div
-                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-primary text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge">
+                    class="absolute top-1 right-1 bg-primary text-white text-[9px] xs:text-[10px] px-1.5 xs:px-2 py-0.5 rounded-full rarity-badge font-semibold z-10">
                     #{{ forloop.counter|add:top_traits.start_index|add:-1 }}</div>
+
+                <!-- Image - Reduced height for mobile -->
                 <div
-                    class="trait-image h-28 xs:h-32 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
+                    class="trait-image h-20 xs:h-24 sm:h-28 bg-accent-light dark:bg-accent-dark flex items-center justify-center">
                     <img src="{{ trait.image_url }}" alt="{{ trait.trait_name }}"
-                        class="w-full h-full object-cover">
+                        class="w-full h-full object-cover"
+                        loading="lazy">
                 </div>
-                <div class="p-2 xs:p-3 sm:p-4 flex-1">
-                    <div class="mb-2">
-                        <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">
+
+                <!-- Content - Compact spacing -->
+                <div class="p-1.5 xs:p-2 sm:p-3 flex-1">
+                    <!-- Title section -->
+                    <div class="mb-1.5 xs:mb-2">
+                        <h3 class="text-[11px] xs:text-xs sm:text-sm font-semibold text-text-light dark:text-text-dark truncate leading-tight">
                             {{ trait.trait_name }}: {{ trait.trait_value }}</h3>
-                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
+                        <p class="text-[9px] xs:text-[10px] text-text-secondary-light dark:text-text-secondary-dark truncate mt-0.5">
                             {{ trait.collection }}
                         </p>
                     </div>
+
+                    <!-- Stats Grid - Compact layout -->
                     <div class="space-y-1">
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-primary">
+                        <!-- Row 1: Score & Avg Sale -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-primary truncate">
                                     {{ trait.performance_score|floatformat:1 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    SCORE</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Score</div>
                             </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.avg_sale_price|floatformat:2 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    AVG SALE</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.premium_score|floatformat:2 }}x</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    PREMIUM</div>
-                            </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.velocity_score|floatformat:2 }}</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    VELOCITY</div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.avg_sale_price|floatformat:1 }}</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Sale</div>
                             </div>
                         </div>
-                        <div class="flex justify-between">
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold">
+
+                        <!-- Row 2: Premium & Velocity -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.premium_score|floatformat:1 }}x</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Premium</div>
+                            </div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.velocity_score|floatformat:1 }}</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Velocity</div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Momentum & Rarity -->
+                        <div class="flex justify-between gap-1">
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold truncate">
                                     {% if trait.momentum_score > 0 %}
-                                    <span class="text-green-400">↑ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    <span class="text-green-400">↑{{ trait.momentum_score|floatformat:1 }}</span>
                                     {% elif trait.momentum_score < 0 %}
-                                    <span class="text-red-400">↓ {{ trait.momentum_score|floatformat:2 }}</span>
+                                    <span class="text-red-400">↓{{ trait.momentum_score|floatformat:1|slice:"1:" }}</span>
                                     {% else %}
-                                    <span class="text-gray-400">→ 0.00</span>
+                                    <span class="text-gray-400">→0</span>
                                     {% endif %}
                                 </div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    MOMENTUM</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Momentum</div>
                             </div>
-                            <div class="text-center flex-1">
-                                <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-light dark:text-text-dark">
-                                    {{ trait.rarity_score|floatformat:1 }}%</div>
-                                <div class="text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    RARITY</div>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="text-[10px] xs:text-xs font-bold text-text-light dark:text-text-dark truncate">
+                                    {{ trait.rarity_score|floatformat:0 }}%</div>
+                                <div class="text-[8px] xs:text-[9px] text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                                    Rarity</div>
                             </div>
                         </div>
                     </div>

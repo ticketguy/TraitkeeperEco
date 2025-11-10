@@ -26,11 +26,224 @@
       }
     }
   </script>
+  <style>
+    /* Comprehensive Mobile Optimizations for Admin List View */
+
+    /* Touch target optimization */
+    @media (max-width: 1023px) {
+      button,
+      input[type="submit"],
+      a,
+      .filter-toggle,
+      .apply-filters {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    /* Prevent iOS zoom on input focus */
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+
+    /* Mobile Filter Sidebar Enhancements */
+    @media (max-width: 768px) {
+      #filter-sidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100vh;
+        z-index: 9999;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+      }
+
+      #show-filter-btn {
+        z-index: 9998;
+      }
+
+      .filter-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        display: none;
+      }
+
+      .filter-overlay.active {
+        display: block;
+      }
+    }
+
+    /* Revolutionary Mobile Table - Stacked Card Layout */
+    @media (max-width: 768px) {
+      .admin-table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        min-width: 600px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      /* Transform table to cards on very small screens */
+      .admin-table-responsive table,
+      .admin-table-responsive thead,
+      .admin-table-responsive tbody,
+      .admin-table-responsive th,
+      .admin-table-responsive td,
+      .admin-table-responsive tr {
+        display: block;
+      }
+
+      .admin-table-responsive thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+
+      .admin-table-responsive tr {
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .admin-table-responsive td {
+        border: none;
+        position: relative;
+        padding-left: 50% !important;
+        text-align: right;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-bottom: 1px solid #f3f4f6;
+      }
+
+      .admin-table-responsive td:last-child {
+        border-bottom: none;
+      }
+
+      .admin-table-responsive td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.75rem;
+        width: 45%;
+        padding-right: 0.5rem;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #800080;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .admin-table-responsive td.action-checkbox {
+        padding-left: 0.75rem !important;
+        justify-content: flex-start;
+      }
+
+      .admin-table-responsive td.action-checkbox:before {
+        content: 'Select';
+      }
+
+      /* Better pagination on mobile */
+      .pagination {
+        gap: 0.25rem !important;
+      }
+
+      .pagination a,
+      .pagination span {
+        min-width: 36px !important;
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.875rem;
+      }
+    }
+
+    /* Small phones optimization */
+    @media (max-width: 480px) {
+      #content-main {
+        padding: 0.75rem !important;
+      }
+
+      .admin-table-responsive tr {
+        padding: 0.5rem;
+      }
+
+      .admin-table-responsive td {
+        padding-left: 45% !important;
+        font-size: 0.875rem;
+      }
+
+      .admin-table-responsive td:before {
+        font-size: 0.75rem;
+        width: 40%;
+      }
+
+      /* Search bar stacking */
+      #changelist-search .flex {
+        flex-direction: column;
+      }
+
+      #changelist-search input[type="text"] {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Actions stacking */
+      .actions-container {
+        flex-direction: column !important;
+      }
+
+      .actions-container > * {
+        width: 100% !important;
+      }
+    }
+
+    /* Smooth transitions */
+    #filter-sidebar {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Better scrollbar for filter sidebar */
+    #filter-sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #filter-sidebar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #filter-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    #filter-sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
 {% endblock %}
 
 {% block admin_inner_content %}
 <div id="content-main" class="w-full">
   <div class="p-6 animate-fade-in">
+    <!-- Filter Overlay for Mobile -->
+    <div id="filter-overlay" class="filter-overlay"></div>
+
     <div class="flex flex-wrap gap-5 relative">
       <!-- Button to show filters on mobile/when hidden -->
       <button id="show-filter-btn" class="fixed left-0 top-1/2 -translate-y-1/2 bg-brand-purple text-white border-none rounded-r-md py-3 px-2 cursor-pointer z-50 transition-opacity opacity-0 pointer-events-none">
@@ -604,7 +817,7 @@
 
           <!-- Actions -->
           {% if action_form and actions_on_top and cl.show_admin_actions %}
-            <div class="flex flex-wrap gap-2.5 items-center mb-5">
+            <div class="actions-container flex flex-wrap gap-2.5 items-center mb-5">
               <div class="flex-1">
                 {{ action_form }}
               </div>
@@ -622,7 +835,7 @@
 
           <!-- Results Table -->
           {% block result_list %}
-            <div class="overflow-x-auto bg-white border border-gray-200 rounded-lg p-4 shadow-sm w-full">
+            <div class="admin-table-responsive overflow-x-auto bg-white border border-gray-200 rounded-lg p-4 shadow-sm w-full">
               {% if cl.result_list %}
                 <table class="w-full border-collapse mb-6">
                   <thead>
@@ -647,12 +860,12 @@
                     {% for result in cl.result_list %}
                       <tr class="hover:bg-gray-50">
                         {% if cl.show_admin_actions %}
-                          <td class="py-3.5 px-4 border-b border-gray-200">
+                          <td class="action-checkbox py-3.5 px-4 border-b border-gray-200" data-label="Select">
                             <input type="checkbox" name="_selected_action" value="{{ result.pk }}" class="action-select w-4.5 h-4.5 cursor-pointer">
                           </td>
                         {% endif %}
                         {% for field in cl.list_display %}
-                          <td class="py-3.5 px-4 border-b border-gray-200 whitespace-normal break-words max-w-[200px] overflow-hidden text-ellipsis text-gray-900 text-sm">
+                          <td class="py-3.5 px-4 border-b border-gray-200 whitespace-normal break-words max-w-[200px] overflow-hidden text-ellipsis text-gray-900 text-sm" data-label="{{ field|capfirst }}">
                             {% if field in cl.list_display_links %}
                               <a href="{% url cl.opts|admin_urlname:'change' result.pk|admin_urlquote %}" class="text-brand-purple hover:text-brand-purple-dark hover:underline">
                                 {{ result|lookup:field|default:"-" }}
@@ -676,7 +889,7 @@
 
           <!-- Pagination -->
           {% if cl.paginator %}
-            <div class="flex justify-center flex-wrap gap-2 mt-5">
+            <div class="pagination flex justify-center flex-wrap gap-2 mt-5">
               {% if cl.has_previous %}
                 <a href="{{ cl.get_query_string|add:'p='|add:cl.previous_page_number }}" class="py-2 px-3 border border-gray-300 rounded no-underline text-brand-purple transition-colors hover:bg-gray-50 min-w-[40px] text-center">Previous</a>
               {% else %}
@@ -722,7 +935,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterToggleBtn = document.getElementById('filter-toggle');
     const filterToggleText = document.getElementById('filter-toggle-text');
     const showFilterBtn = document.getElementById('show-filter-btn');
-    
+    const filterOverlay = document.getElementById('filter-overlay');
+
     // Setup toggle filter function
     window.toggleFilter = function() {
         if (!filterSidebar.classList.contains('translate-x-[-100%]')) {
@@ -732,15 +946,25 @@ document.addEventListener('DOMContentLoaded', function() {
             filterSidebar.classList.remove('sticky');
             filterToggleText.textContent = 'Show Filters';
             showFilterBtn.classList.remove('opacity-0', 'pointer-events-none');
+
+            // Hide overlay
+            if (filterOverlay) {
+                filterOverlay.classList.remove('active');
+            }
         } else {
             // Show sidebar
             filterSidebar.classList.remove('translate-x-[-100%]', 'fixed', 'top-0', 'left-0', 'h-screen');
             filterSidebar.classList.add('sticky');
             filterToggleText.textContent = 'Hide Filters';
             showFilterBtn.classList.add('opacity-0', 'pointer-events-none');
+
+            // Show overlay on mobile
+            if (window.matchMedia('(max-width: 768px)').matches && filterOverlay) {
+                filterOverlay.classList.add('active');
+            }
         }
     };
-    
+
     // Setup show filter button (for mobile)
     if (showFilterBtn) {
         showFilterBtn.addEventListener('click', function() {
@@ -748,9 +972,23 @@ document.addEventListener('DOMContentLoaded', function() {
             filterSidebar.classList.add('sticky');
             filterToggleText.textContent = 'Hide Filters';
             showFilterBtn.classList.add('opacity-0', 'pointer-events-none');
+
+            // Show overlay on mobile
+            if (window.matchMedia('(max-width: 768px)').matches && filterOverlay) {
+                filterOverlay.classList.add('active');
+            }
         });
     }
-    
+
+    // Close filter when clicking overlay
+    if (filterOverlay) {
+        filterOverlay.addEventListener('click', function() {
+            if (!filterSidebar.classList.contains('translate-x-[-100%]')) {
+                toggleFilter();
+            }
+        });
+    }
+
     // Check for smaller screens and hide filter by default
     function checkScreenSize() {
         if (window.matchMedia('(max-width: 768px)').matches) {
@@ -758,16 +996,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleFilter();
             }
         } else {
-            // On larger screens, ensure filter is visible
+            // On larger screens, ensure filter is visible and overlay is hidden
             if (filterSidebar.classList.contains('translate-x-[-100%]')) {
                 toggleFilter();
             }
+            if (filterOverlay) {
+                filterOverlay.classList.remove('active');
+            }
         }
     }
-    
+
     // Run on load
     checkScreenSize();
-    
+
     // Run when window is resized
     window.addEventListener('resize', checkScreenSize);
 
