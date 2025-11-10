@@ -282,6 +282,23 @@
         --tw-ring-shadow: none !important;
     }
 
+    /* Remove outline/box from SVG elements specifically */
+    svg,
+    svg:hover,
+    svg:focus,
+    svg:active,
+    button svg,
+    a svg {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Prevent SVG parent buttons from showing outline */
+    button:has(svg),
+    a:has(svg) {
+        outline: none !important;
+    }
+
     /* --- General Header & Container Styles (Existing + Cleanup) --- */
     header { overflow: visible; box-sizing: border-box; }
     .header-container { overflow: visible; position: relative; box-sizing: border-box; }
