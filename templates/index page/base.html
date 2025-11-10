@@ -7,7 +7,7 @@
 
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="TraitKeeper - Secure and analyze your NFT's traits">
     <meta name="keywords" content="NFT, traits, blockchain, crypto art">
     <title>{% block title %}TraitKeeper - Secure Your NFT's Traits{% endblock %}</title>
@@ -137,6 +137,12 @@
         --text-secondary-dark: #808080;
     }
 
+    /* Dark mode: Change primary to black */
+    html.dark {
+        --primary-color: #000000;
+        --primary-dark-color: #1a1a1a;
+    }
+
     body {
         margin: 0; /* Reset default browser margins */
         width: 100%;
@@ -236,6 +242,45 @@
     .modal-content { position: relative; z-index: 1; }
     .faint-glow-hover:hover { box-shadow: 0 0 5px rgba(128, 0, 128, 0.3); animation: faintPulse 2s infinite; }
 
+
+    /* --- Mobile Responsiveness and Viewport Fixes --- */
+    * { box-sizing: border-box; }
+    html, body {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent horizontal scroll on mobile */
+    body {
+        position: relative;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Ensure all containers respect viewport width */
+    .container, .site-container, main, section {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Remove ugly button focus boxes - cleaner UI */
+    button:focus,
+    button:focus-visible,
+    a:focus,
+    a:focus-visible,
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove Tailwind focus rings */
+    *:focus {
+        --tw-ring-shadow: none !important;
+    }
 
     /* --- General Header & Container Styles (Existing + Cleanup) --- */
     header { overflow: visible; box-sizing: border-box; }
@@ -1067,6 +1112,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 </div>
                                 <input type="password" id="password" name="password"
                                     placeholder="Enter your password"
+                                    autocomplete="current-password"
                                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
                                     required>
                             </div>
@@ -1370,17 +1416,26 @@ if (header) {
                 }
 
                 if (mobileMenuToggle) {
-                    // console.log('Attaching click event listener to mobile menu toggle');
-                    mobileMenuToggle.addEventListener('click', function (e) {
+                    // console.log('Attaching event listeners to mobile menu toggle');
+                    const handleMobileMenuToggle = function (e) {
+                        e.preventDefault();
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        e.preventDefault();
-                        // console.log('Mobile menu toggle clicked');
-                        if (mobileMenuButtons.classList.contains('hidden')) {
+                        // console.log('Mobile menu toggle activated');
+                        if (mobileMenuButtons && mobileMenuButtons.classList.contains('hidden')) {
                             openMobileMenu();
                         } else {
                             closeMobileMenu();
                         }
+                    };
+
+                    // Add both click and touch events for better mobile support
+                    mobileMenuToggle.addEventListener('click', handleMobileMenuToggle);
+                    mobileMenuToggle.addEventListener('touchend', handleMobileMenuToggle);
+
+                    // Prevent ghost clicks on mobile
+                    mobileMenuToggle.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
                     });
                 } else {
                     console.error('Mobile menu toggle not found in the DOM');
@@ -1517,15 +1572,16 @@ if (header) {
 
                 if (walletTab && walletTabContent) {
                     // console.log('Attaching click event to wallet tab');
-                    walletTab.addEventListener('click', (e) => {
+                    const handleWalletTabActivation = (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        // console.log('\n>>> WALLET TAB CLICKED <<<');
-                        // console.log('Event:', e);
-                        // console.log('Current target:', e.currentTarget);
-                        // console.log('Calling activateTab for WALLET tab...');
+                        // console.log('\n>>> WALLET TAB ACTIVATED <<<');
                         activateTab(walletTab, walletTabContent, true);
-                    });
-                    // console.log('Wallet tab click listener attached successfully');
+                    };
+
+                    walletTab.addEventListener('click', handleWalletTabActivation);
+                    walletTab.addEventListener('touchend', handleWalletTabActivation);
+                    // console.log('Wallet tab listeners attached successfully');
                 } else {
                     console.error('ERROR: Wallet tab or content not found!', {
                         walletTab: !!walletTab,
@@ -1535,15 +1591,16 @@ if (header) {
 
                 if (loginTab && loginTabContent) {
                     // console.log('Attaching click event to login tab');
-                    loginTab.addEventListener('click', (e) => {
+                    const handleLoginTabActivation = (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        // console.log('\n>>> LOGIN TAB CLICKED <<<');
-                        // console.log('Event:', e);
-                        // console.log('Current target:', e.currentTarget);
-                        // console.log('Calling activateTab for LOGIN tab...');
+                        // console.log('\n>>> LOGIN TAB ACTIVATED <<<');
                         activateTab(loginTab, loginTabContent, false);
-                    });
-                    // console.log('Login tab click listener attached successfully');
+                    };
+
+                    loginTab.addEventListener('click', handleLoginTabActivation);
+                    loginTab.addEventListener('touchend', handleLoginTabActivation);
+                    // console.log('Login tab listeners attached successfully');
                 } else {
                     console.error('ERROR: Login tab or content not found!', {
                         loginTab: !!loginTab,
@@ -1748,7 +1805,7 @@ if (header) {
                 const desktopMenu = document.getElementById('user-profile-menu-desktop');
                 const mobileMenu = document.getElementById('user-profile-menu-mobile');
 
-                // console.log('Profile dropdown setup:', {
+                console.log('Profile dropdown setup:', {
                     profileLinksCount: profileLinks.length,
                     hasDesktopMenu: !!desktopMenu,
                     hasMobileMenu: !!mobileMenu
@@ -1760,26 +1817,29 @@ if (header) {
                         const menu = index === 0 ? desktopMenu : mobileMenu;
                         const menuType = index === 0 ? 'desktop' : 'mobile';
 
-                        // console.log(`Setting up ${menuType} profile dropdown`, {
+                        console.log(`Setting up ${menuType} profile dropdown`, {
                             hasProfileLink: !!profileLink,
                             hasMenu: !!menu
                         });
 
                         if (profileLink && menu) {
-                            // Toggle dropdown on click
-                            profileLink.addEventListener('click', function (e) {
-                                // console.log(`${menuType} profile link clicked`);
+                            // Toggle dropdown on click with touch support
+                            const handleProfileToggle = function (e) {
+                                console.log(`${menuType} profile activated`);
                                 e.stopPropagation();
                                 e.preventDefault();
 
                                 const wasHidden = menu.classList.contains('hidden');
                                 menu.classList.toggle('hidden');
-                                // console.log(`${menuType} menu toggled from ${wasHidden ? 'hidden' : 'visible'} to ${!wasHidden ? 'hidden' : 'visible'}`);
+                                console.log(`${menuType} menu toggled from ${wasHidden ? 'hidden' : 'visible'} to ${!wasHidden ? 'hidden' : 'visible'}`);
 
                                 // Close the other menu
                                 const otherMenu = index === 0 ? mobileMenu : desktopMenu;
                                 if (otherMenu) otherMenu.classList.add('hidden');
-                            });
+                            };
+
+                            profileLink.addEventListener('click', handleProfileToggle);
+                            profileLink.addEventListener('touchend', handleProfileToggle);
 
                             // Prevent dropdown from closing when clicking inside it
                             menu.addEventListener('click', function(e) {

@@ -583,12 +583,12 @@ def vitality_metrics(request):
 
         # Count NFT vitality calculations in last 24h
         nft_calculations = NFTVitalityHistory.objects.filter(
-            updated_at__gte=cutoff
+            calculated_at__gte=cutoff
         ).count()
 
         # Count collection vitality calculations in last 24h
         collection_calculations = CollectionVitalityHistory.objects.filter(
-            updated_at__gte=cutoff
+            calculated_at__gte=cutoff
         ).count()
 
         # Get average calculation times (placeholder - would need timing data)
@@ -597,12 +597,12 @@ def vitality_metrics(request):
 
         # Calculate failed calculations (vitality_score of 0 could indicate failure)
         failed_nft = NFTVitalityHistory.objects.filter(
-            updated_at__gte=cutoff,
+            calculated_at__gte=cutoff,
             vitality_score=0
         ).count()
 
         failed_collection = CollectionVitalityHistory.objects.filter(
-            updated_at__gte=cutoff,
+            calculated_at__gte=cutoff,
             vitality_score=0
         ).count()
 
@@ -621,7 +621,7 @@ def vitality_metrics(request):
         queue_status = 'idle' if queue_size == 0 else 'active'
 
         # Get recent calculation component values (sample from latest calculations)
-        recent_nft = NFTVitalityHistory.objects.order_by('-updated_at').first()
+        recent_nft = NFTVitalityHistory.objects.order_by('-calculated_at').first()
 
         recent_calculations = {
             'perception_index': round(recent_nft.perception_index, 2) if recent_nft else 0,
