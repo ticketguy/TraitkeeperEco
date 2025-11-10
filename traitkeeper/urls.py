@@ -13,8 +13,9 @@ urlpatterns = [
     # Health check endpoint for Docker
     path('health/', views.health_check, name='health_check'),
 
-    # Admin page
-    path('admin/', admin_site.urls),
+    # Admin page - SECURE PATH (DO NOT SHARE)
+    # Access at: /secure-mgmt-xK9pL2vQ7nR8mT4wU6yH5jA3bC1d/
+    path('secure-mgmt-xK9pL2vQ7nR8mT4wU6yH5jA3bC1d/', admin_site.urls),
 
     # Landing page
     path('', views.index, name='index'),
@@ -49,7 +50,8 @@ urlpatterns = [
     path('admin-secure/', include('admin_secure.urls')),
 
     # API URLs
-    path('api/', include('traitkeeper.api.urls')),  
+    path('api/', include('traitkeeper.api.urls')),
+    path('api/search-collections/', views.search_collections, name='api_search_collections'),  
 
     # Notifications URLs
     path('notifications/', include('notifications.urls')),

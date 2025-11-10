@@ -80,6 +80,36 @@ def health_check(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def search_collections(request):
+    """
+    Search collections by name or display_name.
+    Returns JSON with matching collections.
+    """
+    query = request.GET.get('q', '').strip()
+
+    if not query or len(query) < 2:
+        return Response({'results': []})
+
+    # Search collections by name or display_name (case-insensitive)
+    collections = NFTCollection.objects.filter(
+        Q(name__icontains=query) |
+        Q(display_name__icontains=query)
+    ).only(
+        'address', 'name', 'display_name', 'image_url'
+    )[:10]  # Limit to 10 results
+
+    results = [{
+        'address': col.address,
+        'name': col.display_name or col.name,
+        'image_url': col.image_url or '',
+        'url': f'/collection/{col.address}/'
+    } for col in collections]
+
+    return Response({'results': results})
+
+
+@api_view(['GET'])
 @permission_classes([AllowAny]) # Allow anyone to get stats
 def solana_network_stats(request):
     """API endpoint for Solana network statistics."""
