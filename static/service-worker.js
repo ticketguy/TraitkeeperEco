@@ -1,12 +1,14 @@
-// TraitKeeper Service Worker - v1
-const CACHE_NAME = 'traitkeeper-cache-v1';
+// TraitKeeper Service Worker - v2
+const CACHE_NAME = 'traitkeeper-cache-v2';
 const urlsToCache = [
   "/",
-  "/static/css/styles/main.css",
-  "/static/js/src/wallet-connection.js",
+  "/static/css/tailwind-compiled.css",
   "/static/img/Trait-Keeper-Logo-purple-1-unaimated-effect.png",
+  "/static/img/trait-keeper-logo-purple-combination-mark.png",
   "/static/img/favicon/android-chrome-192x192.png",
-  "/static/img/favicon/android-chrome-512x512.png"
+  "/static/img/favicon/android-chrome-512x512.png",
+  "/static/img/favicon/favicon-32x32.png",
+  "/static/img/favicon/favicon-16x16.png"
 ];
 
 // Install event - cache essential files

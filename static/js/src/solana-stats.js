@@ -2,9 +2,17 @@
 
 // Variable to store the previous Solana price (no longer needed, but keeping for potential future use)
 let previousPrice = null;
+let rateLimitBackoff = 0; // Track rate limit backoff time
+let lastRequestTime = 0; // Track last request timestamp
 
 // Function to fetch and update Solana price and TPS
 function updateSolanaStats() {
+    // Check if we're in a backoff period
+    const now = Date.now();
+    if (rateLimitBackoff > 0 && now - lastRequestTime < rateLimitBackoff) {
+        console.log('Rate limited, waiting before next request...');
+        return;
+    }
     // console.log("Running updateSolanaStats");
 
     // Find ALL DOM elements (both desktop and mobile)
@@ -21,12 +29,22 @@ function updateSolanaStats() {
     tpsElements.forEach(el => el.classList.add('animate-fade-pulse'));
 
     // console.log("Making fetch request to /api/solana-network-stats/");
+    lastRequestTime = Date.now();
+
     fetch('/api/solana-network-stats/')
         .then(response => {
             // console.log("Fetch response received:", response);
             if (!response.ok) {
+                if (response.status === 429) {
+                    // Rate limited - implement exponential backoff
+                    rateLimitBackoff = rateLimitBackoff === 0 ? 60000 : Math.min(rateLimitBackoff * 2, 300000); // Start at 1min, max 5min
+                    console.warn(`Rate limited (429). Backing off for ${rateLimitBackoff / 1000}s`);
+                    throw new Error(`Rate limited. Retry after ${rateLimitBackoff / 1000}s`);
+                }
                 throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
             }
+            // Reset backoff on successful request
+            rateLimitBackoff = 0;
             return response.json();
         })
         .then(data => {
@@ -115,19 +133,15 @@ function initializeSolanaStats(retries = 3, delay = 1000) {
     // console.log("Calling updateSolanaStats initially");
     updateSolanaStats();
 
-    // Refresh every 30 seconds
+    // Refresh every 60 seconds (reduced from 30s to avoid rate limits)
     setInterval(() => {
         // console.log("Polling for updated Solana stats");
         updateSolanaStats();
-    }, 30000);
+    }, 60000);
 }
 
-// Run initialization with retries
+// Run initialization with retries (only on DOMContentLoaded to avoid duplicate calls)
 document.addEventListener("DOMContentLoaded", () => {
     // console.log("DOMContentLoaded event fired in solana-stats.js, running initializeSolanaStats");
     initializeSolanaStats();
 });
-
-// Fallback: Run initialization immediately in case DOMContentLoaded doesn't fire
-// console.log("Running initializeSolanaStats as fallback in solana-stats.js");
-initializeSolanaStats();

@@ -53,6 +53,7 @@
 
     <!-- PWA theme colors -->
     <meta name="theme-color" content="#9945FF">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TraitKeeper">
@@ -1286,6 +1287,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 </div>
                                 <input type="text" id="username_or_email" name="username_or_email"
                                     placeholder="Enter your username or email"
+                                    autocomplete="username"
                                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
                                     required>
                             </div>
@@ -2087,9 +2089,8 @@ if (header) {
                             if (mobileMenu) mobileMenu.classList.add('hidden');
                         }
                     });
-                } else {
-                    console.error('No profile links found!');
                 }
+                // Profile links not found is expected when user is not authenticated
 
                 const transactionCheckbox = document.querySelector('input[name="transaction"]');
                 const transactionSettings = document.querySelector('.transaction-settings');
