@@ -430,9 +430,9 @@
                         </div>
 
                         <!-- Navigation Dots -->
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1.5">
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1">
                             {% for collection in featured_collections %}
-                            <button class="carousel-dot w-1.5 h-1.5 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-4{% else %}bg-white/50 hover:bg-white/75{% endif %}"
+                            <button class="carousel-dot w-0.5 h-0.5 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-2{% else %}bg-white/50 hover:bg-white/75{% endif %}"
                                     data-slide="{{ forloop.counter0 }}"
                                     aria-label="Go to slide {{ forloop.counter }}">
                             </button>

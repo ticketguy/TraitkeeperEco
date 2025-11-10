@@ -15,64 +15,8 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <!-- Tailwind CSS -->
-    <!-- Production Note: Replace CDN with compiled production build for better performance -->
-    <!-- Using CDN for development flexibility. In production, use: npm run build:css -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                screens: {
-                    'xs': '360px', // Custom breakpoint for small screens
-                    'sm': '640px',
-                    'md': '768px',
-                    'lg': '1024px',
-                    'xl': '1280px',
-                    '2xl': '1536px',
-                },
-                extend: {
-                    colors: {
-                        primary: '#800080',
-                        'primary-dark': '#660066',
-                        background: { light: '#ffffff', dark: '#121212' },
-                        text: { light: '#333333', dark: '#e0e0e0' },
-                        accent: { light: '#f0f0f0', dark: '#1e1e1e' },
-                        border: { light: '#E5E7EB', dark: '#333333' },
-                        'text-secondary': { light: '#6B7280', dark: '#808080' },
-                        'brand-purple': '#800080',
-                        'brand-black': '#0A0A0A',
-                        'brand-white': '#FFFFFF',
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.5s ease-in-out',
-                        'pulse': 'pulse 2s infinite',
-                        'scale-in': 'scaleIn 0.3s ease-out',
-                        'particle-move': 'particleMove 10s linear infinite',
-                        'faint-pulse': 'faintPulse 2s infinite',
-                        'spin-colors': 'spinColors 3s linear infinite',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        pulse: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.5' } },
-                        scaleIn: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
-                        particleMove: {
-                            '0%': { transform: 'translate(0, 0)' },
-                            '100%': { transform: 'translate(50px, 50px)' },
-                        },
-                        faintPulse: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.02)' } },
-                        spinColors: {
-                            '0%': { background: 'linear-gradient(90deg, #800080, #660066)' },
-                            '50%': { background: 'linear-gradient(90deg, #660066, #800080)' },
-                            '100%': { background: 'linear-gradient(90deg, #800080, #660066)' },
-                        },
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS - Compiled & Minified for Production Performance -->
+    <link rel="stylesheet" href="{% static 'css/tailwind-compiled.css' %}" type="text/css">
 
     <!-- Google Fonts -->
     <link
@@ -92,6 +36,7 @@
     <meta property="og:url" content="https://traitkeeper.io">
 
     <!-- Preload critical assets -->
+    <link rel="preload" as="image" href="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" fetchpriority="high">
     <link rel="preload"
         href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Roboto:wght@100..900&family=Space+Mono:wght@400..700&family=Courier+Prime:wght@400..700&display=swap"
         as="style">
@@ -183,28 +128,40 @@
         .mobile-menu-toggle svg { width: 22px; height: 22px; }
     }
 
-    /* --- Animations (Existing from Tailwind config & custom) --- */
+    /* --- Animations (Optimized for GPU acceleration) --- */
     @keyframes float {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
     }
-    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+        will-change: transform;
+    }
 
     @keyframes fade {
         0% { opacity: 1; }
         50% { opacity: 0.3; }
         100% { opacity: 1; }
     }
-    .animate-fade { animation: fade 1s ease-in-out; }
+    .animate-fade {
+        animation: fade 1s ease-in-out;
+        will-change: opacity;
+    }
 
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
-    .animate-pulse-custom { animation: pulse 1s ease-in-out; }
+    .animate-pulse-custom {
+        animation: pulse 1s ease-in-out;
+        will-change: transform;
+    }
 
-    .animate-fade-pulse { animation: fade 1s ease-in-out, pulse 1s ease-in-out; }
+    .animate-fade-pulse {
+        animation: fade 1s ease-in-out, pulse 1s ease-in-out;
+        will-change: transform, opacity;
+    }
 
     @keyframes fadeTab {
         0% { opacity: 0; transform: translateY(10px); }
@@ -230,6 +187,37 @@
     .animate-faint-pulse { animation: faintPulse 2s infinite; }
     .animate-spin-colors { animation: spinColors 3s linear infinite; }
 
+
+    /* --- Performance Optimizations --- */
+    /* CSS Containment for better rendering performance */
+    section {
+        contain: layout style;
+    }
+
+    /* Smooth scrolling performance */
+    * {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Optimize repaints */
+    img, video, iframe {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+
+    /* Prevent layout shifts */
+    #social-proof {
+        min-height: 400px;
+    }
+
+    #top-traits {
+        min-height: 600px;
+    }
+
+    /* Optimize scrolling with passive listeners */
+    html {
+        scroll-behavior: smooth;
+    }
 
     /* --- Dark Mode Utility Classes (Using Variables) --- */
     /* Applied via html.dark selector */
@@ -671,7 +659,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
             <div class="desktop-header flex items-center gap-6 py-4 px-4 hidden md:flex">
                 <!-- Logo - Left Edge -->
                 <a href="{% url 'index' %}" class="flex-shrink-0">
-                    <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper Logo" class="w-16 h-16 animate-float drop-shadow-lg">
+                    <img src="{% static 'img/trait-keeper-logo-purple-combination-mark.png' %}" alt="TraitKeeper Logo" class="w-16 h-16 animate-float drop-shadow-lg" width="64" height="64" fetchpriority="high">
                 </a>
                 
                 <!-- Nav Links - Close to Logo -->
@@ -791,7 +779,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <div class="mobile-header-left">
                     <a href="{% url 'index' %}">
                         <img src="{% static 'img/Trait-Keeper-Logo-purple-1-unaimated-effect.png' %}" alt="TraitKeeper Logo"
-                            class="h-8 xs:h-9 w-auto animate-float drop-shadow-lg">
+                            class="h-8 xs:h-9 w-auto animate-float drop-shadow-lg" width="auto" height="32" fetchpriority="high">
                     </a>
                 </div>
                 <div class="mobile-search flex-1 max-w-[180px] xs:max-w-[200px] mx-1 xs:mx-2 relative">

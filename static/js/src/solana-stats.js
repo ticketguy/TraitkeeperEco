@@ -72,18 +72,6 @@ function updateSolanaStats() {
                 priceElement.classList.add(isPositive ? 'text-green-500' : 'text-red-500');
             });
 
-                previousPrice = newPrice;  // Update the previous price (for potential future use)
-            }
-
-            // Update Solana TPS
-            if (tpsElement) {
-                const averageTps = data?.tps?.average_tps;
-                if (typeof averageTps === 'number' && !isNaN(averageTps)) {
-                    tpsElement.textContent = averageTps.toFixed(0);
-                } else {
-                    console.error("Invalid average_tps value:", averageTps);
-                    tpsElement.textContent = 'N/A';
-                }
             // Update ALL TPS elements (both desktop and mobile)
             if (typeof averageTps === 'number' && !isNaN(averageTps)) {
                 tpsElements.forEach(tpsElement => {
@@ -100,8 +88,6 @@ function updateSolanaStats() {
         })
         .catch(error => {
             console.error('Error fetching Solana stats:', error);
-            if (priceElement) priceElement.textContent = 'Error';
-            if (tpsElement) tpsElement.textContent = 'Error';
             priceElements.forEach(el => el.textContent = 'Error');
             tpsElements.forEach(el => el.textContent = 'TPS: Error');
         });

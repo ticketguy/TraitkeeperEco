@@ -1,0 +1,42 @@
+/* Tailwind CSS Base Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Base Styles */
+@layer base {
+  :root {
+    /* Light mode colors */
+    --background-color-light: #ffffff;
+    --text-color-light: #333333;
+    --accent-color-light: #f0f0f0;
+    --border-color-light: #E5E7EB;
+    --text-secondary-light: #6B7280;
+    --primary-color: #800080;
+    --primary-dark-color: #660066;
+
+    /* Dark mode colors */
+    --background-color-dark: #000000ff;
+    --text-color-dark: #e0e0e0;
+    --accent-color-dark: #1e1e1e;
+    --border-color-dark: #333333;
+    --text-secondary-dark: #808080;
+
+    /* Responsive Spacing Variables */
+    --header-height-mobile: 60px;
+    --header-height-desktop: 80px;
+    --footer-height-mobile: 50px;
+    --footer-height-desktop: 60px;
+
+    /* Responsive Font Sizes */
+    --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --font-size-sm: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+    --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+    --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.875rem);
+    --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+
+    /* Touch Target Minimum Size */
+    --touch-target-min: 44px;
+  }
+}

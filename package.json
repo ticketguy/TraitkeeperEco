@@ -1,0 +1,18 @@
+{
+  "name": "traitkeeper",
+  "version": "1.0.0",
+  "description": "TraitKeeper - Secure Your NFT's Traits",
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind-compiled.css --minify",
+    "watch:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind-compiled.css --watch",
+    "dev": "npm run watch:css"
+  },
+  "keywords": ["nft", "traits", "blockchain"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  }
+}
