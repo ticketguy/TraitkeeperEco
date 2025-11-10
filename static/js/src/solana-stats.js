@@ -81,17 +81,17 @@ function updateSolanaStats() {
             if (tpsElement) {
                 const averageTps = data?.tps?.average_tps;
                 if (typeof averageTps === 'number' && !isNaN(averageTps)) {
-                    tpsElement.textContent = `${averageTps.toFixed(2)} TPS`;
+                    tpsElement.textContent = averageTps.toFixed(0);
                 } else {
                     console.error("Invalid average_tps value:", averageTps);
-                    tpsElement.textContent = 'TPS: N/A';
+                    tpsElement.textContent = 'N/A';
                 }
             }
         })
         .catch(error => {
             console.error('Error fetching Solana stats:', error);
             if (priceElement) priceElement.textContent = 'Error';
-            if (tpsElement) tpsElement.textContent = 'TPS: Error';
+            if (tpsElement) tpsElement.textContent = 'Error';
         });
 }
 
