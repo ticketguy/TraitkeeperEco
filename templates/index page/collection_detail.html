@@ -12,6 +12,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/heroicons@1.0.6/solid/index.css">
 
 <style>
+    /* ==================================================
+     * COLLECTION DETAIL PAGE - RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
+
     :root {
         --font-serif: 'Playfair Display', serif;
         --font-sans: 'Inter', sans-serif;
@@ -20,32 +24,61 @@
         --text-light: #f9fafb;
         --border-color-light: #E5E7EB;
         --border-color-dark: #374151;
-        --header-height: 80px; 
+        --header-height: 80px;
+
+        /* Responsive banner heights */
+        --banner-height-mobile: 50vh;
+        --banner-height-tablet: 60vh;
+        --banner-height-desktop: 70vh;
     }
-    body { 
-        font-family: var(--font-sans); 
+
+    body {
+        font-family: var(--font-sans);
         background-color: white;
     }
     .dark body { background-color: #030712; }
 
-    /* --- Cinematic Banner --- */
+    /* --- Cinematic Banner - RESPONSIVE --- */
     #banner-container {
-        height: 70vh; 
-        min-height: 500px; 
+        height: var(--banner-height-mobile);
+        min-height: 350px; /* Reduced from 500px for mobile */
         position: relative;
     }
 
-    /* --- Sticky Stats Bar --- */
+    /* Tablet banner */
+    @media (min-width: 768px) {
+        #banner-container {
+            height: var(--banner-height-tablet);
+            min-height: 450px;
+        }
+    }
+
+    /* Desktop banner */
+    @media (min-width: 1024px) {
+        #banner-container {
+            height: var(--banner-height-desktop);
+            min-height: 500px;
+        }
+    }
+
+    /* --- Sticky Stats Bar - RESPONSIVE --- */
     #collection-stats-bar {
         position: sticky;
-        top: var(--header-height);
+        top: var(--header-height-mobile); /* Use mobile header height */
         z-index: 30;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding: 0.5rem 0.25rem; /* Reduced padding on mobile */
         border-bottom: 1px solid var(--border-color-light);
         margin-top: -60px;
-        transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+        transition: background-color 0.3s ease, backdrop-filter 0.3s ease, top 0.2s ease;
     }
+
+    @media (min-width: 768px) {
+        #collection-stats-bar {
+            top: var(--header-height-desktop);
+            padding: 0.5rem 1rem;
+        }
+    }
+
     #collection-stats-bar.is-stuck {
         background-color: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(12px);
@@ -59,32 +92,58 @@
         background-color: rgba(17, 24, 39, 0.8);
     }
 
-    /* Stats Flex Layout */
+    /* Stats Flex Layout - RESPONSIVE */
     #collection-stats-flex {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        padding: 0 1rem;
+        padding: 0 0.5rem; /* Reduced for mobile */
+        flex-wrap: wrap; /* Allow wrapping on very small screens */
+        gap: 0.5rem;
     }
-    .stat-item { text-align: center; padding: 0 0.5rem; }
-    .stat-item strong { 
-        font-size: 1.125rem; 
-        font-weight: 600; 
+
+    .stat-item {
+        text-align: center;
+        padding: 0 0.25rem; /* Reduced for mobile */
+        min-width: 60px; /* Minimum width for touch targets */
+    }
+
+    @media (min-width: 768px) {
+        #collection-stats-flex {
+            padding: 0 1rem;
+            flex-wrap: nowrap;
+            gap: 0;
+        }
+        .stat-item {
+            padding: 0 0.5rem;
+        }
+    }
+
+    .stat-item strong {
+        font-size: clamp(0.875rem, 2vw, 1.125rem); /* Responsive font size */
+        font-weight: 600;
         display: block;
         color: white;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
     }
-    .stat-item span { 
-        font-size: 0.75rem; 
-        margin-top: 0.125rem; 
+    .stat-item span {
+        font-size: clamp(0.625rem, 1.5vw, 0.75rem); /* Responsive font size */
+        margin-top: 0.125rem;
         display: block;
         color: rgba(255, 255, 255, 0.9);
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
     }
-    .stat-divider { 
-        width: 1px; 
-        height: 2rem; 
+    .stat-divider {
+        width: 1px;
+        height: 2rem;
         background-color: rgba(255, 255, 255, 0.3);
+        display: none; /* Hide dividers on mobile */
+    }
+
+    @media (min-width: 640px) {
+        .stat-divider {
+            display: block; /* Show dividers on larger screens */
+        }
     }
 
     .dark .stat-item strong { 

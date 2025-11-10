@@ -32,10 +32,21 @@
     </script>
 
     <style>
+        /* ==================================================
+         * SYSTEM HEALTH DASHBOARD - RESPONSIVE OPTIMIZATIONS
+         * ================================================== */
+
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
         * {
             font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        /* Prevent horizontal scroll */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         .glass {
@@ -62,9 +73,12 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(128, 0, 128, 0.2);
+        /* Disable hover lift on mobile for better touch experience */
+        @media (min-width: 768px) {
+            .hover-lift:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px rgba(128, 0, 128, 0.2);
+            }
         }
 
         @keyframes pulse-glow {
@@ -126,9 +140,142 @@
             left: 100%;
         }
 
+        /* Chart container - responsive heights */
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 250px; /* Smaller on mobile */
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 350px; /* Larger on desktop */
+            }
+        }
+
+        /* ==================================================
+         * MOBILE-SPECIFIC OPTIMIZATIONS
+         * ================================================== */
+
+        @media (max-width: 767px) {
+            /* Reduce padding on mobile */
+            .max-w-7xl {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Stack grid items on mobile */
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Smaller font sizes on mobile */
+            h1 {
+                font-size: 1.25rem !important;
+            }
+
+            h2 {
+                font-size: 1.125rem !important;
+            }
+
+            h3 {
+                font-size: 1rem !important;
+            }
+
+            /* Compact metric cards */
+            .metric-card {
+                padding: 1rem !important;
+            }
+
+            /* Smaller badges and indicators */
+            .status-indicator {
+                width: 10px;
+                height: 10px;
+            }
+
+            /* Compact navigation */
+            nav .h-16 {
+                height: 3.5rem !important;
+            }
+
+            /* Better spacing for buttons */
+            button, a.button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* ==================================================
+         * TABLET OPTIMIZATIONS
+         * ================================================== */
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+            /* 2-column layout for tablets */
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        /* ==================================================
+         * RESPONSIVE TABLES
+         * ================================================== */
+
+        @media (max-width: 640px) {
+            /* Make tables scrollable on mobile */
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 0.5rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        /* ==================================================
+         * MODAL RESPONSIVE SIZING
+         * ================================================== */
+
+        .modal-content {
+            width: min(90vw, 600px);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 640px) {
+            .modal-content {
+                width: 95vw;
+                max-height: 90vh;
+                padding: 1rem !important;
+            }
+        }
+
+        /* ==================================================
+         * PERFORMANCE OPTIMIZATIONS
+         * ================================================== */
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
