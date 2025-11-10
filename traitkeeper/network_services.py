@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 class SolanaNetworkService:
     def __init__(self):
         """Initialize the SolanaNetworkService with API and RPC configurations"""
-        # CoinGecko API configuration for Solana price
-        self.coingecko_api_url = "https://api.coingecko.com/api/v3"
-        self.coingecko_coin_id = "solana"
+        # Pyth Network API configuration for Solana price
+        self.pyth_api_url = "https://hermes.pyth.network/v2/updates/price/latest"
+        # SOL/USD price feed ID from Pyth Network
+        self.sol_usd_price_feed = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
 
         # Solana RPC configuration for TPS
         self.primary_rpc_url = getattr(settings, 'SOLANA_RPC_URL', "https://api.mainnet-beta.solana.com")
@@ -87,40 +88,59 @@ class SolanaNetworkService:
         return None
 
     def get_solana_price(self) -> dict:
-        """Fetch the current Solana price from CoinGecko"""
+        """Fetch the current Solana price from Pyth Network on-chain oracle"""
         cache_key = "solana_price"
+        cache_key_24h = "solana_price_24h_ago"
+
         cached_price = cache.get(cache_key)
         if cached_price:
-            logger.info("Returning cached Solana price")
+            logger.info("Returning cached Solana price from Pyth")
             return cached_price
 
-        url = f"{self.coingecko_api_url}/simple/price"
-        params = {
-            "ids": self.coingecko_coin_id,
-            "vs_currencies": "usd",
-            "include_market_cap": "true",
-            "include_24hr_vol": "true",
-            "include_24hr_change": "true",
-        }
-
         try:
-            response = self.fetch_with_backoff(url, params=params)
-            if response and self.coingecko_coin_id in response:
-                price_data = response[self.coingecko_coin_id]
-                result = {
-                    "price_usd": price_data.get("usd", 0.0),
-                    "market_cap_usd": price_data.get("usd_market_cap", 0.0),
-                    "volume_24h_usd": price_data.get("usd_24h_vol", 0.0),
-                    "change_24h_percent": price_data.get("usd_24h_change", 0.0),
-                }
-                cache.set(cache_key, result, self.cache_timeout)
-                logger.info(f"Fetched Solana price: {result}")
-                return result
-            else:
-                logger.error("Failed to fetch Solana price from CoinGecko")
+            # Fetch real-time price from Pyth Network
+            url = f"{self.pyth_api_url}?ids[]={self.sol_usd_price_feed}"
+            response = self.fetch_with_backoff(url, method="GET")
+
+            if not response or 'parsed' not in response:
+                logger.error("Failed to fetch Solana price from Pyth Network")
                 return {"price_usd": 0.0, "market_cap_usd": 0.0, "volume_24h_usd": 0.0, "change_24h_percent": 0.0}
+
+            # Extract price data from Pyth response
+            price_feed = response['parsed'][0]
+            price_data = price_feed['price']
+
+            # Pyth price is in format: price * 10^expo
+            # Example: price: "14523000000", expo: -8 = $145.23
+            raw_price = int(price_data['price'])
+            expo = int(price_data['expo'])
+            current_price = raw_price * (10 ** expo)
+
+            # Calculate 24-hour change
+            price_24h_ago = cache.get(cache_key_24h)
+            change_24h_percent = 0.0
+
+            if price_24h_ago and price_24h_ago > 0:
+                change_24h_percent = ((current_price - price_24h_ago) / price_24h_ago) * 100
+                logger.info(f"24h price change: {change_24h_percent:.2f}% (from ${price_24h_ago:.2f} to ${current_price:.2f})")
+            else:
+                # Store current price for 24h comparison (expires in 24 hours)
+                cache.set(cache_key_24h, current_price, 86400)  # 24 hours in seconds
+                logger.info(f"Stored baseline price for 24h tracking: ${current_price:.2f}")
+
+            result = {
+                "price_usd": round(current_price, 2),
+                "market_cap_usd": 0.0,  # Pyth doesn't provide this
+                "volume_24h_usd": 0.0,  # Pyth doesn't provide this
+                "change_24h_percent": round(change_24h_percent, 2),
+            }
+
+            cache.set(cache_key, result, self.cache_timeout)
+            logger.info(f"Fetched Solana price from Pyth: ${result['price_usd']} (24h: {result['change_24h_percent']}%)")
+            return result
+
         except Exception as e:
-            logger.error(f"Error fetching Solana price: {str(e)}")
+            logger.error(f"Error fetching Solana price from Pyth: {str(e)}")
             return {"price_usd": 0.0, "market_cap_usd": 0.0, "volume_24h_usd": 0.0, "change_24h_percent": 0.0}
 
     def get_solana_tps(self) -> dict:
