@@ -5,10 +5,18 @@
 
 {% block extra_style %}
 <style>
+    /* ==================================================
+     * INDEX PAGE - RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
 
     main#main-content {
         padding-top: 0 !important;
     }
+
+    /* ==================================================
+     * HORIZONTAL SCROLL PREVENTION
+     * ================================================== */
+
     .live-x-feed-container {
         box-sizing: border-box;
         width: 100%;
@@ -35,6 +43,7 @@
         white-space: normal;
     }
 
+    /* Reduce tilt effect on mobile for better performance */
     @media (max-width: 767px) {
         .x-post.tilt-card {
             --tilt-max: 5;
@@ -55,14 +64,116 @@
         overflow-x: hidden;
     }
 
-#top-collections-table tr {
-    transition: all 0.2s ease;
-}
+    /* ==================================================
+     * TABLE RESPONSIVE IMPROVEMENTS
+     * ================================================== */
 
-#top-collections-table tr:hover {
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+    #top-collections-table {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto; /* Horizontal scroll on mobile */
+    }
+
+    #top-collections-table tr {
+        transition: all 0.2s ease;
+    }
+
+    /* Disable hover transform on mobile for better touch experience */
+    @media (min-width: 768px) {
+        #top-collections-table tr:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    /* Make table cells more compact on mobile */
+    @media (max-width: 640px) {
+        #top-collections-table td,
+        #top-collections-table th {
+            padding: 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+
+    /* ==================================================
+     * HERO SECTION RESPONSIVE OPTIMIZATION
+     * ================================================== */
+
+    #hero {
+        min-height: 400px; /* Minimum height for very small screens */
+    }
+
+    @media (max-width: 640px) {
+        #hero {
+            height: 60vh !important;
+            max-height: 500px !important;
+        }
+
+        #hero h1 {
+            line-height: 1.2;
+            margin-bottom: 0.5rem !important;
+        }
+
+        #hero p {
+            line-height: 1.4;
+        }
+    }
+
+    /* ==================================================
+     * CAROUSEL RESPONSIVE IMPROVEMENTS
+     * ================================================== */
+
+    /* Ensure carousels don't cause horizontal scroll */
+    .carousel-container,
+    .swiper-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    /* Mobile carousel optimizations */
+    @media (max-width: 640px) {
+        .swiper-slide {
+            min-width: 280px !important; /* Ensure readable cards on mobile */
+        }
+    }
+
+    /* ==================================================
+     * STATS SECTION RESPONSIVE LAYOUT
+     * ================================================== */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        width: 100%;
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr; /* Single column on mobile */
+            gap: 0.75rem;
+        }
+    }
+
+    /* ==================================================
+     * BUTTON AND LINK TOUCH TARGETS
+     * ================================================== */
+
+    @media (max-width: 767px) {
+        /* Ensure all hero buttons are touch-friendly */
+        #hero a,
+        #hero button {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 0.75rem 1.5rem !important;
+        }
+
+        /* Collection cards should be easily tappable */
+        .collection-card {
+            min-height: 44px;
+        }
+    }
 
 </style>
 {% endblock %}
