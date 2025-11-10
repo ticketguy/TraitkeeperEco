@@ -102,12 +102,12 @@ function updateSolanaStats() {
             // Update ALL TPS elements (both desktop and mobile)
             if (typeof averageTps === 'number' && !isNaN(averageTps)) {
                 tpsElements.forEach(tpsElement => {
-                    tpsElement.textContent = `${averageTps.toFixed(2)} TPS`;
+                    tpsElement.textContent = averageTps.toFixed(2);
                 });
             } else {
                 console.error("Invalid average_tps value:", averageTps);
                 tpsElements.forEach(tpsElement => {
-                    tpsElement.textContent = 'TPS: N/A';
+                    tpsElement.textContent = 'N/A';
                 });
             }
 
@@ -116,7 +116,7 @@ function updateSolanaStats() {
         .catch(error => {
             console.error('Error fetching Solana stats:', error);
             priceElements.forEach(el => el.textContent = 'Error');
-            tpsElements.forEach(el => el.textContent = 'TPS: Error');
+            tpsElements.forEach(el => el.textContent = 'Error');
         })
         .finally(() => {
             isRequestInProgress = false;

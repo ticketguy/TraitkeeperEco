@@ -1235,7 +1235,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js" defer></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
 <script>
@@ -1245,8 +1244,22 @@
             max: 15, speed: 400, glare: false, scale: 1.05
         });
 
-        // Particles.js initialization
-        particlesJS('particles-hero', {
+        // Lazy load particles.js after page is interactive (saves 13s+ blocking!)
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadParticles, { timeout: 3000 });
+        } else {
+            setTimeout(loadParticles, 3000);
+        }
+
+        function loadParticles() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+            script.onload = initParticles;
+            document.body.appendChild(script);
+        }
+
+        function initParticles() {
+            particlesJS('particles-hero', {
             particles: {
                 number: { value: 80, density: { enable: true, value_area: 800 } },
                 color: { value: '#ffffff' },
@@ -1266,6 +1279,7 @@
             },
             retina_detect: true
         });
+        }
 
         // Collection Modal Elements
         const collectionModal = document.getElementById('collection-modal');
