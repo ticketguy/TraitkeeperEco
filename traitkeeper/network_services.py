@@ -98,9 +98,9 @@ class SolanaNetworkService:
             return cached_price
 
         try:
-            # Fetch real-time price from Pyth Network
+            # Fetch real-time price from Pyth Network with shorter retry delays
             url = f"{self.pyth_api_url}?ids[]={self.sol_usd_price_feed}"
-            response = self.fetch_with_backoff(url, method="GET")
+            response = self.fetch_with_backoff(url, method="GET", retries=3, initial_delay=2.0)
 
             if not response or 'parsed' not in response:
                 logger.error("Failed to fetch Solana price from Pyth Network")
