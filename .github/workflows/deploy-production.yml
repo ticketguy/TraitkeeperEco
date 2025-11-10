@@ -258,20 +258,20 @@ jobs:
             git pull origin main
 
             # Pull latest Docker images
-            docker-compose pull
+            docker compose pull
 
             # Rebuild and restart services
-            docker-compose up -d --build --force-recreate
+            docker compose up -d --build --force-recreate
 
             # Run migrations
-            docker-compose exec -T web python manage.py migrate --noinput
+            docker compose exec -T main python manage.py migrate --noinput
 
             # Collect static files
-            docker-compose exec -T web python manage.py collectstatic --noinput
+            docker compose exec -T main python manage.py collectstatic --noinput
 
             # Health check
             sleep 10
-            docker-compose ps
+            docker compose ps
 
             echo "✅ Deployment complete!"
 
@@ -330,6 +330,6 @@ jobs:
             git reset --hard HEAD~1
 
             # Rebuild with previous version
-            docker-compose up -d --build --force-recreate
+            docker compose up -d --build --force-recreate
 
             echo "✅ Rollback complete!"
