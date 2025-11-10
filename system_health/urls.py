@@ -46,4 +46,9 @@ urlpatterns = [
 
     # Vitality Calculation Metrics API endpoint
     path('api/vitality-metrics/', views.vitality_metrics, name='api_vitality_metrics'),
+
+    # Health Sharing API endpoints (Public & Admin)
+    path('api/share/generate/', views.generate_share_token, name='api_generate_share_token'),
+    path('api/share/<str:token>/', views.shared_health_stats, name='api_shared_health_stats'),
+    path('share/<str:token>/', views.shared_health_page, name='shared_health_page'),
 ]

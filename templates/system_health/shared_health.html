@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitKeeper System Health | Public Stats</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#800080',
+                        'primary-dark': '#660066',
+                        'primary-light': '#9933cc',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(30, 30, 46, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(128, 0, 128, 0.2);
+        }
+
+        .glass-light {
+            background: rgba(128, 0, 128, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(128, 0, 128, 0.1);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a0a2e 100%);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 10px #f59e0b;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-critical {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen text-gray-100">
+
+    <!-- Header -->
+    <nav class="glass border-b border-primary/20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-heartbeat text-primary text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+                            TraitKeeper
+                        </h1>
+                        <p class="text-sm text-gray-400">System Health Status</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <span id="status-badge" class="px-4 py-2 rounded-full text-sm font-semibold glass-light">
+                        <span class="status-indicator status-healthy"></span>
+                        Loading...
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Info Banner -->
+        <div class="glass-light rounded-2xl p-6 mb-8 border-l-4 border-primary">
+            <div class="flex items-start space-x-4">
+                <i class="fas fa-info-circle text-2xl text-primary mt-1"></i>
+                <div>
+                    <h2 class="font-bold text-gray-100 mb-1">Public System Health Dashboard</h2>
+                    <p class="text-sm text-gray-400">This is a read-only view of TraitKeeper's system health status. Data refreshes automatically every 30 seconds.</p>
+                    <p id="expires-message" class="text-xs text-gray-500 mt-2">
+                        <i class="far fa-clock mr-1"></i>
+                        Link expires: Loading...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-20">
+            <i class="fas fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+            <p class="text-xl text-gray-400">Loading system health data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden text-center py-20">
+            <i class="fas fa-exclamation-triangle text-5xl text-red-400 mb-4"></i>
+            <p class="text-xl text-gray-100 mb-2">Failed to Load Health Data</p>
+            <p id="error-message" class="text-gray-400"></p>
+        </div>
+
+        <!-- Data Container -->
+        <div id="data-container" class="hidden space-y-8">
+
+            <!-- Performance Metrics -->
+            <div id="performance-section" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-chart-line text-primary mr-3"></i>
+                    System Performance
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- CPU -->
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium">CPU Usage</p>
+                                <p id="cpu-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                            </div>
+                            <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-microchip text-3xl text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="cpu-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Memory -->
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium">Memory</p>
+                                <p id="memory-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                            </div>
+                            <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-memory text-3xl text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="memory-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Disk -->
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium">Disk Usage</p>
+                                <p id="disk-value" class="text-3xl font-bold text-primary mt-1">--</p>
+                            </div>
+                            <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-hdd text-3xl text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="disk-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Status -->
+            <div id="services-section" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fab fa-docker text-primary mr-3"></i>
+                    Services Status
+                </h2>
+                <div class="glass rounded-2xl p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="flex items-center justify-between p-4 glass-light rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-database text-2xl text-primary"></i>
+                                <span class="font-semibold">Database</span>
+                            </div>
+                            <span id="database-status" class="text-2xl">--</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 glass-light rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-bolt text-2xl text-primary"></i>
+                                <span class="font-semibold">Redis Cache</span>
+                            </div>
+                            <span id="redis-status" class="text-2xl">--</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 glass-light rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-sync text-2xl text-primary"></i>
+                                <span class="font-semibold">Indexer</span>
+                            </div>
+                            <span id="indexer-status" class="text-2xl">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketplace Stats -->
+            <div id="marketplace-section" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-store text-primary mr-3"></i>
+                    Marketplace Activity (24h)
+                </h2>
+                <div class="glass rounded-2xl p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="text-center p-4 glass-light rounded-xl">
+                            <p class="text-4xl font-bold text-primary" id="marketplace-sales">--</p>
+                            <p class="text-sm text-gray-400 mt-2">Sales</p>
+                        </div>
+                        <div class="text-center p-4 glass-light rounded-xl">
+                            <p class="text-4xl font-bold text-primary" id="marketplace-volume">--</p>
+                            <p class="text-sm text-gray-400 mt-2">Volume (SOL)</p>
+                        </div>
+                        <div class="text-center p-4 glass-light rounded-xl">
+                            <p class="text-4xl font-bold text-primary" id="marketplace-listings">--</p>
+                            <p class="text-sm text-gray-400 mt-2">Active Listings</p>
+                        </div>
+                        <div class="text-center p-4 glass-light rounded-xl">
+                            <p class="text-4xl font-bold text-primary" id="marketplace-traders">--</p>
+                            <p class="text-sm text-gray-400 mt-2">Unique Traders</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uptime Info -->
+            <div id="uptime-section" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
+                    <i class="fas fa-clock text-primary mr-3"></i>
+                    System Uptime
+                </h2>
+                <div class="glass rounded-2xl p-6">
+                    <p id="uptime-message" class="text-lg text-gray-300">--</p>
+                    <p id="uptime-timestamp" class="text-sm text-gray-500 mt-2">--</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-light mt-20 border-t border-primary/10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-sm text-gray-400">
+                <p>TraitKeeper System Health Dashboard</p>
+                <p class="mt-1">Last updated: <span id="last-updated">--</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const TOKEN = '{{ token }}';
+        const API_URL = `/system-health/api/share/${TOKEN}/`;
+
+        // Fetch shared health stats
+        async function fetchHealthStats() {
+            try {
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    if (response.status === 404 || response.status === 410) {
+                        const error = await response.json();
+                        showError(error.error || 'Share link is invalid or expired');
+                    } else {
+                        showError('Failed to load health data');
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                displayHealthData(data);
+
+            } catch (error) {
+                console.error('Error fetching health stats:', error);
+                showError('Network error occurred');
+            }
+        }
+
+        // Display health data
+        function displayHealthData(data) {
+            // Hide loading, show data container
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('data-container').classList.remove('hidden');
+
+            // Update status badge
+            const statusBadge = document.getElementById('status-badge');
+            const statusMap = {
+                'HEALTHY': { class: 'status-healthy', text: 'All Systems Operational' },
+                'WARNING': { class: 'status-warning', text: 'Minor Issues' },
+                'CRITICAL': { class: 'status-critical', text: 'Critical Issues' },
+                'ERROR': { class: 'status-critical', text: 'System Errors' }
+            };
+            const status = statusMap[data.status] || statusMap['ERROR'];
+            statusBadge.innerHTML = `<span class="status-indicator ${status.class}"></span>${status.text}`;
+
+            // Update expiration message
+            if (data.share_expires_at) {
+                const expiresAt = new Date(data.share_expires_at);
+                document.getElementById('expires-message').innerHTML = `<i class="far fa-clock mr-1"></i>Link expires: ${expiresAt.toLocaleString()}`;
+            }
+
+            // Update timestamp
+            const timestamp = new Date(data.timestamp);
+            document.getElementById('last-updated').textContent = timestamp.toLocaleString();
+
+            // Show performance section if data available
+            if (data.system_resources) {
+                document.getElementById('performance-section').classList.remove('hidden');
+                updateMetric('cpu', data.system_resources.cpu_percent);
+                updateMetric('memory', data.system_resources.memory_percent);
+                updateMetric('disk', data.system_resources.disk_percent);
+            }
+
+            // Show services section if data available
+            if (data.services) {
+                document.getElementById('services-section').classList.remove('hidden');
+                document.getElementById('database-status').textContent = data.services.database_connected ? '✅' : '❌';
+                document.getElementById('redis-status').textContent = data.services.redis_connected ? '✅' : '❌';
+                document.getElementById('indexer-status').textContent = data.services.indexer_running ? '✅' : '❌';
+            }
+
+            // Show marketplace section if data available
+            if (data.marketplace) {
+                document.getElementById('marketplace-section').classList.remove('hidden');
+                document.getElementById('marketplace-sales').textContent = data.marketplace.sales_24h;
+                document.getElementById('marketplace-volume').textContent = data.marketplace.volume_24h.toFixed(2);
+                document.getElementById('marketplace-listings').textContent = data.marketplace.active_listings;
+                document.getElementById('marketplace-traders').textContent = data.marketplace.unique_traders_24h;
+            }
+
+            // Show uptime section if data available
+            if (data.uptime) {
+                document.getElementById('uptime-section').classList.remove('hidden');
+                document.getElementById('uptime-message').textContent = data.uptime.message;
+                const uptimeDate = new Date(data.uptime.last_restart);
+                document.getElementById('uptime-timestamp').textContent = `Last restart: ${uptimeDate.toLocaleString()}`;
+            }
+        }
+
+        // Update metric display
+        function updateMetric(type, value) {
+            document.getElementById(`${type}-value`).textContent = `${value.toFixed(1)}%`;
+            document.getElementById(`${type}-bar`).style.width = `${value}%`;
+        }
+
+        // Show error state
+        function showError(message) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Initial load
+        fetchHealthStats();
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchHealthStats, 30000);
+    </script>
+
+</body>
+</html>
