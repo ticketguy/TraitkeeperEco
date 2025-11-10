@@ -12,6 +12,13 @@
     <meta name="keywords" content="NFT, traits, blockchain, crypto art">
     <title>{% block title %}TraitKeeper - Secure Your NFT's Traits{% endblock %}</title>
 
+    <!-- Preconnect to external domains for faster loading -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -624,7 +631,10 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
 </style>
     {% block extra_style %}
-    
+
+    {% endblock %}
+
+    {% block extra_css %}
     {% endblock %}
 </head>
 
@@ -1392,8 +1402,8 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
     <script src="{% static 'js/src/solana-stats.js' %}" defer
         onerror="console.error('Failed to load solana-stats.js')"></script>
 
-    <!-- Solana Web3.js for blockchain interactions -->
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <!-- Solana Web3.js for blockchain interactions (pinned version for performance) -->
+    <script src="https://unpkg.com/@solana/web3.js@1.95.8/lib/index.iife.min.js" defer></script>
 
     <!-- Solana transaction builder and signer -->
     <script src="{% static 'js/src/wallet/solana-transaction.js' %}" defer
