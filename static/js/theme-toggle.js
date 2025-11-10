@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const htmlElement = document.documentElement;
 
   // console.log("Theme toggle JS loaded, buttons found:", {
-    desktop: !!themeToggle,
-    mobile: !!themeToggleMobile
-  });
+  //   desktop: !!themeToggle,
+  //   mobile: !!themeToggleMobile
+  // });
 
   // Check if user has previously set a theme preference
   const savedTheme = localStorage.getItem("theme");

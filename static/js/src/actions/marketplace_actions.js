@@ -67,9 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // console.log(
-      `Calling API: ${method} ${endpoint}`,
-      data ? `with data: ${JSON.stringify(data)}` : ""
-    );
+    //   `Calling API: ${method} ${endpoint}`,
+    //   data ? `with data: ${JSON.stringify(data)}` : ""
+    // );
     // Consider showing a global loading indicator here
 
     try {
