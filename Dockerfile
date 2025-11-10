@@ -70,7 +70,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
 # Create necessary directories
-RUN mkdir -p staticfiles media logs
+RUN mkdir -p staticfiles media logs /var/log/traitkeeper
 
 # Expose port
 EXPOSE 8000

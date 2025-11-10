@@ -7,20 +7,18 @@ let previousPrice = null;
 function updateSolanaStats() {
     // console.log("Running updateSolanaStats");
 
-    // Find DOM elements
-    const priceElement = document.querySelector('.solana-price .price-value');
-    const tpsElement = document.querySelector('.solana-tps');
+    // Find ALL DOM elements (both desktop and mobile)
+    const priceElements = document.querySelectorAll('.solana-price .price-value');
+    const tpsElements = document.querySelectorAll('.solana-tps');
 
-    if (!priceElement || !tpsElement) {
-        console.error("Price or TPS element not found in DOM");
-        // console.log("Price element:", priceElement);
-        // console.log("TPS element:", tpsElement);
+    if (priceElements.length === 0 || tpsElements.length === 0) {
+        console.error("Price or TPS elements not found in DOM");
         return;
     }
 
-    // Apply fade animation to stats
-    priceElement.classList.add('animate-fade-pulse');
-    tpsElement.classList.add('animate-fade-pulse');
+    // Apply fade animation to all stats
+    priceElements.forEach(el => el.classList.add('animate-fade-pulse'));
+    tpsElements.forEach(el => el.classList.add('animate-fade-pulse'));
 
     // console.log("Making fetch request to /api/solana-network-stats/");
     fetch('/api/solana-network-stats/')
@@ -34,35 +32,35 @@ function updateSolanaStats() {
         .then(data => {
             // console.log('API Response:', data);
 
-            // Update Solana price with 24-hour change
-            if (priceElement) {
-                const newPrice = data?.price?.price_usd;
-                const change24h = data?.price?.change_24h_percent;
+            const newPrice = data?.price?.price_usd;
+            const change24h = data?.price?.change_24h_percent;
+            const averageTps = data?.tps?.average_tps;
 
-                // Validate newPrice and change24h
-                if (typeof newPrice !== 'number' || isNaN(newPrice)) {
-                    console.error("Invalid price_usd value:", newPrice);
-                    priceElement.textContent = 'N/A';
-                    return;
-                }
-                if (typeof change24h !== 'number' || isNaN(change24h)) {
-                    console.error("Invalid change_24h_percent value:", change24h);
-                    priceElement.textContent = `$${newPrice.toFixed(2)} (N/A)`;
-                    return;
-                }
+            // Validate data
+            if (typeof newPrice !== 'number' || isNaN(newPrice)) {
+                console.error("Invalid price_usd value:", newPrice);
+                priceElements.forEach(el => el.textContent = 'N/A');
+                return;
+            }
+            if (typeof change24h !== 'number' || isNaN(change24h)) {
+                console.error("Invalid change_24h_percent value:", change24h);
+                priceElements.forEach(el => el.textContent = `$${newPrice.toFixed(2)} (N/A)`);
+                return;
+            }
 
-                // Format the display: price (24h change)
-                const priceText = `$${newPrice.toFixed(2)}`;
-                const change24hFormatted = change24h >= 0 ? `+${change24h.toFixed(1)}%` : `${change24h.toFixed(1)}%`;
+            // Format the display: price (24h change)
+            const priceText = `$${newPrice.toFixed(2)}`;
+            const change24hFormatted = change24h >= 0 ? `+${change24h.toFixed(1)}%` : `${change24h.toFixed(1)}%`;
 
-                // Determine color and arrow based on 24-hour change
-                const isPositive = change24h >= 0; // Default to green if change is 0
-                const arrow = isPositive ? '↑' : '↓';
-                const changeClass = isPositive
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-red-100 text-red-700';
+            // Determine color and arrow based on 24-hour change
+            const isPositive = change24h >= 0;
+            const arrow = isPositive ? '↑' : '↓';
+            const changeClass = isPositive
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700';
 
-                // Update the price element with styled spans
+            // Update ALL price elements (both desktop and mobile)
+            priceElements.forEach(priceElement => {
                 priceElement.innerHTML = `
                     <span class="text-sm">${priceText}</span>
                     <span class="text-xs ${changeClass} px-1.5 py-0.5 rounded mx-1">
@@ -70,9 +68,9 @@ function updateSolanaStats() {
                     </span>
                 `;
 
-                // Set the overall color of the price element
                 priceElement.classList.remove('text-red-500', 'text-green-500');
                 priceElement.classList.add(isPositive ? 'text-green-500' : 'text-red-500');
+            });
 
                 previousPrice = newPrice;  // Update the previous price (for potential future use)
             }
@@ -86,12 +84,26 @@ function updateSolanaStats() {
                     console.error("Invalid average_tps value:", averageTps);
                     tpsElement.textContent = 'N/A';
                 }
+            // Update ALL TPS elements (both desktop and mobile)
+            if (typeof averageTps === 'number' && !isNaN(averageTps)) {
+                tpsElements.forEach(tpsElement => {
+                    tpsElement.textContent = `${averageTps.toFixed(2)} TPS`;
+                });
+            } else {
+                console.error("Invalid average_tps value:", averageTps);
+                tpsElements.forEach(tpsElement => {
+                    tpsElement.textContent = 'TPS: N/A';
+                });
             }
+
+            previousPrice = newPrice;
         })
         .catch(error => {
             console.error('Error fetching Solana stats:', error);
             if (priceElement) priceElement.textContent = 'Error';
             if (tpsElement) tpsElement.textContent = 'Error';
+            priceElements.forEach(el => el.textContent = 'Error');
+            tpsElements.forEach(el => el.textContent = 'TPS: Error');
         });
 }
 
@@ -100,10 +112,10 @@ function initializeSolanaStats(retries = 3, delay = 1000) {
     // console.log("Initializing Solana stats");
 
     // Check if DOM elements are available
-    const priceElement = document.querySelector('.solana-price .price-value');
-    const tpsElement = document.querySelector('.solana-tps');
+    const priceElements = document.querySelectorAll('.solana-price .price-value');
+    const tpsElements = document.querySelectorAll('.solana-tps');
 
-    if (!priceElement || !tpsElement) {
+    if (priceElements.length === 0 || tpsElements.length === 0) {
         if (retries > 0) {
             // console.log(`DOM elements not found, retrying in ${delay}ms... (${retries} retries left)`);
             setTimeout(() => initializeSolanaStats(retries - 1, delay * 2), delay);

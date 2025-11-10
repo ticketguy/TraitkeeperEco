@@ -1484,7 +1484,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (statsBar) {
             const height = statsBar.offsetHeight;
             document.documentElement.style.setProperty('--stats-bar-height', `${height}px`);
-            // console.log('Stats bar height set to:', height + 'px');
+            console.log('Stats bar height set to:', height + 'px');
         }
     }
 
@@ -2147,7 +2147,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (collectionAddress) {
         const source = new EventSource(`/stream-site-updates/?page=collection_detail&address=${collectionAddress}`);
 
-        source.onopen = () => // console.log("SSE Connected");
+        source.onopen = () => console.log("SSE Connected");
         source.onerror = (error) => console.error("SSE Error:", error);
 
         source.onmessage = (event) => {
@@ -2360,7 +2360,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // TODO: Implement buy now functionality
             showToast('Buy Now functionality coming soon - integrate with your Solana wallet', 'info');
-            // console.log('Buy NFT:', nftId, 'Price:', price);
+            console.log('Buy NFT:', nftId, 'Price:', price);
         });
     });
 
