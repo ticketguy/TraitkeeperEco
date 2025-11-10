@@ -118,8 +118,13 @@
     }
     </script>
 
-    
+
 <style>
+    /* ==================================================
+     * RESPONSIVE DESIGN SYSTEM
+     * Optimized for all screen sizes from mobile to desktop
+     * ================================================== */
+
     /* --- Base Resets & Variables --- */
     :root {
         /* Define your light mode colors */
@@ -137,6 +142,23 @@
         --accent-color-dark: #1e1e1e;
         --border-color-dark: #333333;
         --text-secondary-dark: #808080;
+
+        /* Responsive Spacing Variables */
+        --header-height-mobile: 60px;
+        --header-height-desktop: 80px;
+        --footer-height-mobile: 50px;
+        --footer-height-desktop: 60px;
+
+        /* Responsive Font Sizes */
+        --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+        --font-size-sm: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+        --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+        --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+        --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.875rem);
+        --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+
+        /* Touch Target Minimum Size */
+        --touch-target-min: 44px;
     }
 
     body {
@@ -286,7 +308,7 @@
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
         filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
     }
-    /* --- NEW HEADER STYLES (Transparent + Sticky) --- */
+    /* --- NEW HEADER STYLES (Transparent + Sticky) - RESPONSIVE --- */
     #main-header {
         position: fixed;
         top: 0;
@@ -294,9 +316,16 @@
         width: 100%;
         z-index: 40;
         background-color: transparent; /* Start transparent */
-        transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
-        height: 80px; /* ** ADJUST THIS TO YOUR ACTUAL HEADER HEIGHT ** */
+        transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, height 0.2s ease;
+        height: var(--header-height-mobile); /* Mobile height */
         border-bottom: 1px solid transparent; /* Start with transparent border */
+    }
+
+    /* Desktop header height */
+    @media (min-width: 768px) {
+        #main-header {
+            height: var(--header-height-desktop);
+        }
     }
 
     /* Style when page is scrolled */
@@ -315,14 +344,19 @@
          border-bottom-color: var(--border-color-dark);
     }
 
-    /* Prevent content overlap with fixed header AND fixed footer */
+    /* Prevent content overlap with fixed header AND fixed footer - RESPONSIVE */
     main#main-content {
-         padding-top: 80px !important; /* !! MUST MATCH #main-header height !! */
-         padding-bottom: 60px !important; /* Adjust based on your footer height */
+         padding-top: var(--header-height-mobile) !important; /* Mobile header height */
+         padding-bottom: var(--footer-height-mobile) !important; /* Mobile footer height */
+         min-height: 100vh; /* Ensure full viewport height */
     }
-     @media (max-width: 639px) { /* Adjust padding-bottom for mobile footer */
-         main#main-content { padding-bottom: 50px !important; } /* Adjust if mobile footer height differs */
-     }
+
+    @media (min-width: 768px) {
+        main#main-content {
+            padding-top: var(--header-height-desktop) !important;
+            padding-bottom: var(--footer-height-desktop) !important;
+        }
+    }
 
     /* --- CORRECTED HEADER CONTENT TEXT COLORS --- */
 /* Default Text Color (Light Mode - applies always unless overridden by dark mode) */
@@ -369,32 +403,235 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
     /* --- END NEW HEADER STYLES --- */
 
 
-    /* --- Footer Positioning & Mobile Adjustments (Existing + Cleanup) --- */
+    /* --- Footer Positioning & Mobile Adjustments - RESPONSIVE --- */
     footer.bottom-bar {
-        position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; /* Increased from 40 to 50 to be above header */
-        /* background/border handled by variables */
+        position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50;
         background-color: var(--background-color-light);
         border-top: 1px solid var(--border-color-light);
-        pointer-events: auto; /* Ensure footer accepts pointer events */
+        pointer-events: auto;
+        height: var(--footer-height-mobile);
+        transition: height 0.2s ease;
     }
+
+    @media (min-width: 768px) {
+        footer.bottom-bar {
+            height: var(--footer-height-desktop);
+        }
+    }
+
     html.dark footer.bottom-bar {
         background-color: var(--background-color-dark);
         border-top-color: var(--border-color-dark);
     }
-    /* main#main-content padding-bottom is now set in header styles */
-    @media (max-width: 639px) { /* sm breakpoint */
+
+    @media (max-width: 639px) {
         .bottom-bar {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            padding: 0.5rem 0.75rem;
         }
-        /* Mobile footer uses flexbox - no absolute positioning needed */
-        /* Ensure mobile footer is fully interactive */
         footer.bottom-bar {
             z-index: 50 !important;
             pointer-events: auto !important;
         }
+    }
+
+    /* ==================================================
+     * RESPONSIVE TOUCH TARGETS & BUTTONS
+     * Ensures minimum 44x44px for mobile usability
+     * ================================================== */
+
+    /* Minimum touch target sizes for all interactive elements */
+    button, a, .clickable, input[type="button"], input[type="submit"],
+    .mobile-menu-toggle, .profile-link, #notification-toggle {
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+    }
+
+    /* Mobile-specific touch target optimization */
+    @media (max-width: 767px) {
+        /* Ensure all clickable elements are at least 44px tall/wide */
+        .mobile-header button,
+        .mobile-header a,
+        .mobile-header .mobile-menu-toggle {
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-center: center;
+        }
+
+        /* Profile images should be touchable */
+        #wallet-profile-image-mobile,
+        .user-profile {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Notification bell minimum size */
+        #notification-toggle {
+            padding: 8px;
+        }
+    }
+
+    /* ==================================================
+     * MODAL RESPONSIVE OPTIMIZATIONS
+     * ================================================== */
+
+    /* Wallet Modal - Fully Responsive */
+    #wallet-modal {
+        width: min(90vw, 420px); /* Responsive width */
+        max-width: 95vw;
+        max-height: 85vh; /* Leave room for safe areas */
+    }
+
+    @media (max-width: 640px) {
+        #wallet-modal {
+            width: 95vw;
+            max-height: 90vh;
+            border-radius: 1.5rem; /* Slightly smaller radius on mobile */
+        }
+
+        /* Modal padding adjustments for mobile */
+        #wallet-modal .modal-content {
+            padding: 1rem;
+        }
+
+        #wallet-modal .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Tab buttons more compact on mobile */
+        #wallet-modal .tab-button {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+
+    /* Notification Settings Modal */
+    #notification-settings-modal .bg-white {
+        width: min(90vw, 28rem);
+        max-height: 85vh;
+    }
+
+    @media (max-width: 640px) {
+        #notification-settings-modal .bg-white {
+            width: 95vw;
+            max-height: 90vh;
+            padding: 1rem !important;
+        }
+    }
+
+    /* ==================================================
+     * FORM INPUT RESPONSIVE OPTIMIZATION
+     * ================================================== */
+
+    /* Ensure form inputs are properly sized for mobile */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px !important; /* Prevent iOS zoom on focus */
+        min-height: 44px;
+    }
+
+    @media (max-width: 640px) {
+        /* Mobile form inputs */
+        input, textarea, select {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Search inputs optimized */
+        #mobile-search-input {
+            min-width: 150px !important; /* Increased from 120px */
+            font-size: 14px !important;
+        }
+    }
+
+    /* ==================================================
+     * RESPONSIVE FONT SCALING
+     * ================================================== */
+
+    /* Apply responsive font sizes using CSS variables */
+    .text-xs { font-size: var(--font-size-xs) !important; }
+    .text-sm { font-size: var(--font-size-sm) !important; }
+    .text-base { font-size: var(--font-size-base) !important; }
+    .text-lg { font-size: var(--font-size-lg) !important; }
+    .text-xl { font-size: var(--font-size-xl) !important; }
+    .text-2xl { font-size: var(--font-size-2xl) !important; }
+
+    /* ==================================================
+     * MOBILE NAVIGATION OPTIMIZATIONS
+     * ================================================== */
+
+    @media (max-width: 767px) {
+        /* Mobile header adjustments */
+        .mobile-header {
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Mobile menu buttons - better spacing */
+        #mobile-menu-buttons a {
+            min-height: 44px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Notification dropdown full width on mobile */
+        #notification-dropdown-mobile {
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* User profile dropdown positioning */
+        #user-profile-menu-mobile {
+            right: 0.5rem;
+            min-width: 200px;
+        }
+    }
+
+    /* ==================================================
+     * SMOOTH TRANSITIONS FOR RESPONSIVE CHANGES
+     * ================================================== */
+
+    @media (prefers-reduced-motion: no-preference) {
+        * {
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 200ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    }
+
+    /* Disable transitions during resize for performance */
+    .resizing * {
+        transition: none !important;
+    }
+
+    /* ==================================================
+     * HORIZONTAL SCROLL PREVENTION
+     * ================================================== */
+
+    html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Prevent specific elements from causing horizontal scroll */
+    .site-container,
+    .header-container,
+    main,
+    section,
+    div {
+        max-width: 100%;
     }
 
 </style>
@@ -557,9 +794,10 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             class="h-8 xs:h-9 w-auto animate-float drop-shadow-lg">
                     </a>
                 </div>
-                <div class="mobile-search flex-1 max-w-[120px] xs:max-w-[140px] mx-1 xs:mx-2 relative">
+                <div class="mobile-search flex-1 max-w-[180px] xs:max-w-[200px] mx-1 xs:mx-2 relative">
                     <input id="mobile-search-input" type="search" placeholder="Search..." autocomplete="off"
-                        class="w-full px-2 xs:px-3 py-1 xs:py-1.5 text-xs xs:text-sm rounded-lg border border-accent-light dark:border-accent-dark bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-800 shadow-md transition-all animate-slide-up">
+                        class="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm rounded-lg border border-accent-light dark:border-accent-dark bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-800 shadow-md transition-all animate-slide-up"
+                        style="min-height: 44px;">
                     <div id="mobile-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-accent-light dark:border-accent-dark rounded-lg shadow-xl max-h-64 overflow-y-auto z-50 w-[280px]"></div>
                 </div>
                 <div class="mobile-header-right flex items-center space-x-1 xs:space-x-2">
@@ -1183,6 +1421,34 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
     <script>
 
         document.addEventListener('DOMContentLoaded', function() {
+
+// ==================================================
+// RESPONSIVE OPTIMIZATION: Resize Handler
+// ==================================================
+let resizeTimer;
+window.addEventListener('resize', function() {
+    // Add resizing class to disable transitions during resize
+    document.body.classList.add('resizing');
+
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+        document.body.classList.remove('resizing');
+    }, 250);
+});
+
+// Prevent horizontal scroll on specific elements
+function preventHorizontalScroll() {
+    const elements = document.querySelectorAll('body, html, .site-container, main');
+    elements.forEach(el => {
+        if (el.scrollWidth > el.clientWidth) {
+            console.warn('Horizontal scroll detected on:', el);
+        }
+    });
+}
+
+// Check on load and resize
+preventHorizontalScroll();
+window.addEventListener('resize', preventHorizontalScroll);
 
 // Header Scroll Effects
     const header = document.getElementById('main-header');
