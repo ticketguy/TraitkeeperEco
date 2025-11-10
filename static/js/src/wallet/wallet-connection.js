@@ -18,8 +18,8 @@ const closeWalletOptionsButtons = document.querySelectorAll('.close-wallet-optio
 const walletOptionButtons = document.querySelectorAll('.wallet-option');
 const loadingIndicators = document.querySelectorAll('#loading-indicator');
 const walletBackdrop = document.getElementById('wallet-backdrop');
-// Define userProfileMenus in the global scope
-const userProfileMenus = document.querySelectorAll('#user-profile-menu, #user-profile-menu-mobile');
+// Define userProfileMenus in the global scope - Fix: Use correct IDs
+const userProfileMenus = document.querySelectorAll('#user-profile-menu-desktop, #user-profile-menu-mobile');
 // console.log('Globally cached user-profile-menus:', userProfileMenus.length);
 
 // Utility Functions

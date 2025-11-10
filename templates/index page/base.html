@@ -665,6 +665,20 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         Login/Signup
                     </button>
                     {% endif %}
+                    {% if user.is_authenticated %}
+                    <div class="relative">
+                        <button id="notification-toggle-mobile" type="button"
+                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block">
+                            <i class="fas fa-bell text-lg"></i>
+                            {% if unread_notifications_count > 0 %}
+                            <span id="notification-badge-mobile"
+                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center transform translate-x-1/2 -translate-y-1/2">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% endif %}
                     <button class="mobile-menu-toggle text-text-light dark:text-text-dark faint-glow-hover text-shadow-header"
                         aria-label="Toggle mobile menu">
                         <svg viewBox="0 0 24 24" width="20" xs:width="22" height="20" xs:height="22"
