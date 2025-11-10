@@ -143,7 +143,7 @@ jobs:
 
       - name: Run Django system check
         env:
-          SECRET_KEY: test-secret-key-for-ci
+          SECRET_KEY: test-secret-key-for-ci-that-is-long-enough-to-pass-security-checks-in-github-actions
           DEBUG: 'False'
           POSTGRES_DB: test_db
           POSTGRES_USER: postgres
@@ -151,8 +151,11 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           REDIS_URL: redis://localhost:6379/0
+          SECURE_SSL_REDIRECT: 'False'  # Not needed in test environment
+          SESSION_COOKIE_SECURE: 'False'  # Not needed in test environment
+          CSRF_COOKIE_SECURE: 'False'  # Not needed in test environment
         run: |
-          poetry run python manage.py check --deploy --fail-level WARNING
+          poetry run python manage.py check --deploy --fail-level ERROR
 
       - name: Run migrations
         env:

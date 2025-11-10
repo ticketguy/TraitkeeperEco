@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <!-- Tailwind CSS -->
+    <!-- Production Note: Replace CDN with compiled production build for better performance -->
+    <!-- Using CDN for development flexibility. In production, use: npm run build:css -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -1066,6 +1068,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                     </svg>
                                 </div>
                                 <input type="password" id="password" name="password"
+                                    autocomplete="current-password"
                                     placeholder="Enter your password"
                                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
                                     required>
@@ -1348,6 +1351,12 @@ if (header) {
                     } else {
                         console.error('mobileMenuBackdrop element not found during openMobileMenu');
                     }
+
+                    // Close notification dropdowns when mobile nav menu opens
+                    const notificationDropdown = document.getElementById('notification-dropdown');
+                    const notificationDropdownMobile = document.getElementById('notification-dropdown-mobile');
+                    if (notificationDropdown) notificationDropdown.classList.add('hidden');
+                    if (notificationDropdownMobile) notificationDropdownMobile.classList.add('hidden');
                 }
 
                 function closeMobileMenu() {
@@ -1777,6 +1786,10 @@ if (header) {
                                 // Close the other menu
                                 const otherMenu = index === 0 ? mobileMenu : desktopMenu;
                                 if (otherMenu) otherMenu.classList.add('hidden');
+
+                                // Close notification dropdowns when profile menu opens
+                                if (notificationDropdown) notificationDropdown.classList.add('hidden');
+                                if (notificationDropdownMobile) notificationDropdownMobile.classList.add('hidden');
                             });
 
                             // Prevent dropdown from closing when clicking inside it
@@ -1976,41 +1989,37 @@ if (header) {
         console.log('Base.html script finished loading');
 
         // Handle zoom for all site containers to stretch the entire site
+            // Optimized to reduce forced reflows by batching DOM reads and writes
             function handleSiteZoom() {
                 const siteContainers = document.querySelectorAll('.site-container');
                 if (!siteContainers.length) return;
 
-                // Get the current viewport width in CSS pixels
+                // BATCH READS: Read viewport width once (avoid multiple reads)
                 const viewportWidth = window.innerWidth;
+                const defaultMaxWidth = 1792; // 1792px as per max-w-7xl
 
-                // Desktop view (md: breakpoint is 768px)
+                // Calculate styles based on viewport (no DOM writes yet)
+                let styles;
                 if (viewportWidth >= 768) {
-                    // Default max-width for desktop (equivalent to max-w-7xl)
-                    const defaultMaxWidth = 1792; // 1792px as per max-w-7xl
-
-                    // When zoomed in, the effective viewport width decreases
-                    // If the viewport width is less than the default max-width, stretch to fill
+                    // Desktop view (md: breakpoint is 768px)
                     if (viewportWidth < defaultMaxWidth) {
-                        siteContainers.forEach(container => {
-                            container.style.maxWidth = '100%'; // Stretch to full viewport width
-                            container.style.marginLeft = '0';
-                            container.style.marginRight = '0';
-                        });
+                        styles = { maxWidth: '100%', marginLeft: '0', marginRight: '0' };
                     } else {
-                        siteContainers.forEach(container => {
-                            container.style.maxWidth = `${defaultMaxWidth}px`; // Restore default max-width
-                            container.style.marginLeft = 'auto';
-                            container.style.marginRight = 'auto';
-                        });
+                        styles = { maxWidth: `${defaultMaxWidth}px`, marginLeft: 'auto', marginRight: 'auto' };
                     }
                 } else {
                     // Mobile view: always stretch to full width
-                    siteContainers.forEach(container => {
-                        container.style.maxWidth = '100%';
-                        container.style.marginLeft = '0';
-                        container.style.marginRight = '0';
-                    });
+                    styles = { maxWidth: '100%', marginLeft: '0', marginRight: '0' };
                 }
+
+                // BATCH WRITES: Apply all style changes together using requestAnimationFrame
+                requestAnimationFrame(() => {
+                    siteContainers.forEach(container => {
+                        container.style.maxWidth = styles.maxWidth;
+                        container.style.marginLeft = styles.marginLeft;
+                        container.style.marginRight = styles.marginRight;
+                    });
+                });
             }
 
             // Run on initial load
