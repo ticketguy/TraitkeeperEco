@@ -157,8 +157,8 @@ async function detectWallets() {
             { name: 'Solflare', provider: window.solflare, icon: 'https://solflare.com/favicon.ico', installLink: 'https://solflare.com/' },
             { name: 'Backpack', provider: window.backpack?.solana, icon: 'https://backpack.app/favicon.ico', installLink: 'https://backpack.app/' },
             { name: 'Glow', provider: window.glow?.solana, icon: 'https://glow.app/favicon.ico', installLink: 'https://glow.app/' },
-            { name: 'Slope', provider: window.slope, icon: 'https://slope.finance/favicon.ico', installLink: 'https://slope.finance/' },
-            { name: 'Sollet', provider: window.sollet, icon: 'https://www.sollet.io/favicon.ico', installLink: 'https://www.sollet.io/' }
+            { name: 'Slope', provider: window.slope, icon: 'https://solana.com/favicon.ico', installLink: 'https://slope.finance/' },
+            { name: 'Sollet', provider: window.sollet, icon: 'https://solana.com/favicon.ico', installLink: 'https://www.sollet.io/' }
         ];
 
         const additionalWallets = [];
