@@ -653,3 +653,130 @@ def vitality_metrics(request):
             'queue_size': 0,
             'queue_status': 'error',
         }, status=500)
+
+# ============================================================================
+# HEALTH SHARING API ENDPOINTS (Public & Admin)
+# ============================================================================
+
+import secrets
+from datetime import timedelta
+from rest_framework.permissions import AllowAny
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def generate_share_token(request):
+    """Generate a public share token for system health stats."""
+    try:
+        from .models import HealthShareToken
+        
+        # Generate a secure random token
+        token = secrets.token_urlsafe(32)
+        
+        # Token expires in 24 hours
+        expires_at = timezone.now() + timedelta(hours=24)
+        
+        # Get options from request
+        include_performance = request.data.get('performance', True)
+        include_services = request.data.get('services', True)
+        include_marketplace = request.data.get('marketplace', True)
+        include_uptime = request.data.get('uptime', True)
+        
+        # Create share token
+        share_token = HealthShareToken.objects.create(
+            token=token,
+            expires_at=expires_at,
+            include_performance=include_performance,
+            include_services=include_services,
+            include_marketplace=include_marketplace,
+            include_uptime=include_uptime
+        )
+        
+        logger.info(f"Share token {token[:8]}... created by {request.user.username}")
+        
+        return Response({
+            'token': token,
+            'expires_at': expires_at,
+            'share_url': f'/system-health/share/{token}/'
+        })
+        
+    except Exception as e:
+        logger.error(f"Share token generation error: {e}", exc_info=True)
+        return Response({'error': 'Failed to generate share token.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Public endpoint
+def shared_health_stats(request, token):
+    """View shared system health stats (public, no auth required)."""
+    try:
+        from .models import HealthShareToken, EcosystemHealth
+        
+        # Find and validate token
+        try:
+            share_token = HealthShareToken.objects.get(token=token)
+        except HealthShareToken.DoesNotExist:
+            return Response({'error': 'Invalid or expired share link.'}, status=404)
+        
+        # Check if token is still valid
+        if not share_token.is_valid:
+            return Response({'error': 'This share link has expired.'}, status=410)
+        
+        # Increment view count
+        share_token.increment_view_count()
+        
+        # Get latest ecosystem health data
+        latest = EcosystemHealth.get_latest()
+        
+        if not latest:
+            return Response({'error': 'No health data available.'}, status=404)
+        
+        # Build response based on share options (exclude sensitive data)
+        response_data = {
+            'timestamp': latest.timestamp,
+            'status': latest.status,
+            'share_expires_at': share_token.expires_at
+        }
+        
+        # Include performance metrics if allowed
+        if share_token.include_performance:
+            response_data['system_resources'] = {
+                'cpu_percent': latest.cpu_percent,
+                'memory_percent': latest.memory_percent,
+                'disk_percent': latest.disk_percent,
+            }
+        
+        # Include service status if allowed
+        if share_token.include_services:
+            response_data['services'] = {
+                'indexer_running': latest.indexer_running,
+                'redis_connected': latest.redis_connected,
+                'database_connected': latest.database_connected,
+            }
+        
+        # Include marketplace stats if allowed
+        if share_token.include_marketplace:
+            response_data['marketplace'] = {
+                'active_listings': latest.active_listings_count,
+                'sales_24h': latest.sales_24h,
+                'volume_24h': float(latest.volume_24h),
+                'unique_traders_24h': latest.unique_traders_24h,
+            }
+        
+        # Include uptime if allowed
+        if share_token.include_uptime:
+            # Calculate uptime (placeholder - would need actual deployment timestamp)
+            response_data['uptime'] = {
+                'message': 'System operational',
+                'last_restart': latest.timestamp,
+            }
+        
+        return Response(response_data)
+        
+    except Exception as e:
+        logger.error(f"Shared health stats error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch shared health stats.'}, status=500)
+
+
+def shared_health_page(request, token):
+    """Render public page for shared health stats (no auth required)."""
+    return render(request, 'system_health/shared_health.html', {'token': token})
