@@ -30,7 +30,9 @@
       "Bash(default:0 }}\"\n    data-volume=\"{{ collection.volume)",
       "Bash(default:0 }}\"\n    data-sales=\"{{ collection.sales_24h)",
       "Bash(curl:*)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

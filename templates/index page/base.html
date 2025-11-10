@@ -6,8 +6,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta charset="UTF-7">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <meta name="description" content="TraitKeeper - Secure and analyze your NFT's traits">
     <meta name="keywords" content="NFT, traits, blockchain, crypto art">
     <title>{% block title %}TraitKeeper - Secure Your NFT's Traits{% endblock %}</title>
@@ -137,12 +137,6 @@
         --text-secondary-dark: #808080;
     }
 
-    /* Dark mode: Change primary to black */
-    html.dark {
-        --primary-color: #000000;
-        --primary-dark-color: #1a1a1a;
-    }
-
     body {
         margin: 0; /* Reset default browser margins */
         width: 100%;
@@ -242,62 +236,6 @@
     .modal-content { position: relative; z-index: 1; }
     .faint-glow-hover:hover { box-shadow: 0 0 5px rgba(128, 0, 128, 0.3); animation: faintPulse 2s infinite; }
 
-
-    /* --- Mobile Responsiveness and Viewport Fixes --- */
-    * { box-sizing: border-box; }
-    html, body {
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Prevent horizontal scroll on mobile */
-    body {
-        position: relative;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* Ensure all containers respect viewport width */
-    .container, .site-container, main, section {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    /* Remove ugly button focus boxes - cleaner UI */
-    button:focus,
-    button:focus-visible,
-    a:focus,
-    a:focus-visible,
-    input:focus,
-    select:focus,
-    textarea:focus {
-        outline: none !important;
-        box-shadow: none !important;
-    }
-
-    /* Remove Tailwind focus rings */
-    *:focus {
-        --tw-ring-shadow: none !important;
-    }
-
-    /* Remove outline/box from SVG elements specifically */
-    svg,
-    svg:hover,
-    svg:focus,
-    svg:active,
-    button svg,
-    a svg {
-        outline: none !important;
-        box-shadow: none !important;
-    }
-
-    /* Prevent SVG parent buttons from showing outline */
-    button:has(svg),
-    a:has(svg) {
-        outline: none !important;
-    }
 
     /* --- General Header & Container Styles (Existing + Cleanup) --- */
     header { overflow: visible; box-sizing: border-box; }
@@ -664,20 +602,6 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         class="bg-primary text-white px-2 xs:px-3 py-1 xs:py-1.5 text-xs xs:text-sm rounded-lg hover:bg-primary-dark transition faint-glow-hover">
                         Login/Signup
                     </button>
-                    {% endif %}
-                    {% if user.is_authenticated %}
-                    <div class="relative">
-                        <button id="notification-toggle-mobile" type="button"
-                            class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block">
-                            <i class="fas fa-bell text-lg"></i>
-                            {% if unread_notifications_count > 0 %}
-                            <span id="notification-badge-mobile"
-                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center transform translate-x-1/2 -translate-y-1/2">
-                                {{ unread_notifications_count }}
-                            </span>
-                            {% endif %}
-                        </button>
-                    </div>
                     {% endif %}
                     <button class="mobile-menu-toggle text-text-light dark:text-text-dark faint-glow-hover text-shadow-header"
                         aria-label="Toggle mobile menu">
@@ -1143,7 +1067,6 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 </div>
                                 <input type="password" id="password" name="password"
                                     placeholder="Enter your password"
-                                    autocomplete="current-password"
                                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
                                     required>
                             </div>
@@ -1288,15 +1211,13 @@ if (header) {
     console.warn("Main header element (#main-header) not found for scroll effects.");
 }
 
-        // console.log('Base.html script started loading'); // Debug log to confirm script execution
+        console.log('Base.html script started loading'); // Debug log to confirm script execution
 
         // Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/static/service-worker.js')
-                    .then(registration => {
-                        // console.log('Service Worker registered:', registration)
-                    })
+                    .then(registration => console.log('Service Worker registered:', registration))
                     .catch(error => console.error('Service Worker registration failed:', error));
             });
         }
@@ -1339,13 +1260,13 @@ if (header) {
                 const { outcome } = await deferredPrompt.userChoice;
 
                 if (outcome === 'accepted') {
-                    // console.log('User accepted the install prompt');
+                    console.log('User accepted the install prompt');
                     localStorage.setItem('pwa-installed', 'true');
                     if (window.showToast) {
                         window.showToast('App installed successfully! Check your home screen.', 'success');
                     }
                 } else {
-                    // console.log('User dismissed the install prompt');
+                    console.log('User dismissed the install prompt');
                 }
 
                 // Hide the prompt
@@ -1379,7 +1300,7 @@ if (header) {
 
         // Check if app is already installed
         window.addEventListener('appinstalled', () => {
-            // console.log('PWA was installed');
+            console.log('PWA was installed');
             localStorage.setItem('pwa-installed', 'true');
             if (installPrompt) {
                 installPrompt.classList.add('hidden');
@@ -1397,25 +1318,25 @@ if (header) {
 
 
         // Main script execution
-            // console.log('DOMContentLoaded fired for base.html script'); // Debug log
+            console.log('DOMContentLoaded fired for base.html script'); // Debug log
 
                 // Mobile Menu Toggle (New Spherical Buttons)
                 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
                 const mobileMenuButtons = document.getElementById('mobile-menu-buttons');
                 const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
 
-                // console.log('Mobile menu elements:', {
-                //     mobileMenuToggle: !!mobileMenuToggle,
-                //     mobileMenuButtons: !!mobileMenuButtons,
-                //     mobileMenuBackdrop: !!mobileMenuBackdrop
-                // });
+                console.log('Mobile menu elements:', {
+                    mobileMenuToggle: !!mobileMenuToggle,
+                    mobileMenuButtons: !!mobileMenuButtons,
+                    mobileMenuBackdrop: !!mobileMenuBackdrop
+                });
 
                 function openMobileMenu() {
-                    // console.log('Opening mobile menu buttons');
+                    console.log('Opening mobile menu buttons');
                     if (mobileMenuButtons) {
                         mobileMenuButtons.classList.remove('hidden');
                         mobileMenuButtons.classList.add('flex');
-                        // console.log('Mobile menu visibility:', !mobileMenuButtons.classList.contains('hidden')); // Debug log
+                        console.log('Mobile menu visibility:', !mobileMenuButtons.classList.contains('hidden')); // Debug log
                     } else {
                         console.error('mobileMenuButtons element not found during openMobileMenu');
                     }
@@ -1423,14 +1344,14 @@ if (header) {
                         mobileMenuBackdrop.classList.remove('hidden');
                         mobileMenuBackdrop.classList.remove('opacity-0');
                         mobileMenuBackdrop.classList.add('opacity-100');
-                        // console.log('Backdrop visibility:', !mobileMenuBackdrop.classList.contains('hidden')); // Debug log
+                        console.log('Backdrop visibility:', !mobileMenuBackdrop.classList.contains('hidden')); // Debug log
                     } else {
                         console.error('mobileMenuBackdrop element not found during openMobileMenu');
                     }
                 }
 
                 function closeMobileMenu() {
-                    // console.log('Closing mobile menu buttons');
+                    console.log('Closing mobile menu buttons');
                     if (mobileMenuButtons) {
                         mobileMenuButtons.classList.remove('flex');
                         mobileMenuButtons.classList.add('hidden');
@@ -1447,26 +1368,17 @@ if (header) {
                 }
 
                 if (mobileMenuToggle) {
-                    // console.log('Attaching event listeners to mobile menu toggle');
-                    const handleMobileMenuToggle = function (e) {
-                        e.preventDefault();
+                    console.log('Attaching click event listener to mobile menu toggle');
+                    mobileMenuToggle.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        // console.log('Mobile menu toggle activated');
-                        if (mobileMenuButtons && mobileMenuButtons.classList.contains('hidden')) {
+                        e.preventDefault();
+                        console.log('Mobile menu toggle clicked');
+                        if (mobileMenuButtons.classList.contains('hidden')) {
                             openMobileMenu();
                         } else {
                             closeMobileMenu();
                         }
-                    };
-
-                    // Add both click and touch events for better mobile support
-                    mobileMenuToggle.addEventListener('click', handleMobileMenuToggle);
-                    mobileMenuToggle.addEventListener('touchend', handleMobileMenuToggle);
-
-                    // Prevent ghost clicks on mobile
-                    mobileMenuToggle.addEventListener('touchstart', function(e) {
-                        e.stopPropagation();
                     });
                 } else {
                     console.error('Mobile menu toggle not found in the DOM');
@@ -1476,7 +1388,7 @@ if (header) {
                     mobileMenuBackdrop.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        // console.log('Backdrop clicked, closing mobile menu');
+                        console.log('Backdrop clicked, closing mobile menu');
                         closeMobileMenu();
                     });
                 }
@@ -1498,7 +1410,7 @@ if (header) {
                     if (mobileMenuButtons && mobileMenuToggle && !mobileMenuButtons.contains(e.target) && !mobileMenuToggle.contains(e.target) && !clickedInsideWalletToggle && !clickedThemeToggle && !clickedFooter && (!walletModal || !walletModal.contains(e.target)) && (!walletBackdrop || !walletBackdrop.contains(e.target))) {
                         // Only proceed if the mobile menu is visible (not hidden)
                         if (!mobileMenuButtons.classList.contains('hidden')) {
-                            // console.log('Clicked outside mobile menu, closing');
+                            console.log('Clicked outside mobile menu, closing');
                             closeMobileMenu();
                         }
                     }
@@ -1509,13 +1421,13 @@ if (header) {
                         // Allow theme toggle clicks to propagate
                         const themeToggleMobile = document.getElementById('theme-toggle-mobile');
                         if (themeToggleMobile && themeToggleMobile.contains(e.target)) {
-                            // console.log('Theme toggle clicked, allowing propagation');
+                            console.log('Theme toggle clicked, allowing propagation');
                             return; // Let the theme toggle handler process this
                         }
 
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        // console.log('Clicked inside mobile menu buttons, preventing close');
+                        console.log('Clicked inside mobile menu buttons, preventing close');
                     });
                 }
 
@@ -1526,93 +1438,92 @@ if (header) {
                 const loginTabContent = document.getElementById('login-tab-content');
                 const tabIndicator = document.getElementById('tab-indicator');
 
-                // console.log('=== WALLET MODAL TAB INITIALIZATION ===');
-                // console.log('Wallet tab element:', walletTab, '| Found:', !!walletTab);
-                // console.log('Login tab element:', loginTab, '| Found:', !!loginTab);
-                // console.log('Wallet tab content:', walletTabContent, '| Found:', !!walletTabContent);
-                // console.log('Login tab content:', loginTabContent, '| Found:', !!loginTabContent);
-                // console.log('Tab indicator:', tabIndicator, '| Found:', !!tabIndicator);
+                console.log('=== WALLET MODAL TAB INITIALIZATION ===');
+                console.log('Wallet tab element:', walletTab, '| Found:', !!walletTab);
+                console.log('Login tab element:', loginTab, '| Found:', !!loginTab);
+                console.log('Wallet tab content:', walletTabContent, '| Found:', !!walletTabContent);
+                console.log('Login tab content:', loginTabContent, '| Found:', !!loginTabContent);
+                console.log('Tab indicator:', tabIndicator, '| Found:', !!tabIndicator);
 
                 if (walletTabContent) {
-                    // console.log('Wallet tab content initial classes:', walletTabContent.className);
+                    console.log('Wallet tab content initial classes:', walletTabContent.className);
                 }
                 if (loginTabContent) {
-                    // console.log('Login tab content initial classes:', loginTabContent.className);
+                    console.log('Login tab content initial classes:', loginTabContent.className);
                 }
-                // console.log('=== END INITIALIZATION ===');
+                console.log('=== END INITIALIZATION ===');
 
                 function activateTab(tabButton, tabContent, isWalletTab) {
-                    // console.log('\n=== ACTIVATE TAB CALLED ===');
-                    // console.log('Tab button:', tabButton);
-                    // console.log('Tab content:', tabContent);
-                    // console.log('Is wallet tab:', isWalletTab);
-                    // console.log('Tab content ID:', tabContent?.id);
+                    console.log('\n=== ACTIVATE TAB CALLED ===');
+                    console.log('Tab button:', tabButton);
+                    console.log('Tab content:', tabContent);
+                    console.log('Is wallet tab:', isWalletTab);
+                    console.log('Tab content ID:', tabContent?.id);
 
                     // Remove active state from all tabs
                     const allTabButtons = document.querySelectorAll('.tab-button');
-                    // console.log('Found', allTabButtons.length, 'tab buttons');
+                    console.log('Found', allTabButtons.length, 'tab buttons');
                     allTabButtons.forEach((btn, index) => {
-                        // console.log(`Deactivating tab button ${index}:`, btn.id);
+                        console.log(`Deactivating tab button ${index}:`, btn.id);
                         btn.classList.remove('active-tab', 'text-primary');
                         btn.classList.add('text-gray-600', 'dark:text-gray-400');
                     });
 
                     // Hide all tab content
                     const allTabContent = document.querySelectorAll('.tab-content');
-                    // console.log('Found', allTabContent.length, 'tab content elements');
+                    console.log('Found', allTabContent.length, 'tab content elements');
                     allTabContent.forEach((content, index) => {
-                        // console.log(`Hiding tab content ${index}:`, content.id, '| Before classes:', content.className);
+                        console.log(`Hiding tab content ${index}:`, content.id, '| Before classes:', content.className);
                         content.classList.add('hidden', 'opacity-0');
                         content.classList.remove('opacity-100');
-                        // console.log(`After hiding:`, content.className);
+                        console.log(`After hiding:`, content.className);
                     });
 
                     // Activate the clicked tab with enhanced styling
-                    // console.log('Activating tab button:', tabButton.id, '| Before classes:', tabButton.className);
+                    console.log('Activating tab button:', tabButton.id, '| Before classes:', tabButton.className);
                     tabButton.classList.add('active-tab', 'text-primary');
                     tabButton.classList.remove('text-gray-600', 'dark:text-gray-400');
-                    // console.log('After activation:', tabButton.className);
+                    console.log('After activation:', tabButton.className);
 
                     // Animate tab indicator
                     if (tabIndicator) {
                         const newLeft = isWalletTab ? '4px' : 'calc(50% + 0px)';
-                        // console.log('Moving tab indicator to:', newLeft);
+                        console.log('Moving tab indicator to:', newLeft);
                         tabIndicator.style.left = newLeft;
-                        // console.log('Tab indicator left value now:', tabIndicator.style.left);
+                        console.log('Tab indicator left value now:', tabIndicator.style.left);
                     } else {
                         console.warn('Tab indicator not found!');
                     }
 
                     // Show the corresponding tab content with animation
                     if (tabContent) {
-                        // console.log('Showing tab content:', tabContent.id, '| Before classes:', tabContent.className);
+                        console.log('Showing tab content:', tabContent.id, '| Before classes:', tabContent.className);
                         tabContent.classList.remove('hidden');
-                        // console.log('Removed hidden class, classes now:', tabContent.className);
+                        console.log('Removed hidden class, classes now:', tabContent.className);
 
                         setTimeout(() => {
-                            // console.log('Applying opacity animation to:', tabContent.id);
+                            console.log('Applying opacity animation to:', tabContent.id);
                             tabContent.classList.remove('opacity-0');
                             tabContent.classList.add('opacity-100');
-                            // console.log('Final classes:', tabContent.className);
+                            console.log('Final classes:', tabContent.className);
                         }, 50); // Smooth transition
                     } else {
                         console.error('Tab content is null!');
                     }
-                    // console.log('=== END ACTIVATE TAB ===\n');
+                    console.log('=== END ACTIVATE TAB ===\n');
                 }
 
                 if (walletTab && walletTabContent) {
-                    // console.log('Attaching click event to wallet tab');
-                    const handleWalletTabActivation = (e) => {
-                        e.preventDefault();
+                    console.log('Attaching click event to wallet tab');
+                    walletTab.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        // console.log('\n>>> WALLET TAB ACTIVATED <<<');
+                        console.log('\n>>> WALLET TAB CLICKED <<<');
+                        console.log('Event:', e);
+                        console.log('Current target:', e.currentTarget);
+                        console.log('Calling activateTab for WALLET tab...');
                         activateTab(walletTab, walletTabContent, true);
-                    };
-
-                    walletTab.addEventListener('click', handleWalletTabActivation);
-                    walletTab.addEventListener('touchend', handleWalletTabActivation);
-                    // console.log('Wallet tab listeners attached successfully');
+                    });
+                    console.log('Wallet tab click listener attached successfully');
                 } else {
                     console.error('ERROR: Wallet tab or content not found!', {
                         walletTab: !!walletTab,
@@ -1621,17 +1532,16 @@ if (header) {
                 }
 
                 if (loginTab && loginTabContent) {
-                    // console.log('Attaching click event to login tab');
-                    const handleLoginTabActivation = (e) => {
-                        e.preventDefault();
+                    console.log('Attaching click event to login tab');
+                    loginTab.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        // console.log('\n>>> LOGIN TAB ACTIVATED <<<');
+                        console.log('\n>>> LOGIN TAB CLICKED <<<');
+                        console.log('Event:', e);
+                        console.log('Current target:', e.currentTarget);
+                        console.log('Calling activateTab for LOGIN tab...');
                         activateTab(loginTab, loginTabContent, false);
-                    };
-
-                    loginTab.addEventListener('click', handleLoginTabActivation);
-                    loginTab.addEventListener('touchend', handleLoginTabActivation);
-                    // console.log('Login tab listeners attached successfully');
+                    });
+                    console.log('Login tab click listener attached successfully');
                 } else {
                     console.error('ERROR: Login tab or content not found!', {
                         loginTab: !!loginTab,
@@ -1651,25 +1561,25 @@ if (header) {
                 const markAllRead = document.getElementById('mark-all-read');
                 const markAllReadMobile = document.getElementById('mark-all-read-mobile');
 
-                // console.log('Notification elements:', {
-                //     notificationToggle: !!notificationToggle,
-                //     notificationDropdown: !!notificationDropdown,
-                //     notificationToggleMobile: !!notificationToggleMobile,
-                //     notificationDropdownMobile: !!notificationDropdownMobile,
-                //     notificationSettingsToggle: !!notificationSettingsToggle,
-                //     notificationSettingsToggleMobile: !!notificationSettingsToggleMobile,
-                //     notificationSettingsModal: !!notificationSettingsModal,
-                //     closeNotificationSettings: !!closeNotificationSettings,
-                //     markAllRead: !!markAllRead,
-                //     markAllReadMobile: !!markAllReadMobile
-                // });
+                console.log('Notification elements:', {
+                    notificationToggle: !!notificationToggle,
+                    notificationDropdown: !!notificationDropdown,
+                    notificationToggleMobile: !!notificationToggleMobile,
+                    notificationDropdownMobile: !!notificationDropdownMobile,
+                    notificationSettingsToggle: !!notificationSettingsToggle,
+                    notificationSettingsToggleMobile: !!notificationSettingsToggleMobile,
+                    notificationSettingsModal: !!notificationSettingsModal,
+                    closeNotificationSettings: !!closeNotificationSettings,
+                    markAllRead: !!markAllRead,
+                    markAllReadMobile: !!markAllReadMobile
+                });
 
                 // Setup desktop notification dropdown
                 if (notificationToggle && notificationDropdown) {
                     notificationToggle.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.preventDefault();
-                        // console.log('Desktop notification toggle clicked');
+                        console.log('Desktop notification toggle clicked');
                         notificationDropdown.classList.toggle('hidden');
                         // Close mobile dropdown if open
                         if (notificationDropdownMobile) {
@@ -1688,7 +1598,7 @@ if (header) {
                     notificationToggleMobile.addEventListener('click', function (e) {
                         e.stopPropagation();
                         e.preventDefault();
-                        // console.log('Mobile notification toggle clicked');
+                        console.log('Mobile notification toggle clicked');
                         notificationDropdownMobile.classList.toggle('hidden');
                         // Close desktop dropdown if open
                         if (notificationDropdown) {
@@ -1854,9 +1764,9 @@ if (header) {
                         });
 
                         if (profileLink && menu) {
-                            // Toggle dropdown on click with touch support
-                            const handleProfileToggle = function (e) {
-                                console.log(`${menuType} profile activated`);
+                            // Toggle dropdown on click
+                            profileLink.addEventListener('click', function (e) {
+                                console.log(`${menuType} profile link clicked`);
                                 e.stopPropagation();
                                 e.preventDefault();
 
@@ -1867,10 +1777,7 @@ if (header) {
                                 // Close the other menu
                                 const otherMenu = index === 0 ? mobileMenu : desktopMenu;
                                 if (otherMenu) otherMenu.classList.add('hidden');
-                            };
-
-                            profileLink.addEventListener('click', handleProfileToggle);
-                            profileLink.addEventListener('touchend', handleProfileToggle);
+                            });
 
                             // Prevent dropdown from closing when clicking inside it
                             menu.addEventListener('click', function(e) {
@@ -1988,14 +1895,14 @@ if (header) {
                                         console.error("Failed to subscribe to push notifications:", error);
                                     });
                                 } else {
-                                    // console.log("Push notification permission denied");
+                                    console.log("Push notification permission denied");
                                 }
                             });
                         }
                     });
                 });
             } else {
-                // console.log("Push notifications not supported in this browser");
+                console.log("Push notifications not supported in this browser");
             }
             {% endif %}
 
@@ -2066,7 +1973,7 @@ if (header) {
         setInterval(updateTimestamps, 30000);
         updateTimestamps();
 
-        // console.log('Base.html script finished loading');
+        console.log('Base.html script finished loading');
 
         // Handle zoom for all site containers to stretch the entire site
             function handleSiteZoom() {
@@ -2129,7 +2036,7 @@ if (header) {
             const desktopResults = document.getElementById('desktop-search-results');
             const mobileResults = document.getElementById('mobile-search-results');
 
-            // console.log('Collection Search Initialized:', {
+            console.log('Collection Search Initialized:', {
                 desktopInput: !!desktopInput,
                 mobileInput: !!mobileInput,
                 desktopResults: !!desktopResults,
@@ -2140,31 +2047,31 @@ if (header) {
             const SEARCH_DELAY = 300; // milliseconds
 
             function performSearch(query, resultsContainer) {
-                // console.log('performSearch called:', { query, hasContainer: !!resultsContainer });
+                console.log('performSearch called:', { query, hasContainer: !!resultsContainer });
 
                 if (query.length < 2) {
                     resultsContainer.classList.add('hidden');
-                    // console.log('Query too short, hiding results');
+                    console.log('Query too short, hiding results');
                     return;
                 }
 
                 // Show loading state
-                // console.log('Showing loading state');
+                console.log('Showing loading state');
                 resultsContainer.innerHTML = '<div class="p-4 text-center"><div class="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div><span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Searching...</span></div>';
                 resultsContainer.classList.remove('hidden');
-                // console.log('Results container visible:', !resultsContainer.classList.contains('hidden'));
+                console.log('Results container visible:', !resultsContainer.classList.contains('hidden'));
 
                 // Fetch search results
                 const searchUrl = `/api/search-collections/?q=${encodeURIComponent(query)}`;
-                // console.log('Fetching from:', searchUrl);
+                console.log('Fetching from:', searchUrl);
 
                 fetch(searchUrl)
                     .then(response => {
-                        // console.log('Search response status:', response.status);
+                        console.log('Search response status:', response.status);
                         return response.json();
                     })
                     .then(data => {
-                        // console.log('Search results:', data);
+                        console.log('Search results:', data);
                         if (data.results && data.results.length > 0) {
                             const html = data.results.map(collection => `
                                 <a href="/collection/${collection.slug || collection.address}/"
@@ -2184,10 +2091,10 @@ if (header) {
                                 </a>
                             `).join('');
                             resultsContainer.innerHTML = html;
-                            // console.log('Results rendered:', data.results.length, 'collections');
+                            console.log('Results rendered:', data.results.length, 'collections');
                         } else {
                             resultsContainer.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">No collections found</div>';
-                            // console.log('No results found');
+                            console.log('No results found');
                         }
                     })
                     .catch(error => {
@@ -2202,12 +2109,12 @@ if (header) {
                     return;
                 }
 
-                // console.log('Setting up search input:', { inputId: input.id, resultsId: results.id });
+                console.log('Setting up search input:', { inputId: input.id, resultsId: results.id });
 
                 input.addEventListener('input', (e) => {
                     clearTimeout(searchTimeout);
                     const query = e.target.value.trim();
-                    // console.log('Input event triggered:', query);
+                    console.log('Input event triggered:', query);
 
                     if (query.length < 2) {
                         results.classList.add('hidden');
@@ -2221,7 +2128,7 @@ if (header) {
 
                 input.addEventListener('focus', (e) => {
                     const query = e.target.value.trim();
-                    // console.log('Focus event triggered:', query);
+                    console.log('Focus event triggered:', query);
                     if (query.length >= 2 && !results.classList.contains('hidden')) {
                         performSearch(query, results);
                     }
@@ -2230,7 +2137,7 @@ if (header) {
                 // Close results when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!input.contains(e.target) && !results.contains(e.target)) {
-                        // console.log('Click outside search, hiding results');
+                        console.log('Click outside search, hiding results');
                         results.classList.add('hidden');
                     }
                 });
@@ -2238,16 +2145,16 @@ if (header) {
                 // Handle keyboard navigation
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
-                        // console.log('Escape key pressed, hiding results');
+                        console.log('Escape key pressed, hiding results');
                         results.classList.add('hidden');
                         input.blur();
                     }
                 });
             }
 
-            // console.log('Setting up desktop search...');
+            console.log('Setting up desktop search...');
             setupSearchInput(desktopInput, desktopResults);
-            // console.log('Setting up mobile search...');
+            console.log('Setting up mobile search...');
             setupSearchInput(mobileInput, mobileResults);
     });
 

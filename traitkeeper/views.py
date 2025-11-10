@@ -596,7 +596,7 @@ def collection_detail(request, address):
                 'floor_price': 0.0, 'floor_change_24h': 0.0, 'volume_24h': 0.0,
                 'velocity_24h': 0.0, 'total_volume': 0.0, 'market_cap': 0.0,
                 'owners': 0, 'owners_change_24h': 0.0, 'listed_count': 0,
-                'total_supply': collection.total_supply or 0, # Use cached total_supply from collection model
+                'total_supply': 0, # Default to 0 when no stats available
                 # Add any other default values needed
             }
 
