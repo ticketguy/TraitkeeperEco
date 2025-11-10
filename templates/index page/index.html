@@ -17,29 +17,17 @@
      * SCROLL PERFORMANCE OPTIMIZATION
      * ================================================== */
 
-    /* Enable smooth scrolling with hardware acceleration */
-    html {
-        scroll-behavior: smooth;
+    /* Enable momentum scrolling on iOS/mobile */
+    body {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Hardware acceleration for animated elements */
+    /* Prevent flickering on animated elements */
     .trait-card,
     .collection-card,
     .tilt-card {
-        transform: translateZ(0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
-    }
-
-    /* Optimize transitions to use GPU */
-    .trait-card {
-        will-change: transform, opacity;
-    }
-
-    /* Reduce paint operations */
-    .trait-card:hover {
-        will-change: transform;
     }
 
     /* ==================================================
