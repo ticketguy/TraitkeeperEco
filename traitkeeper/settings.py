@@ -300,7 +300,7 @@ SESSION_COOKIE_SECURE = str_to_bool(os.getenv('SESSION_COOKIE_SECURE', 'False'))
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookies
 SESSION_EXPIRE_AT_BROWSER_CLOSE = str_to_bool(os.getenv('SESSION_EXPIRE_AT_BROWSER_CLOSE', 'False'))  # Keep sessions for SESSION_COOKIE_AGE duration (2 weeks)
 CSRF_COOKIE_SECURE = str_to_bool(os.getenv('CSRF_COOKIE_SECURE', 'False'))  # Set to True in production for secure CSRF cookies
-CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookies
+# NOTE: CSRF_COOKIE_HTTPONLY must be False to allow JavaScript to read the token for AJAX requests
 
 # -----------------------------------------------------------------------------
 # Background Task Settings
