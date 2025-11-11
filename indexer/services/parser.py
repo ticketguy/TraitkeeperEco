@@ -313,6 +313,8 @@ class TransactionParserService:
                 return await self._parse_tensor_escrow_instruction(tx, ix, decoded_data, collection_address, timestamp)
             elif specific_marketplace == 'mpl_core':
                 return await self._parse_mpl_core_instruction(tx, ix, decoded_data, collection_address, timestamp)
+            elif specific_marketplace == 'token_metadata':
+                return await self._parse_token_metadata_instruction(tx, ix, decoded_data, collection_address, timestamp)
 
             logger.warning(f"No sub-parser implemented for marketplace: {specific_marketplace} (alias: {marketplace})")
             return None
@@ -2935,4 +2937,210 @@ class TransactionParserService:
 
         except Exception as e:
             logger.error(f"Error parsing Mpl Core transfer: {e}", exc_info=True)
+            return None
+
+    # ===================================================================
+    # METAPLEX TOKEN METADATA (LEGACY) PARSERS - Mint/Burn Detection
+    # ===================================================================
+
+    async def _parse_token_metadata_instruction(self, tx_details: Dict, ix: Dict, decoded_data: bytes,
+                                                collection_address: str, timestamp: Any) -> Optional[dict]:
+        """
+        Parse Metaplex Token Metadata instructions (legacy standard).
+
+        Token Metadata uses 1-byte discriminators instead of 8-byte.
+        Example transaction: 4QhvVb9uC21uyTKkoVC5h2CKRh9mBF6chcAHMHjSvUey4hNX2UutBnK7ZYJZcnTRqoBuic22gHQoGRhN72t5jb6f
+        """
+        from indexer.nft_constants import MARKETPLACE_DISCRIMINATORS
+
+        accounts = ix.get('accounts', [])
+        discriminator = decoded_data[:1] if len(decoded_data) >= 1 else b''  # 1-byte discriminator
+
+        # Check discriminator
+        if discriminator == MARKETPLACE_DISCRIMINATORS['token_metadata']['create']:
+            return await self._parse_token_metadata_create(tx_details, ix, accounts, collection_address, timestamp)
+        elif discriminator == MARKETPLACE_DISCRIMINATORS['token_metadata']['mint']:
+            return await self._parse_token_metadata_mint(tx_details, ix, accounts, collection_address, timestamp)
+        elif discriminator == MARKETPLACE_DISCRIMINATORS['token_metadata']['burn']:
+            return await self._parse_token_metadata_burn(tx_details, ix, accounts, collection_address, timestamp)
+        else:
+            # No discriminator match - try fallback by looking for mintTo inner instruction
+            return await self._parse_token_metadata_fallback(tx_details, ix, accounts, collection_address, timestamp)
+
+    async def _parse_token_metadata_create(self, tx_details: dict, ix: dict, accounts: list,
+                                          collection: str, ts: Any) -> Optional[dict]:
+        """
+        Parse Token Metadata Create instruction (creates metadata + initializes mint).
+
+        Account structure (varies by version):
+        - accounts[0]: Metadata account
+        - accounts[1]: Master Edition account (optional)
+        - accounts[2]: Mint
+        - accounts[3]: Mint authority
+        - accounts[4]: Payer
+        """
+        try:
+            # Look for the mint address in accounts or inner instructions
+            mint_address = ''
+
+            # Check accounts for mint
+            if len(accounts) > 2:
+                mint_address = accounts[2]
+
+            # If not found, look for initializeMint2 inner instruction
+            if not mint_address:
+                for inner_ix in ix.get('innerInstructions', []):
+                    if inner_ix.get('parsed', {}).get('type') == 'initializeMint2':
+                        mint_address = inner_ix.get('parsed', {}).get('info', {}).get('mint', '')
+                        break
+
+            # Extract collection from metadata or use provided
+            collection_address = collection or (accounts[1] if len(accounts) > 1 else '')
+
+            # Extract owner/minter
+            owner = accounts[4] if len(accounts) > 4 else (accounts[3] if len(accounts) > 3 else '')
+
+            # Get mint price from native transfers
+            mint_price = None
+            for transfer in tx_details.get('nativeTransfers', []):
+                if transfer.get('fromUserAccount') == owner and transfer.get('amount', 0) > 1000000:  # > 0.001 SOL
+                    mint_price = transfer.get('amount', 0) / 1e9
+                    break
+
+            logger.info(f"[Token Metadata] Create detected: {mint_address[:8] if mint_address else 'unknown'}...")
+
+            return {
+                'event_type': 'MINT',
+                'mint_address': mint_address,
+                'amount': mint_price,
+                'buyer': owner,
+                'seller': None,
+                'timestamp': ts,
+                'collection_address': collection_address,
+                'marketplace': 'token_metadata',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Token Metadata create: {e}", exc_info=True)
+            return None
+
+    async def _parse_token_metadata_mint(self, tx_details: dict, ix: dict, accounts: list,
+                                        collection: str, ts: Any) -> Optional[dict]:
+        """
+        Parse Token Metadata Mint instruction (mints tokens to account).
+
+        Account structure:
+        - accounts[0]: Token account (destination)
+        - accounts[1]: Token owner
+        - accounts[2]: Metadata
+        - accounts[3]: Master Edition
+        - accounts[5]: Mint
+        """
+        try:
+            # Extract mint address
+            mint_address = accounts[5] if len(accounts) > 5 else ''
+
+            # Look for mintTo inner instruction to confirm
+            if not mint_address:
+                for inner_ix in ix.get('innerInstructions', []):
+                    if inner_ix.get('parsed', {}).get('type') == 'mintTo':
+                        mint_address = inner_ix.get('parsed', {}).get('info', {}).get('mint', '')
+                        break
+
+            # Extract collection
+            collection_address = accounts[2] if len(accounts) > 2 else collection
+
+            # Extract owner
+            owner = accounts[1] if len(accounts) > 1 else ''
+
+            logger.info(f"[Token Metadata] Mint detected: {mint_address[:8] if mint_address else 'unknown'}...")
+
+            return {
+                'event_type': 'MINT',
+                'mint_address': mint_address,
+                'amount': None,
+                'buyer': owner,
+                'seller': None,
+                'timestamp': ts,
+                'collection_address': collection_address,
+                'marketplace': 'token_metadata',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Token Metadata mint: {e}", exc_info=True)
+            return None
+
+    async def _parse_token_metadata_burn(self, tx_details: dict, ix: dict, accounts: list,
+                                        collection: str, ts: Any) -> Optional[dict]:
+        """
+        Parse Token Metadata Burn instruction.
+        """
+        try:
+            # Extract mint from accounts or inner instructions
+            mint_address = accounts[0] if len(accounts) > 0 else ''
+            burner = accounts[1] if len(accounts) > 1 else ''
+
+            logger.info(f"[Token Metadata] Burn detected: {mint_address[:8] if mint_address else 'unknown'}...")
+
+            return {
+                'event_type': 'BURN',
+                'mint_address': mint_address,
+                'amount': None,
+                'buyer': None,
+                'seller': burner,
+                'timestamp': ts,
+                'collection_address': collection,
+                'marketplace': 'token_metadata',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Token Metadata burn: {e}", exc_info=True)
+            return None
+
+    async def _parse_token_metadata_fallback(self, tx_details: dict, ix: dict, accounts: list,
+                                            collection: str, ts: Any) -> Optional[dict]:
+        """
+        Fallback parser for Token Metadata when discriminator doesn't match.
+        Looks for mintTo inner instruction to detect mints.
+        """
+        try:
+            # Look through inner instructions for mintTo
+            for inner_ix in ix.get('innerInstructions', []):
+                parsed_inner = inner_ix.get('parsed', {})
+                if parsed_inner.get('type') == 'mintTo':
+                    # This is a mint operation!
+                    info = parsed_inner.get('info', {})
+                    mint_address = info.get('mint', '')
+                    token_account = info.get('account', '')
+                    amount = info.get('amount', '0')
+
+                    # Find the token owner from accounts
+                    owner = ''
+                    for acc_ix in ix.get('innerInstructions', []):
+                        if acc_ix.get('parsed', {}).get('info', {}).get('account') == token_account:
+                            owner = acc_ix.get('parsed', {}).get('info', {}).get('owner', '')
+                            break
+
+                    logger.info(f"[Token Metadata Fallback] Mint detected via mintTo: {mint_address[:8]}...")
+
+                    return {
+                        'event_type': 'MINT',
+                        'mint_address': mint_address,
+                        'amount': None,
+                        'buyer': owner or accounts[1] if len(accounts) > 1 else '',
+                        'seller': None,
+                        'timestamp': ts,
+                        'collection_address': collection,
+                        'marketplace': 'token_metadata',
+                        'traits': {}
+                    }
+
+            # No mintTo found
+            return None
+
+        except Exception as e:
+            logger.error(f"Error in Token Metadata fallback: {e}", exc_info=True)
             return None

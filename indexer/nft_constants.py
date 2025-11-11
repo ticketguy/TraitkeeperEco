@@ -19,7 +19,8 @@ MARKETPLACE_PROGRAMS = {
     'tensor_escrow': 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN',  # TensorSwap
 
     # Metaplex Programs (for mint/burn detection)
-    'mpl_core': 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d',  # Metaplex Core
+    'mpl_core': 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d',  # Metaplex Core (new standard)
+    'token_metadata': 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',  # Token Metadata (legacy)
     'candy_machine': 'CMZYPASGWeTz7RNGHaRJfCq2XQ5pYK6nDvVQxzkH51zb',  # Candy Machine v3
 
     # Other Marketplaces
@@ -116,6 +117,12 @@ OPENSEA_IX_DELIST = bytes.fromhex("3788cd6b6bad041f")
 MPL_CORE_CREATE_V1 = bytes.fromhex("0000100000005174")  # createV1 (mint)
 MPL_CORE_BURN = bytes.fromhex("749c6b74726f2075")  # burn
 MPL_CORE_TRANSFER = bytes.fromhex("8a9d2c8f4f6e7765")  # transfer
+
+# Metaplex Token Metadata (Legacy) - 1-byte discriminators
+TOKEN_METADATA_CREATE = bytes.fromhex("2a")  # Create instruction (creates metadata + mint)
+TOKEN_METADATA_MINT = bytes.fromhex("2b")  # Mint instruction (mints tokens)
+TOKEN_METADATA_UPDATE = bytes.fromhex("21")  # Update metadata
+TOKEN_METADATA_BURN = bytes.fromhex("1d")  # Burn NFT
 
 # Layout structures (update based on IDLs; examples)
 ME_V2_EXECUTE_SALE_LAYOUT = CStruct(
@@ -829,11 +836,18 @@ MARKETPLACE_DISCRIMINATORS = {
         'bid': bytes.fromhex("c738552692f3259e"),  # bid (TComp)
         'cancel_bid': bytes.fromhex("6a8e437cae6a0c7d"),  # cancelBid (TComp)
     },
-    # Metaplex Core - NFT Mint/Burn detection
+    # Metaplex Core - NFT Mint/Burn detection (new standard)
     'mpl_core': {
         'create_v1': bytes.fromhex("0000100000005174"),  # createV1 (NFT mint)
         'burn': bytes.fromhex("749c6b74726f2075"),  # burn (NFT burn)
         'transfer': bytes.fromhex("8a9d2c8f4f6e7765"),  # transfer
+    },
+    # Metaplex Token Metadata - NFT Mint/Burn detection (legacy standard)
+    'token_metadata': {
+        'create': bytes.fromhex("2a"),  # Create (creates metadata + mint)
+        'mint': bytes.fromhex("2b"),  # Mint (mints tokens)
+        'update': bytes.fromhex("21"),  # Update metadata
+        'burn': bytes.fromhex("1d"),  # Burn NFT
     },
 }
 
@@ -919,10 +933,15 @@ EVENT_TYPE_MAPPING = {
     'create_auctioneer_trade_state': 'NFT_LISTING',
     'withdraw_from_treasury': 'NFT_POOL_WITHDRAW',
 
-    # Metaplex Core - Mint/Burn/Transfer
+    # Metaplex Core - Mint/Burn/Transfer (new standard)
     'create_v1': 'MINT',  # NFT mint
-    'burn': 'BURN',  # NFT burn
+    'burn': 'BURN',  # NFT burn (Note: conflicts with token_metadata 'burn' - handle by program ID)
     'transfer': 'TRANSFER',  # NFT transfer
+
+    # Metaplex Token Metadata - Mint/Burn (legacy standard)
+    'create': 'MINT',  # Create & mint
+    'mint': 'MINT',  # Mint tokens
+    'update': 'TRANSFER',  # Metadata update (treat as activity)
 }
 
 # =============================================================================
