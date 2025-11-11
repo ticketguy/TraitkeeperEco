@@ -562,7 +562,7 @@ def pending_collections(request):
         return redirect('admin:index')
 
     # GET request - display pending collections
-    collections = PendingCollection.objects.all().order_by('-submitted_at')
+    collections = PendingCollection.objects.all().order_by('-created_at')
     paginator = Paginator(collections, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
