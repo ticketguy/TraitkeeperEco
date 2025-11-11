@@ -571,7 +571,7 @@ def pending_collections(request):
         'page_obj': page_obj,
         'page_title': 'Pending Collections',
     }
-    return render(request, 'admin/nft_data/pending_collections.html', context)
+    return render(request, 'admin/pending_collections.html', context)
 
 
 # ============================================================================
