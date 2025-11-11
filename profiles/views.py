@@ -179,7 +179,9 @@ def settings_profile_view(request):
         messages.error(request, 'Admin users cannot access profile settings.')
         return redirect('admin:index')
 
-    profile = request.user.profile
+    # Get or create profile for this user (handles legacy users without profiles)
+    from profiles.models import Profile
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         # Pass request.POST and request.FILES (if using ImageField for avatar)

@@ -330,6 +330,38 @@ async function checkInitialWalletState() {
     const wallets = await detectWallets();
     for (const wallet of wallets) {
         if (wallet.isInstalled && wallet.provider.isConnected && wallet.blockchain === 'solana') {
+            // First, try to get the public key without signing
+            try {
+                const walletPublicKey = wallet.provider.publicKey?.toString();
+
+                if (walletPublicKey) {
+                    // Check if there's an active session with this public key
+                    const response = await fetch('/wallet/verify-session/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ public_key: walletPublicKey })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            // Valid session exists! Update UI without requesting signature
+                            isWalletConnected = true;
+                            publicKey = walletPublicKey;
+                            updateHeaderWalletState(true, data.username, data.profile_picture);
+                            startPollingWalletState();
+                            return;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('No active session found, will request signature');
+            }
+
+            // No valid session - proceed with normal connect + sign flow
             await connectWalletAndSignMessage(wallet);
             break;
         }
@@ -857,11 +889,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hideWalletOptions();
             }
 
-            // Handle disconnect
-            if (target.matches('#disconnect-wallet, #disconnect-wallet-mobile')) {
+            // Handle disconnect/logout
+            if (target.matches('#disconnect-wallet-desktop, #disconnect-wallet-mobile')) {
                 event.preventDefault();
                 disconnectWalletGlobal().catch(error => {
-                    handleError(error, 'Failed to disconnect wallet. Please try again.');
+                    handleError(error, 'Failed to logout. Please try again.');
                 });
             }
 
