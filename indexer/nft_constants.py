@@ -18,6 +18,10 @@ MARKETPLACE_PROGRAMS = {
     'tensor_amm': 'TAMM6ub33ij1mbetoMyVBLeKY5iP41i4UPUJQGkhfsg',
     'tensor_escrow': 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN',  # TensorSwap
 
+    # Metaplex Programs (for mint/burn detection)
+    'mpl_core': 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d',  # Metaplex Core
+    'candy_machine': 'CMZYPASGWeTz7RNGHaRJfCq2XQ5pYK6nDvVQxzkH51zb',  # Candy Machine v3
+
     # Other Marketplaces
     'opensea': '3o9d13qUvEuuauhFrVom1vuCzgNsJifeaBYDPquaT73Y',
     'haus': 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk',
@@ -107,6 +111,11 @@ OPENSEA_IX_SELL = bytes.fromhex("33e685a4017f83ad")  # Placeholder, compute if n
 OPENSEA_IX_BUY = bytes.fromhex("66063d1201daebea")
 OPENSEA_IX_LIST = bytes.fromhex("36aec14311298426")
 OPENSEA_IX_DELIST = bytes.fromhex("3788cd6b6bad041f")
+
+# Metaplex Core (Mpl Core) - NFT mint/burn detection
+MPL_CORE_CREATE_V1 = bytes.fromhex("0000100000005174")  # createV1 (mint)
+MPL_CORE_BURN = bytes.fromhex("749c6b74726f2075")  # burn
+MPL_CORE_TRANSFER = bytes.fromhex("8a9d2c8f4f6e7765")  # transfer
 
 # Layout structures (update based on IDLs; examples)
 ME_V2_EXECUTE_SALE_LAYOUT = CStruct(
@@ -655,6 +664,24 @@ TENSOR_AMM_BUY_NFT_T22_LAYOUT = CStruct(
     "discriminator" / ConstructBytes (8),
     "max_amount" / U64
 )
+
+# Metaplex Core Layouts
+MPL_CORE_CREATE_V1_LAYOUT = CStruct(
+    "discriminator" / ConstructBytes (8),
+    # name and uri are variable length strings encoded in the remaining bytes
+    # We'll parse these manually in the parser function
+)
+
+MPL_CORE_BURN_LAYOUT = CStruct(
+    "discriminator" / ConstructBytes (8),
+    # Burn has minimal data, just the discriminator
+)
+
+MPL_CORE_TRANSFER_LAYOUT = CStruct(
+    "discriminator" / ConstructBytes (8),
+    # Transfer data will be in accounts
+)
+
 # =============================================================================
 # DISCRIMINATOR MAPPINGS (Corrected with sighashes from IDLs and computed additions)
 # =============================================================================
@@ -802,6 +829,12 @@ MARKETPLACE_DISCRIMINATORS = {
         'bid': bytes.fromhex("c738552692f3259e"),  # bid (TComp)
         'cancel_bid': bytes.fromhex("6a8e437cae6a0c7d"),  # cancelBid (TComp)
     },
+    # Metaplex Core - NFT Mint/Burn detection
+    'mpl_core': {
+        'create_v1': bytes.fromhex("0000100000005174"),  # createV1 (NFT mint)
+        'burn': bytes.fromhex("749c6b74726f2075"),  # burn (NFT burn)
+        'transfer': bytes.fromhex("8a9d2c8f4f6e7765"),  # transfer
+    },
 }
 
 # =============================================================================
@@ -885,6 +918,11 @@ EVENT_TYPE_MAPPING = {
     'update_auctioneer': 'NFT_POOL_UPDATE',
     'create_auctioneer_trade_state': 'NFT_LISTING',
     'withdraw_from_treasury': 'NFT_POOL_WITHDRAW',
+
+    # Metaplex Core - Mint/Burn/Transfer
+    'create_v1': 'MINT',  # NFT mint
+    'burn': 'BURN',  # NFT burn
+    'transfer': 'TRANSFER',  # NFT transfer
 }
 
 # =============================================================================

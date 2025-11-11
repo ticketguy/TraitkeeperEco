@@ -311,7 +311,9 @@ class TransactionParserService:
                 return await self._parse_tensor_amm_instruction(tx, ix, decoded_data, collection_address, timestamp)
             elif specific_marketplace == 'tensor_escrow':
                 return await self._parse_tensor_escrow_instruction(tx, ix, decoded_data, collection_address, timestamp)
-            
+            elif specific_marketplace == 'mpl_core':
+                return await self._parse_mpl_core_instruction(tx, ix, decoded_data, collection_address, timestamp)
+
             logger.warning(f"No sub-parser implemented for marketplace: {specific_marketplace} (alias: {marketplace})")
             return None
             
@@ -2744,9 +2746,193 @@ class TransactionParserService:
             
             # Could also check logs for collection mentions
             # logs = meta.get('logMessages', [])
-            
+
             return None  # Placeholder - expand based on actual data patterns
-            
+
         except Exception as e:
             logger.debug(f"[_extract_collection] Error: {e}")
+            return None
+
+    # ===================================================================
+    # METAPLEX CORE (MPL CORE) PARSERS - Mint/Burn Detection
+    # ===================================================================
+
+    async def _parse_mpl_core_instruction(self, tx_details: Dict, ix: Dict, decoded_data: bytes,
+                                         collection_address: str, timestamp: Any) -> Optional[dict]:
+        """
+        Parse Metaplex Core instructions (mint, burn, transfer).
+
+        Metaplex Core is the new standard for NFTs on Solana.
+        Example transaction: 24RPxtPHuFksx8vdJWdUvC633rK6B1HS6qHxn1Cw7WfV41rgCdDRsMhMSTmHHWVdQGhiy28gdXPt725N3BCCdHmg
+        """
+        from indexer.nft_constants import (
+            MARKETPLACE_DISCRIMINATORS,
+            MPL_CORE_CREATE_V1_LAYOUT,
+            MPL_CORE_BURN_LAYOUT,
+            MPL_CORE_TRANSFER_LAYOUT
+        )
+
+        accounts = ix.get('accounts', [])
+        discriminator = decoded_data[:8] if len(decoded_data) >= 8 else b''
+
+        # Discriminator → (parser_function, layout) mapping
+        mpl_core_parsers = {
+            MARKETPLACE_DISCRIMINATORS['mpl_core']['create_v1']:
+                (self._parse_mpl_core_create_v1, MPL_CORE_CREATE_V1_LAYOUT),
+            MARKETPLACE_DISCRIMINATORS['mpl_core']['burn']:
+                (self._parse_mpl_core_burn, MPL_CORE_BURN_LAYOUT),
+            MARKETPLACE_DISCRIMINATORS['mpl_core']['transfer']:
+                (self._parse_mpl_core_transfer, MPL_CORE_TRANSFER_LAYOUT),
+        }
+
+        parser_tuple = mpl_core_parsers.get(discriminator)
+        if not parser_tuple:
+            logger.warning(f"Unknown Mpl Core discriminator: {discriminator.hex()}")
+            return None
+
+        parser_func, layout = parser_tuple
+        try:
+            parsed_data = layout.parse(decoded_data)
+            return await parser_func(tx_details, accounts, parsed_data, collection_address, timestamp, decoded_data)
+        except Exception as e:
+            logger.error(f"Error parsing Mpl Core instruction {discriminator.hex()}: {e}", exc_info=True)
+            return None
+
+    async def _parse_mpl_core_create_v1(self, tx_details: dict, accounts: list,
+                                       parsed_data: Any, collection: str, ts: Any, decoded_data: bytes) -> Optional[dict]:
+        """
+        Parse Mpl Core createV1 instruction (NFT mint).
+
+        Account structure:
+        - accounts[0]: Asset (newly minted NFT)
+        - accounts[1]: Collection
+        - accounts[2]: Authority
+        - accounts[3]: Payer
+        - accounts[4]: Owner (recipient)
+        """
+        try:
+            # Extract mint address (the newly created NFT)
+            mint_address = accounts[0] if len(accounts) > 0 else ''
+
+            # Extract collection from accounts or use provided
+            collection_address = accounts[1] if len(accounts) > 1 else collection
+
+            # Extract owner (minter/recipient)
+            owner = accounts[4] if len(accounts) > 4 else (accounts[3] if len(accounts) > 3 else '')
+
+            # Try to parse name and URI from instruction data
+            # Format after discriminator: name_length (u32) + name + uri_length (u32) + uri
+            nft_name = ''
+            nft_uri = ''
+            try:
+                data_after_disc = decoded_data[8:]  # Skip 8-byte discriminator
+                if len(data_after_disc) > 0:
+                    # Parse name (variable length string)
+                    # The format is complex with packed data, extract from logs instead
+                    pass
+            except:
+                pass
+
+            # Get price if this was part of a mint transaction with payment
+            mint_price = None
+            for transfer in tx_details.get('nativeTransfers', []):
+                if transfer.get('toUserAccount') != owner:  # Payment to treasury/creator
+                    mint_price = transfer.get('amount', 0) / 1e9
+                    break
+
+            logger.info(f"[Mpl Core] Mint detected: {mint_address[:8]}... in collection {collection_address[:8]}...")
+
+            return {
+                'event_type': 'MINT',
+                'mint_address': mint_address,
+                'amount': mint_price,
+                'buyer': owner,  # The one who minted/received
+                'seller': None,  # No seller in a mint
+                'timestamp': ts,
+                'collection_address': collection_address,
+                'marketplace': 'mpl_core',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Mpl Core createV1: {e}", exc_info=True)
+            return None
+
+    async def _parse_mpl_core_burn(self, tx_details: dict, accounts: list,
+                                  parsed_data: Any, collection: str, ts: Any, decoded_data: bytes) -> Optional[dict]:
+        """
+        Parse Mpl Core burn instruction (NFT burn).
+
+        Account structure:
+        - accounts[0]: Asset (NFT being burned)
+        - accounts[1]: Collection
+        - accounts[2]: Payer/Authority
+        """
+        try:
+            # Extract mint address (the NFT being burned)
+            mint_address = accounts[0] if len(accounts) > 0 else ''
+
+            # Extract collection
+            collection_address = accounts[1] if len(accounts) > 1 else collection
+
+            # Extract burner (the one burning the NFT)
+            burner = accounts[2] if len(accounts) > 2 else ''
+
+            logger.info(f"[Mpl Core] Burn detected: {mint_address[:8]}... from collection {collection_address[:8]}...")
+
+            return {
+                'event_type': 'BURN',
+                'mint_address': mint_address,
+                'amount': None,
+                'buyer': None,
+                'seller': burner,  # The one who burned it
+                'timestamp': ts,
+                'collection_address': collection_address,
+                'marketplace': 'mpl_core',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Mpl Core burn: {e}", exc_info=True)
+            return None
+
+    async def _parse_mpl_core_transfer(self, tx_details: dict, accounts: list,
+                                      parsed_data: Any, collection: str, ts: Any, decoded_data: bytes) -> Optional[dict]:
+        """
+        Parse Mpl Core transfer instruction (NFT transfer).
+
+        Account structure:
+        - accounts[0]: Asset (NFT being transferred)
+        - accounts[1]: Collection
+        - accounts[2]: Payer
+        - accounts[3]: Authority (from)
+        - accounts[4]: New Owner (to)
+        """
+        try:
+            # Extract mint address
+            mint_address = accounts[0] if len(accounts) > 0 else ''
+
+            # Extract collection
+            collection_address = accounts[1] if len(accounts) > 1 else collection
+
+            # Extract from/to addresses
+            from_address = accounts[3] if len(accounts) > 3 else ''
+            to_address = accounts[4] if len(accounts) > 4 else ''
+
+            logger.info(f"[Mpl Core] Transfer detected: {mint_address[:8]}... from {from_address[:8]}... to {to_address[:8]}...")
+
+            return {
+                'event_type': 'TRANSFER',
+                'mint_address': mint_address,
+                'amount': None,
+                'buyer': to_address,  # Recipient
+                'seller': from_address,  # Sender
+                'timestamp': ts,
+                'collection_address': collection_address,
+                'marketplace': 'mpl_core',
+                'traits': {}
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing Mpl Core transfer: {e}", exc_info=True)
             return None
