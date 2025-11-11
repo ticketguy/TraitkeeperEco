@@ -44,6 +44,11 @@ urlpatterns = [
 
     path('marketplace/', include('marketplace.urls')),
 
+    # TraitKeeper Ecosystem Apps (Coming Soon)
+    path('popbox/', include('popbox.urls')),
+    path('traitloom/', include('traitloom.urls')),
+    path('outerflow/', include('outerflow.urls')),
+
     path('system-health/', include('system_health.urls')),
 
     # Admin Secure URLs (encrypted secrets management)

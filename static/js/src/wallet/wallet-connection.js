@@ -754,8 +754,9 @@ function initializeNotificationWebSocket() {
         window.notificationSocket = null;
     }
 
-    // Establish new WebSocket connection
-    window.notificationSocket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+    // Establish new WebSocket connection (use wss:// for HTTPS, ws:// for HTTP)
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    window.notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
 
     window.notificationSocket.onopen = function () {
         // console.log("Notification WebSocket connection established");

@@ -685,8 +685,21 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">EchoSafe</a>
                     <a href="#"
                         class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Voyager</a>
-                    <a href="#"
-                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Outerflow</a>
+                    <a href="{% url 'popbox:home' %}"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap group relative">
+                        PopBox
+                        <span class="absolute -top-2 -right-10 text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Soon</span>
+                    </a>
+                    <a href="{% url 'traitloom:home' %}"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap group relative">
+                        TraitLoom
+                        <span class="absolute -top-2 -right-10 text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Soon</span>
+                    </a>
+                    <a href="{% url 'outerflow:home' %}"
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap group relative">
+                        Outerflow
+                        <span class="absolute -top-2 -right-10 text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Soon</span>
+                    </a>
                 </nav>
                 
                 <!-- Search Bar - Takes Most Space -->
@@ -870,9 +883,20 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
                 Voyager
             </a>
-            <a href="#"
-                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
+            <a href="{% url 'popbox:home' %}"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover relative group">
+                PopBox
+                <span class="ml-1 text-[8px] xs:text-[9px] opacity-60">Soon</span>
+            </a>
+            <a href="{% url 'traitloom:home' %}"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover relative group">
+                TraitLoom
+                <span class="ml-1 text-[8px] xs:text-[9px] opacity-60">Soon</span>
+            </a>
+            <a href="{% url 'outerflow:home' %}"
+                class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover relative group">
                 Outerflow
+                <span class="ml-1 text-[8px] xs:text-[9px] opacity-60">Soon</span>
             </a>
         </div>
 

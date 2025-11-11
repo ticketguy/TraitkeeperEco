@@ -1,0 +1,75 @@
+{% extends 'index page/base.html' %}
+{% load static %}
+
+{% block title %}{{ app_name }} - Coming Soon | TraitKeeper{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-20 px-4">
+    <div class="max-w-4xl w-full">
+        <!-- Coming Soon Badge -->
+        <div class="text-center mb-8">
+            <span class="inline-flex items-center px-6 py-2 rounded-full bg-primary/20 border-2 border-primary text-primary font-semibold text-sm animate-pulse">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                </svg>
+                Coming Soon
+            </span>
+        </div>
+
+        <!-- App Logo/Icon -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-gradient-to-br from-primary to-primary-dark shadow-2xl shadow-primary/50 mb-6">
+                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <h1 class="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-primary via-purple-400 to-primary-dark bg-clip-text text-transparent mb-4 font-space-mono">
+                {{ app_name }}
+            </h1>
+            <p class="text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto">
+                {{ app_description }}
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+            {% for feature in features %}
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-primary/50 transition-all duration-300">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">{{ feature }}</h3>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Notify Me Button -->
+        <div class="text-center">
+            <a href="mailto:hello@traitkeeper.xyz?subject=Notify me when {{ app_name }} launches"
+                class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-primary-dark text-white font-bold rounded-xl hover:shadow-2xl hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 text-lg">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                Notify Me When It Launches
+            </a>
+            <p class="text-gray-400 mt-4 text-sm">
+                Be the first to know when {{ app_name }} goes live
+            </p>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-12">
+            <a href="{% url 'index' %}" class="text-primary hover:text-primary-dark transition-colors inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to TraitKeeper
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

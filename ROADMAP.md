@@ -78,7 +78,6 @@ Revolutionary cross-collection trait trading platform. Users can trade specific 
 
 - **Trading Mechanisms**
   - Peer-to-peer direct trades
-  - AMM-style trait pools
   - Trait auctions
   - Offer/counter-offer system
 

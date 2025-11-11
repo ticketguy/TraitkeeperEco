@@ -119,6 +119,9 @@ INSTALLED_APPS = [
     'indexer',                   # Indexer app for blockchain data
     'notifications',             # Notifications app
     'traitkeeper',               # Main app for TraitKeeper
+    'popbox',                    # PopBox - NFT discovery platform (Coming Soon)
+    'traitloom',                 # TraitLoom - Trait weaving & customization (Coming Soon)
+    'outerflow',                 # Outerflow - Community-as-a-Service (Coming Soon)
 
     # Django-Allauth Apps (for social authentication)
     'allauth',                   # Core allauth app
