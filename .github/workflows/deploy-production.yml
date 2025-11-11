@@ -241,7 +241,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
     environment:
       name: production
-      url: https://traitkeeper.com
+      url: https://traitkeeper.xyz
 
     steps:
       - name: Checkout code
@@ -285,7 +285,7 @@ jobs:
           sleep 30
 
           # Health check (adjust URL as needed)
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://traitkeeper.com/health/ || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://traitkeeper.xyz/health/ || echo "000")
 
           if [ "$response" = "200" ] || [ "$response" = "301" ] || [ "$response" = "302" ]; then
             echo "✅ Health check passed (HTTP $response)"
