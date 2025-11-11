@@ -64,6 +64,7 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper  # Support both log paths
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,7 +76,7 @@ services:
         python manage.py migrate --noinput &&
         python manage.py collectstatic --noinput &&
         echo '🚀 Main App: Starting gunicorn...' &&
-        gunicorn traitkeeper.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --worker-class gthread --timeout 180 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -
+        exec gunicorn traitkeeper.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --worker-class gthread --timeout 180 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile - --log-level info
       "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
@@ -103,6 +104,7 @@ services:
       LOG_FILE_PATH: "/app/logs/indexer_live.log"
     volumes:
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper
     depends_on:
       postgres:
         condition: service_healthy
@@ -137,6 +139,7 @@ services:
       LOG_FILE_PATH: "/app/logs/indexer_scheduled.log"
     volumes:
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper
     depends_on:
       postgres:
         condition: service_healthy
@@ -176,6 +179,7 @@ services:
       LOG_FILE_PATH: "/app/logs/vitality_analytics.log"
     volumes:
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper
     depends_on:
       postgres:
         condition: service_healthy
@@ -214,6 +218,7 @@ services:
       LOG_FILE_PATH: "/app/logs/health.log"
     volumes:
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper
     depends_on:
       postgres:
         condition: service_healthy
@@ -248,6 +253,7 @@ services:
       LOG_FILE_PATH: "/app/logs/config_listener.log"
     volumes:
       - ./logs:/app/logs
+      - ./logs:/var/log/traitkeeper
     command: >
       sh -c "
         echo '⚙️  Config Listener: Starting...' &&
