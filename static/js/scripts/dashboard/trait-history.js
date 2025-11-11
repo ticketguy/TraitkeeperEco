@@ -184,6 +184,6 @@ window.onload = function() {
 };
 
 function updateHistoryChart(timeFrame) {
-    // console.log(`Updating chart for ${timeFrame}`);
+    console.log(`Updating chart for ${timeFrame}`);
     // Implement actual chart update logic here
 }

@@ -5,7 +5,7 @@
  * Requires @solana/web3.js to be loaded
  */
 
-// console.log("solana-transaction.js loaded");
+console.log("solana-transaction.js loaded");
 
 // Check if Solana Web3 is available
 if (typeof window.solanaWeb3 === 'undefined') {
@@ -104,7 +104,7 @@ async function signAndSendTransaction(transaction) {
     }
 
     try {
-        // console.log('Requesting wallet to sign transaction...');
+        console.log('Requesting wallet to sign transaction...');
 
         // Different wallets have slightly different APIs
         let signedTransaction;
@@ -112,7 +112,7 @@ async function signAndSendTransaction(transaction) {
         if (provider.signAndSendTransaction) {
             // Some wallets (like Phantom) can sign and send in one call
             const { signature } = await provider.signAndSendTransaction(transaction);
-            // console.log('Transaction signed and sent. Signature:', signature);
+            console.log('Transaction signed and sent. Signature:', signature);
             return signature;
         } else if (provider.signTransaction) {
             // Others require separate sign and send steps
@@ -125,7 +125,7 @@ async function signAndSendTransaction(transaction) {
             );
 
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-            // console.log('Transaction signed and sent. Signature:', signature);
+            console.log('Transaction signed and sent. Signature:', signature);
 
             // Wait for confirmation
             await connection.confirmTransaction(signature);
@@ -160,7 +160,7 @@ async function signAndSendTransaction(transaction) {
 async function executeMarketplaceAction(instructionEndpoint, confirmationEndpoint, actionData, csrfToken) {
     try {
         // --- Step 1: Request instruction from backend ---
-        // console.log('Step 1: Requesting instruction from backend...');
+        console.log('Step 1: Requesting instruction from backend...');
 
         const step1Response = await fetch(instructionEndpoint, {
             method: 'POST',
@@ -186,16 +186,16 @@ async function executeMarketplaceAction(instructionEndpoint, confirmationEndpoin
         const instructionData = step1Result.data.transaction_instruction;
         const tempBidId = step1Result.data.temp_bid_id;
 
-        // console.log('Step 2: Building transaction...');
+        console.log('Step 2: Building transaction...');
         // --- Step 2: Build and Sign Transaction ---
         const transaction = await buildTransaction(instructionData);
 
-        // console.log('Step 3: Requesting user signature and sending to Solana...');
+        console.log('Step 3: Requesting user signature and sending to Solana...');
         // Sign and send transaction to the Solana RPC
         // This function handles waiting for RPC confirmation
         const signature = await signAndSendTransaction(transaction);
 
-        // console.log('Step 4: Confirming transaction with backend...');
+        console.log('Step 4: Confirming transaction with backend...');
         // --- Step 4: Send signature back to the DEDICATED CONFIRMATION endpoint ---
         const finalConfirmationResponse = await fetch(confirmationEndpoint, {
             method: 'POST',
@@ -219,7 +219,7 @@ async function executeMarketplaceAction(instructionEndpoint, confirmationEndpoin
 
         const finalResult = await finalConfirmationResponse.json();
 
-        // console.log('Transaction complete and confirmed!', finalResult);
+        console.log('Transaction complete and confirmed!', finalResult);
         return finalResult;
 
     } catch (error) {
@@ -236,4 +236,4 @@ window.solanaTransaction = {
     executeMarketplaceAction
 };
 
-// console.log("Solana Transaction utilities initialized");
+console.log("Solana Transaction utilities initialized");

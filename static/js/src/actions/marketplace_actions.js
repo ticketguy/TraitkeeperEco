@@ -16,7 +16,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  // console.log("Marketplace Actions Script Loaded"); // Debug log
+  console.log("Marketplace Actions Script Loaded"); // Debug log
 
   // --- Configuration & Elements ---
   const config = window.traitkeeperConfig || {}; // Get config from global scope
@@ -66,10 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
       options.body = JSON.stringify(data);
     }
 
-    // console.log(
-    //   `Calling API: ${method} ${endpoint}`,
-    //   data ? `with data: ${JSON.stringify(data)}` : ""
-    // );
+    console.log(
+      `Calling API: ${method} ${endpoint}`,
+      data ? `with data: ${JSON.stringify(data)}` : ""
+    );
     // Consider showing a global loading indicator here
 
     try {
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         result = await response.json();
-        // console.log(`API Response from ${endpoint}:`, result);
+        console.log(`API Response from ${endpoint}:`, result);
       } else {
         const text = await response.text();
         console.error("Non-JSON response received:", text);
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // console.log("Make Offer clicked for NFT:", nftId);
+    console.log("Make Offer clicked for NFT:", nftId);
 
     // Simple prompt (Replace with a dedicated offer modal UI)
     const bidAmountStr = prompt(
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       // Check if Solana transaction utilities are available
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log("Using Solana on-chain transaction signing...");
+        console.log("Using Solana on-chain transaction signing...");
 
         // Use the new transaction flow
         const result = await window.solanaTransaction.executeMarketplaceAction(
@@ -254,10 +254,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let endpoint;
     if (isDirectSell) {
       endpoint = apiEndpoints.buyDirect;
-      // console.log("Calling direct buy endpoint");
+      console.log("Calling direct buy endpoint");
     } else if (isSellIntent) {
       endpoint = apiEndpoints.acceptAsk;
-      // console.log("Calling accept asking price endpoint");
+      console.log("Calling accept asking price endpoint");
     } else {
       alert("This item isn't currently listed for immediate purchase.");
       return;
@@ -266,9 +266,9 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       // Check if Solana transaction utilities are available
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing for purchase..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing for purchase..."
+        );
 
         // Use the new transaction flow
         const result = await window.solanaTransaction.executeMarketplaceAction(
@@ -803,9 +803,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing to accept bid..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing to accept bid..."
+        );
 
         const result = await window.solanaTransaction.executeMarketplaceAction(
           apiEndpoints.acceptBid,
@@ -854,9 +854,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing to reject bid..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing to reject bid..."
+        );
 
         const result = await window.solanaTransaction.executeMarketplaceAction(
           apiEndpoints.rejectBid,
@@ -904,9 +904,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing to cancel bid..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing to cancel bid..."
+        );
 
         const result = await window.solanaTransaction.executeMarketplaceAction(
           apiEndpoints.cancelBid,
@@ -955,9 +955,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing to set sell intent..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing to set sell intent..."
+        );
 
         // NOTE: The backend service handles both direct-sell and sell-intent logic
         // based on the context. We assume this button is for Sell Intent (negotiable).
@@ -1108,9 +1108,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing to cancel auction..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing to cancel auction..."
+        );
 
         const result = await window.solanaTransaction.executeMarketplaceAction(
           "/marketplace/api/auction/cancel/",
@@ -1204,9 +1204,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       if (typeof window.solanaTransaction !== "undefined") {
-        // console.log(
-        //   "Using Solana on-chain transaction signing for counter-offer..."
-        // );
+        console.log(
+          "Using Solana on-chain transaction signing for counter-offer..."
+        );
 
         const result = await window.solanaTransaction.executeMarketplaceAction(
           "/marketplace/api/bid/counter/",
@@ -1245,5 +1245,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  // console.log("Marketplace Actions Script Initialized");
+  console.log("Marketplace Actions Script Initialized");
 }); // End DOMContentLoaded
