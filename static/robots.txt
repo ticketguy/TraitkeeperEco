@@ -1,0 +1,17 @@
+# TraitKeeper - robots.txt
+# Allow all search engines to index the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://traitkeeper.xyz/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /api/internal/
+Disallow: /_
+
+# Crawl delay (be nice to our servers)
+Crawl-delay: 1
