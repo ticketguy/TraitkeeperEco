@@ -109,7 +109,6 @@ INSTALLED_APPS = [
     'wallet',                    # Wallet management app
     'profiles',                  # User profiles app
     'core',                      # Core utilities and services
-#    'learn',                     # Learn app
     'analytics',                 # Analytics app
     'nft_data',                  # NFT data management app
     'nftmemories',               # NFT memories app

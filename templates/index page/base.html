@@ -686,7 +686,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                     <a href="#"
                         class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Voyager</a>
                     <a href="#"
-                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Learn</a>
+                        class="text-text-light dark:text-text-dark hover:text-primary transition animate-fade-in font-medium text-shadow-header whitespace-nowrap">Outerflow</a>
                 </nav>
                 
                 <!-- Search Bar - Takes Most Space -->
@@ -872,7 +872,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
             </a>
             <a href="#"
                 class="px-2 xs:px-2.5 h-5 xs:h-6 flex items-center justify-center rounded-lg text-white text-xs xs:text-sm font-space-mono animate-spin-colors animate-scale-in faint-glow-hover">
-                Learn
+                Outerflow
             </a>
         </div>
 
@@ -1149,16 +1149,16 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
     <!-- Wallet Modal (Redesigned - Fast Transition) -->
     <div id="wallet-modal"
-        class="wallet-options fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[420px] max-h-[90vh] bg-white dark:bg-gray-800 backdrop-blur-xl border-2 border-primary/40 rounded-3xl shadow-2xl shadow-primary/20 z-[1001] transition-all duration-200 ease-out opacity-0 scale-95 hidden overflow-hidden">
+        class="wallet-options fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-[340px] sm:max-w-[420px] max-h-[90vh] bg-white dark:bg-gray-800 backdrop-blur-xl border-2 border-primary/40 rounded-2xl sm:rounded-3xl shadow-2xl shadow-primary/20 z-[1001] transition-all duration-200 ease-out opacity-0 scale-95 hidden overflow-hidden">
 
         <!-- Animated Background Gradient -->
         <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none"></div>
 
         <div class="modal-content relative flex flex-col h-full">
             <!-- Header Section -->
-            <div class="relative px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="relative px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent font-space-mono">
+                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent font-space-mono">
                         TraitVerse Portal
                     </h3>
                     <button
@@ -1171,10 +1171,10 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 </div>
 
                 <!-- Enhanced Tab Navigation -->
-                <div class="flex mt-4 bg-gray-100 dark:bg-gray-700/50 rounded-xl p-1 relative">
+                <div class="flex mt-3 sm:mt-4 bg-gray-100 dark:bg-gray-700/50 rounded-xl p-1 relative">
                     <div id="tab-indicator" class="absolute h-[calc(100%-8px)] bg-white dark:bg-gray-600 rounded-lg shadow-md transition-all duration-300 ease-out" style="width: calc(50% - 4px); left: 4px;"></div>
                     <button id="wallet-tab"
-                        class="tab-button relative z-10 flex-1 px-4 py-2.5 text-sm font-semibold font-space-mono rounded-lg transition-all duration-300 active-tab text-primary">
+                        class="tab-button relative z-10 flex-1 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold font-space-mono rounded-lg transition-all duration-300 active-tab text-primary">
                         <span class="flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
@@ -1183,7 +1183,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                         </span>
                     </button>
                     <button id="login-tab"
-                        class="tab-button relative z-10 flex-1 px-4 py-2.5 text-sm font-semibold font-space-mono rounded-lg transition-all duration-300 text-gray-600 dark:text-gray-400">
+                        class="tab-button relative z-10 flex-1 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold font-space-mono rounded-lg transition-all duration-300 text-gray-600 dark:text-gray-400">
                         <span class="flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -1200,7 +1200,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <p id="wallet-error-display" class="absolute top-2 left-4 right-4 text-red-500 text-xs hidden font-roboto animate-fade-in text-center bg-red-50 dark:bg-red-900/20 py-2 px-3 rounded-lg border border-red-200 dark:border-red-800"></p>
 
                 <!-- Wallet Tab Content -->
-                <div id="wallet-tab-content" class="tab-content p-6 transition-all duration-300 opacity-100">
+                <div id="wallet-tab-content" class="tab-content p-4 sm:p-6 transition-all duration-300 opacity-100">
                     <!-- Chain Selector -->
                     <div class="flex justify-center mb-6">
                         <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl">
@@ -1276,7 +1276,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 </div>
 
                 <!-- Username Tab Content -->
-                <div id="login-tab-content" class="tab-content p-6 transition-all duration-300 opacity-0 hidden">
+                <div id="login-tab-content" class="tab-content p-4 sm:p-6 transition-all duration-300 opacity-0 hidden">
                     <form id="email-login-form" method="POST" action="{% url 'wallet:email_login' %}" class="space-y-5">
                         {% csrf_token %}
 
@@ -1580,6 +1580,55 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
             setInterval(updateTimestamps, 30000);
             updateTimestamps();
+
+            // ==================================================
+            // Wallet Modal Tab Switching
+            // ==================================================
+            const walletTab = document.getElementById('wallet-tab');
+            const loginTab = document.getElementById('login-tab');
+            const walletTabContent = document.getElementById('wallet-tab-content');
+            const loginTabContent = document.getElementById('login-tab-content');
+            const tabIndicator = document.getElementById('tab-indicator');
+
+            if (walletTab && loginTab && walletTabContent && loginTabContent) {
+                // Wallet Tab Click
+                walletTab.addEventListener('click', function() {
+                    // Switch active tab styling
+                    walletTab.classList.add('active-tab', 'text-primary');
+                    walletTab.classList.remove('text-gray-600', 'dark:text-gray-400');
+                    loginTab.classList.remove('active-tab', 'text-primary');
+                    loginTab.classList.add('text-gray-600', 'dark:text-gray-400');
+
+                    // Move indicator
+                    tabIndicator.style.left = '4px';
+                    tabIndicator.style.width = 'calc(50% - 4px)';
+
+                    // Show wallet content, hide login content
+                    walletTabContent.classList.remove('opacity-0', 'hidden');
+                    walletTabContent.classList.add('opacity-100');
+                    loginTabContent.classList.remove('opacity-100');
+                    loginTabContent.classList.add('opacity-0', 'hidden');
+                });
+
+                // Login Tab Click
+                loginTab.addEventListener('click', function() {
+                    // Switch active tab styling
+                    loginTab.classList.add('active-tab', 'text-primary');
+                    loginTab.classList.remove('text-gray-600', 'dark:text-gray-400');
+                    walletTab.classList.remove('active-tab', 'text-primary');
+                    walletTab.classList.add('text-gray-600', 'dark:text-gray-400');
+
+                    // Move indicator
+                    tabIndicator.style.left = 'calc(50% + 0px)';
+                    tabIndicator.style.width = 'calc(50% - 4px)';
+
+                    // Show login content, hide wallet content
+                    loginTabContent.classList.remove('opacity-0', 'hidden');
+                    loginTabContent.classList.add('opacity-100');
+                    walletTabContent.classList.remove('opacity-100');
+                    walletTabContent.classList.add('opacity-0', 'hidden');
+                });
+            }
         });
     </script>
     {% block extra_js %}
