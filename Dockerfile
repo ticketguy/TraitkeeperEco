@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     libpq-dev \
     curl \
+    ca-certificates \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -57,6 +59,8 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     libpq-dev \
     curl \
+    ca-certificates \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
