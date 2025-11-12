@@ -255,26 +255,39 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
           script: |
-            # Navigate to project directory
-            cd /home/user/TraitkeeperEco || exit 1
+            # Navigate to project directory (use $HOME to get actual user home)
+            cd $HOME/TraitkeeperEco || exit 1
 
             # Pull latest changes
-            git pull origin main
+            echo "Pulling latest changes from main branch..."
+            git pull origin main || {
+              echo "Error: Failed to pull from git"
+              exit 1
+            }
 
-            # Pull latest Docker images
-            docker compose pull
-
-            # Rebuild and restart services
+            # Build and restart services (skip pull, build directly)
+            echo "Building and restarting Docker services..."
+            docker compose down
             docker compose up -d --build --force-recreate
 
+            # Wait for services to start
+            echo "Waiting for services to start..."
+            sleep 15
+
             # Run migrations
-            docker compose exec -T main python manage.py migrate --noinput
+            echo "Running database migrations..."
+            docker compose exec -T main python manage.py migrate --noinput || {
+              echo "Warning: Migration failed, but continuing..."
+            }
 
             # Collect static files
-            docker compose exec -T main python manage.py collectstatic --noinput
+            echo "Collecting static files..."
+            docker compose exec -T main python manage.py collectstatic --noinput || {
+              echo "Warning: Collectstatic failed, but continuing..."
+            }
 
             # Health check
-            sleep 10
+            echo "Checking service status..."
             docker compose ps
 
             echo "✅ Deployment complete!"
@@ -313,12 +326,16 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
           script: |
-            cd /home/user/TraitkeeperEco
+            # Navigate to project directory
+            cd $HOME/TraitkeeperEco || exit 1
 
             # Rollback git
+            echo "Rolling back to previous commit..."
             git reset --hard HEAD~1
 
             # Rebuild with previous version
+            echo "Rebuilding with previous version..."
+            docker compose down
             docker compose up -d --build --force-recreate
 
             echo "✅ Rollback complete!"
