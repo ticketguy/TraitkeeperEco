@@ -28,7 +28,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.admin.views.decorators import staff_member_required
-
 from asgiref.sync import async_to_sync
 
 
@@ -522,7 +521,7 @@ def pending_collections(request):
                 return redirect('admin:index')
             
             for collection in collections:
-                result = nft_data_service.approve_pending_collection(
+                result = async_to_sync(nft_data_service.approve_pending_collection)(
                     pending_collection_id=collection.id,
                     approved_by_user=request.user
                 )
@@ -537,7 +536,7 @@ def pending_collections(request):
                 return redirect('admin:index')
             
             for collection in collections:
-                result = nft_data_service.reject_pending_collection(
+                result = async_to_sync(nft_data_service.reject_pending_collection)(
                     pending_collection_id=collection.id,
                     rejected_by_user=request.user
                 )
