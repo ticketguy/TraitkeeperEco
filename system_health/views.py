@@ -370,20 +370,55 @@ def performance_metrics(request):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def docker_services_status(request):
-    """Get status of all services based on internal checks."""
+    """Get status of all services based on Docker container health checks."""
     try:
-        from indexer.background_task_manager import task_manager as indexer_task_manager
-        from .background_task_manager import health_task_manager
+        import docker
+        from docker.errors import DockerException
 
-        # Define expected services and their descriptions
+        # Try to connect to Docker
+        try:
+            docker_client = docker.from_env()
+        except DockerException:
+            logger.warning("Cannot connect to Docker - falling back to internal checks")
+            docker_client = None
+
+        # Define expected services with their container name patterns
         services_config = {
-            'main': {'description': 'Web Server (Django)', 'check': 'self'},
-            'indexer-live': {'description': 'Live WebSocket Indexer', 'check': 'indexer'},
-            'indexer-scheduled': {'description': 'Scheduled Indexer', 'check': 'indexer'},
-            'vitality-analytics': {'description': 'Vitality Analytics Worker', 'check': 'indexer'},
-            'health': {'description': 'Health Monitoring Worker', 'check': 'health'},
-            'postgres': {'description': 'PostgreSQL Database', 'check': 'database'},
-            'redis': {'description': 'Redis Cache', 'check': 'redis'},
+            'main': {
+                'description': 'Web Server (Django)',
+                'check': 'self',
+                'container_pattern': 'traitkeeper-main'
+            },
+            'indexer-live': {
+                'description': 'Live WebSocket Indexer',
+                'check': 'docker',
+                'container_pattern': 'traitkeeper-indexer-live'
+            },
+            'indexer-scheduled': {
+                'description': 'Scheduled Indexer',
+                'check': 'docker',
+                'container_pattern': 'traitkeeper-indexer-scheduled'
+            },
+            'vitality-analytics': {
+                'description': 'Vitality Analytics Worker',
+                'check': 'docker',
+                'container_pattern': 'traitkeeper-vitality-analytics'
+            },
+            'health': {
+                'description': 'Health Monitoring Worker',
+                'check': 'docker',
+                'container_pattern': 'traitkeeper-health'
+            },
+            'postgres': {
+                'description': 'PostgreSQL Database',
+                'check': 'database',
+                'container_pattern': None
+            },
+            'redis': {
+                'description': 'Redis Cache',
+                'check': 'redis',
+                'container_pattern': None
+            },
         }
 
         services_status = []
@@ -392,6 +427,7 @@ def docker_services_status(request):
         for service_name, config in services_config.items():
             check_type = config['check']
             description = config['description']
+            container_pattern = config.get('container_pattern')
 
             if check_type == 'self':
                 # Main service is running if this code executes
@@ -403,44 +439,141 @@ def docker_services_status(request):
                     'health': 'N/A'
                 })
 
-            elif check_type == 'indexer':
-                # Check if indexer task manager is running
+            elif check_type == 'docker':
+                # Check Docker container status
                 try:
-                    is_running = hasattr(indexer_task_manager, 'is_running') and indexer_task_manager.is_running
+                    if docker_client and container_pattern:
+                        # Find container by name pattern
+                        containers = docker_client.containers.list(
+                            all=True,
+                            filters={'name': container_pattern}
+                        )
+
+                        if containers:
+                            container = containers[0]
+                            status = container.status  # 'running', 'exited', etc.
+                            state = container.attrs.get('State', {})
+                            health = state.get('Health', {}).get('Status', 'N/A')
+
+                            # Get error info if container exited
+                            error_msg = None
+                            if status != 'running':
+                                exit_code = state.get('ExitCode', 'unknown')
+                                error = state.get('Error', '')
+                                if error:
+                                    error_msg = f"Exit code {exit_code}: {error}"
+                                elif exit_code != 0:
+                                    error_msg = f"Exited with code {exit_code}"
+
+                            is_healthy = status == 'running'
+                            service_info = {
+                                'name': service_name,
+                                'description': description,
+                                'status': status,
+                                'status_class': 'success' if is_healthy else 'error',
+                                'health': health if health != 'N/A' else 'N/A'
+                            }
+                            if error_msg:
+                                service_info['error'] = error_msg
+
+                            services_status.append(service_info)
+                        else:
+                            # Container not found
+                            services_status.append({
+                                'name': service_name,
+                                'description': description,
+                                'status': 'not found',
+                                'status_class': 'error',
+                                'health': 'N/A',
+                                'error': f'Container matching pattern "{container_pattern}" not found'
+                            })
+                    else:
+                        # Docker not available - mark as unknown
+                        services_status.append({
+                            'name': service_name,
+                            'description': description,
+                            'status': 'unknown',
+                            'status_class': 'warning',
+                            'health': 'Docker unavailable',
+                            'error': 'Docker client unavailable - check Docker socket mount'
+                        })
+                except Exception as e:
+                    error_detail = str(e)
+                    logger.error(f"Error checking Docker container {container_pattern}: {e}", exc_info=True)
                     services_status.append({
                         'name': service_name,
                         'description': description,
-                        'status': 'running' if is_running else 'not running',
-                        'status_class': 'success' if is_running else 'error',
-                        'health': 'N/A'
-                    })
-                except:
-                    services_status.append({
-                        'name': service_name,
-                        'description': description,
-                        'status': 'unknown',
-                        'status_class': 'warning',
-                        'health': 'N/A'
+                        'status': 'error',
+                        'status_class': 'error',
+                        'health': 'N/A',
+                        'error': error_detail
                     })
 
             elif check_type == 'health':
-                # Check if health task manager is running
+                # Check health service via Docker
                 try:
-                    is_running = hasattr(health_task_manager, 'is_running') and health_task_manager.is_running
+                    if docker_client and container_pattern:
+                        containers = docker_client.containers.list(
+                            all=True,
+                            filters={'name': container_pattern}
+                        )
+
+                        if containers:
+                            container = containers[0]
+                            status = container.status
+                            state = container.attrs.get('State', {})
+                            health = state.get('Health', {}).get('Status', 'N/A')
+
+                            # Get error info if container exited
+                            error_msg = None
+                            if status != 'running':
+                                exit_code = state.get('ExitCode', 'unknown')
+                                error = state.get('Error', '')
+                                if error:
+                                    error_msg = f"Exit code {exit_code}: {error}"
+                                elif exit_code != 0:
+                                    error_msg = f"Exited with code {exit_code}"
+
+                            is_healthy = status == 'running'
+                            service_info = {
+                                'name': service_name,
+                                'description': description,
+                                'status': status,
+                                'status_class': 'success' if is_healthy else 'error',
+                                'health': health if health != 'N/A' else 'N/A'
+                            }
+                            if error_msg:
+                                service_info['error'] = error_msg
+
+                            services_status.append(service_info)
+                        else:
+                            services_status.append({
+                                'name': service_name,
+                                'description': description,
+                                'status': 'not found',
+                                'status_class': 'error',
+                                'health': 'N/A',
+                                'error': f'Container matching pattern "{container_pattern}" not found'
+                            })
+                    else:
+                        services_status.append({
+                            'name': service_name,
+                            'description': description,
+                            'status': 'unknown',
+                            'status_class': 'warning',
+                            'health': 'Docker unavailable',
+                            'error': 'Docker client unavailable - check Docker socket mount'
+                        })
+                except Exception as e:
+                    error_detail = str(e)
+                    logger.error(f"Error checking health service: {e}", exc_info=True)
                     services_status.append({
                         'name': service_name,
                         'description': description,
-                        'status': 'running' if is_running else 'not running',
-                        'status_class': 'success' if is_running else 'error',
-                        'health': 'N/A'
-                    })
-                except:
-                    services_status.append({
-                        'name': service_name,
-                        'description': description,
-                        'status': 'unknown',
-                        'status_class': 'warning',
-                        'health': 'N/A'
+                        'status': 'error',
+                        'status_class': 'error',
+                        'health': 'N/A',
+                        'error': error_detail
                     })
 
             elif check_type == 'database':
@@ -455,13 +588,16 @@ def docker_services_status(request):
                         'status_class': 'success',
                         'health': 'N/A'
                     })
-                except:
+                except Exception as e:
+                    error_detail = str(e)
+                    logger.error(f"Database connection error: {e}", exc_info=True)
                     services_status.append({
                         'name': service_name,
                         'description': description,
                         'status': 'not running',
                         'status_class': 'error',
-                        'health': 'N/A'
+                        'health': 'N/A',
+                        'error': error_detail
                     })
 
             elif check_type == 'redis':
@@ -470,20 +606,34 @@ def docker_services_status(request):
                     from django.core.cache import cache
                     cache.set('health_check', 'ok', 1)
                     is_connected = cache.get('health_check') == 'ok'
-                    services_status.append({
-                        'name': service_name,
-                        'description': description,
-                        'status': 'running' if is_connected else 'not running',
-                        'status_class': 'success' if is_connected else 'error',
-                        'health': 'N/A'
-                    })
-                except:
+
+                    if is_connected:
+                        services_status.append({
+                            'name': service_name,
+                            'description': description,
+                            'status': 'running',
+                            'status_class': 'success',
+                            'health': 'N/A'
+                        })
+                    else:
+                        services_status.append({
+                            'name': service_name,
+                            'description': description,
+                            'status': 'not running',
+                            'status_class': 'error',
+                            'health': 'N/A',
+                            'error': 'Redis health check failed - cache write/read mismatch'
+                        })
+                except Exception as e:
+                    error_detail = str(e)
+                    logger.error(f"Redis connection error: {e}", exc_info=True)
                     services_status.append({
                         'name': service_name,
                         'description': description,
                         'status': 'not running',
                         'status_class': 'error',
-                        'health': 'N/A'
+                        'health': 'N/A',
+                        'error': error_detail
                     })
 
         return Response({

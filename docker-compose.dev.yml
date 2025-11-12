@@ -63,6 +63,7 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
       - ./logs:/var/log/traitkeeper
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for health checks
     ports:
       - "8000:8000"
     depends_on:
