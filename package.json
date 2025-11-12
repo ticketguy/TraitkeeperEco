@@ -1,7 +1,7 @@
 {
   "name": "traitkeeper",
   "version": "1.0.0",
-  "description": "TraitKeeper - Secure Your NFT's Traits",
+  "description": "TraitKeeper - Shape. Reflect. Evolve. Because Every Trait Tells a Story!",
   "scripts": {
     "build:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind-compiled.css --minify",
     "watch:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind-compiled.css --watch",
