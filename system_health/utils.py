@@ -378,6 +378,107 @@ def get_ecosystem_health_summary(hours: int = 24) -> Dict:
     }
 
 
+def auto_resolve_stale_alerts():
+    """
+    Automatically resolve alerts whose conditions are no longer true.
+
+    This function re-validates all unresolved alerts and auto-resolves
+    them if the underlying issue has been fixed.
+
+    Returns:
+        int: Number of alerts auto-resolved
+    """
+    from .monitoring import system_monitor
+
+    try:
+        # Get current system health
+        health_check = system_monitor.check_health()
+        current_services = health_check.get('services', {})
+        current_alerts = set(health_check.get('alerts', []))
+
+        # Get all unresolved alerts
+        unresolved_alerts = SystemAlert.objects.filter(is_resolved=False)
+        resolved_count = 0
+
+        for alert in unresolved_alerts:
+            should_resolve = False
+            resolution_reason = "Issue no longer detected"
+
+            # Check service-related alerts
+            if alert.category == SystemAlert.AlertCategory.SERVICE:
+                alert_msg_lower = alert.message.lower()
+
+                # Check if indexer service alert
+                if 'indexer' in alert_msg_lower and 'not running' in alert_msg_lower:
+                    # Check if indexers are now running
+                    docker_services = current_services.get('docker_services', {})
+                    indexer_running = any(
+                        service.get('status') == 'running'
+                        for name, service in docker_services.items()
+                        if 'indexer' in name.lower()
+                    )
+                    if indexer_running:
+                        should_resolve = True
+                        resolution_reason = "Indexer services are now running"
+
+                # Check if redis alert
+                elif 'redis' in alert_msg_lower:
+                    if current_services.get('redis', {}).get('status') == 'connected':
+                        should_resolve = True
+                        resolution_reason = "Redis connection restored"
+
+                # Check if database alert
+                elif 'database' in alert_msg_lower or 'postgres' in alert_msg_lower:
+                    if current_services.get('database', {}).get('status') == 'connected':
+                        should_resolve = True
+                        resolution_reason = "Database connection restored"
+
+            # Check resource-related alerts
+            elif alert.category == SystemAlert.AlertCategory.RESOURCE:
+                alert_msg_lower = alert.message.lower()
+                metrics = health_check.get('metrics')
+
+                if metrics:
+                    # Check CPU alerts
+                    if 'cpu' in alert_msg_lower and 'high' in alert_msg_lower:
+                        if metrics.cpu_percent < 80:  # Below critical threshold
+                            should_resolve = True
+                            resolution_reason = f"CPU usage normalized to {metrics.cpu_percent}%"
+
+                    # Check memory alerts
+                    elif 'memory' in alert_msg_lower and 'high' in alert_msg_lower:
+                        if metrics.memory_percent < 85:  # Below critical threshold
+                            should_resolve = True
+                            resolution_reason = f"Memory usage normalized to {metrics.memory_percent}%"
+
+                    # Check disk alerts
+                    elif 'disk' in alert_msg_lower and ('full' in alert_msg_lower or 'high' in alert_msg_lower):
+                        if metrics.disk_usage < 90:  # Below critical threshold
+                            should_resolve = True
+                            resolution_reason = f"Disk usage normalized to {metrics.disk_usage}%"
+
+            # Check if alert message no longer appears in current alerts
+            if not should_resolve and alert.message not in current_alerts:
+                # Alert message not in current health check = issue likely resolved
+                should_resolve = True
+                resolution_reason = "Alert condition no longer present in health checks"
+
+            # Auto-resolve if condition met
+            if should_resolve:
+                alert.mark_resolved(notes=f"Auto-resolved: {resolution_reason}")
+                resolved_count += 1
+                logger.info(f"Auto-resolved alert: {alert.title} - {resolution_reason}")
+
+        if resolved_count > 0:
+            logger.info(f"Auto-resolved {resolved_count} stale alerts")
+
+        return resolved_count
+
+    except Exception as e:
+        logger.error(f"Error in auto_resolve_stale_alerts: {e}", exc_info=True)
+        return 0
+
+
 def cleanup_old_health_records(days: int = 30):
     """
     Clean up health records older than N days to prevent database bloat.

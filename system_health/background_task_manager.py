@@ -286,9 +286,16 @@ class SystemHealthTaskManager:
     async def _capture_ecosystem_snapshot(self):
         """Capture ecosystem health snapshot and reschedule itself."""
         try:
-            from .utils import capture_ecosystem_health_snapshot
+            from .utils import capture_ecosystem_health_snapshot, auto_resolve_stale_alerts
+
+            # Capture current health snapshot
             snapshot = await sync_to_async(capture_ecosystem_health_snapshot)()
             logger.info(f"Ecosystem health snapshot captured: {snapshot.status}")
+
+            # Auto-resolve stale alerts
+            resolved_count = await sync_to_async(auto_resolve_stale_alerts)()
+            if resolved_count > 0:
+                logger.info(f"Auto-resolved {resolved_count} stale alerts")
 
             # Send critical alerts if status is critical
             if snapshot.status == 'CRITICAL':

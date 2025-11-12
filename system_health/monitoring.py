@@ -8,6 +8,8 @@ from datetime import timedelta
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 import json
+import docker
+from docker.errors import DockerException
 
 logger = logging.getLogger(__name__)
 
@@ -75,13 +77,38 @@ class SystemMonitor:
             raise
     
     def _get_indexer_status(self) -> Dict:
-        """Get indexer task manager status"""
+        """Get indexer Docker container status"""
         try:
-            from indexer.background_task_manager import task_manager
-            return task_manager.get_status()
+            docker_client = docker.from_env()
+
+            # Check for indexer containers
+            indexer_containers = docker_client.containers.list(
+                all=True,
+                filters={'name': 'indexer'}
+            )
+
+            running_indexers = [c for c in indexer_containers if c.status == 'running']
+
+            if running_indexers:
+                return {
+                    'is_running': True,
+                    'total_pending_tasks': 0,
+                    'container_count': len(running_indexers),
+                    'status_detail': 'running'
+                }
+            else:
+                return {
+                    'is_running': False,
+                    'total_pending_tasks': 0,
+                    'container_count': len(indexer_containers),
+                    'status_detail': 'stopped'
+                }
+        except DockerException as e:
+            logger.error(f"Docker error getting indexer status: {str(e)}")
+            return {'is_running': False, 'total_pending_tasks': 0, 'error': str(e)}
         except Exception as e:
             logger.error(f"Error getting indexer status: {str(e)}")
-            return {'is_running': False, 'total_pending_tasks': 0}
+            return {'is_running': False, 'total_pending_tasks': 0, 'error': str(e)}
     
     def _get_health_worker_status(self) -> Dict:
         """Get health worker status"""
@@ -135,15 +162,68 @@ class SystemMonitor:
         """Get timestamp of last successful indexing"""
         try:
             from indexer.background_task_manager import task_manager
-            
+
             for task in reversed(list(task_manager.task_history)):
-                if (task.get('status') == 'success' and 
+                if (task.get('status') == 'success' and
                     'index' in task.get('name', '').lower()):
                     return str(task.get('completed_at'))
-            
+
             return None
         except Exception:
             return None
+
+    def _get_docker_services_status(self) -> Dict:
+        """Get status of all Docker services"""
+        try:
+            docker_client = docker.from_env()
+
+            # Define services we're monitoring
+            service_patterns = {
+                'indexer-live': 'indexer-live',
+                'indexer-historical': 'indexer-historical',
+                'web': 'web',
+                'postgres': 'postgres',
+                'redis': 'redis',
+                'nginx': 'nginx',
+                'celery': 'celery'
+            }
+
+            services_status = {}
+
+            for service_name, pattern in service_patterns.items():
+                try:
+                    containers = docker_client.containers.list(
+                        all=True,
+                        filters={'name': pattern}
+                    )
+
+                    if containers:
+                        container = containers[0]
+                        services_status[service_name] = {
+                            'status': container.status,
+                            'name': container.name,
+                            'id': container.short_id
+                        }
+                    else:
+                        services_status[service_name] = {
+                            'status': 'not_found',
+                            'name': None,
+                            'id': None
+                        }
+                except Exception as e:
+                    services_status[service_name] = {
+                        'status': 'error',
+                        'error': str(e)
+                    }
+
+            return services_status
+
+        except DockerException as e:
+            logger.error(f"Docker error getting services status: {str(e)}")
+            return {'error': f'Docker connection failed: {str(e)}'}
+        except Exception as e:
+            logger.error(f"Error getting Docker services status: {str(e)}")
+            return {'error': str(e)}
     
     def check_health(self) -> Dict[str, any]:
         """Perform comprehensive health check"""
@@ -151,39 +231,42 @@ class SystemMonitor:
             metrics = self.get_system_metrics()
             alerts = []
             status = 'healthy'
-            
+
+            # Get Docker services status
+            docker_services = self._get_docker_services_status()
+
             # Check thresholds
             if metrics.cpu_percent > self.alert_thresholds['cpu_percent']:
                 alerts.append(f"High CPU usage: {metrics.cpu_percent:.1f}%")
                 status = 'warning'
-            
+
             if metrics.memory_percent > self.alert_thresholds['memory_percent']:
                 alerts.append(f"High memory usage: {metrics.memory_percent:.1f}%")
                 status = 'warning'
-            
+
             if metrics.disk_usage > self.alert_thresholds['disk_usage']:
                 alerts.append(f"Low disk space: {metrics.disk_usage:.1f}% used")
                 status = 'critical'
-            
+
             if not metrics.redis_connected:
                 alerts.append("Redis connection failed")
                 status = 'critical'
-            
+
             if metrics.indexer_status != 'running':
                 alerts.append("Indexer service not running")
                 status = 'critical'
-            
+
             if metrics.health_worker_status != 'running':
                 alerts.append("Health monitoring not running")
                 status = 'warning'
-            
+
             if metrics.failed_tasks_24h > 10:
                 alerts.append(f"High failure rate: {metrics.failed_tasks_24h} failed tasks in 24h")
                 if metrics.failed_tasks_24h > 50:
                     status = 'critical'
                 else:
                     status = 'warning'
-            
+
             return {
                 'status': status,
                 'metrics': metrics,
@@ -193,16 +276,18 @@ class SystemMonitor:
                     'indexer': metrics.indexer_status,
                     'health_monitor': metrics.health_worker_status,
                     'redis': 'connected' if metrics.redis_connected else 'disconnected',
-                    'database': 'connected'
+                    'database': 'connected',
+                    'docker_services': docker_services
                 }
             }
-            
+
         except Exception as e:
-            logger.error(f"Error performing health check: {str(e)}")
+            logger.error(f"Error performing health check: {str(e)}", exc_info=True)
             return {
                 'status': 'error',
                 'error': str(e),
-                'timestamp': timezone.now().isoformat()
+                'timestamp': timezone.now().isoformat(),
+                'alerts': [f"Health check error: {str(e)}"]
             }
     
     def get_service_status(self) -> Dict[str, str]:
