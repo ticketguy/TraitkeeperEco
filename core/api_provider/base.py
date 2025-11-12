@@ -71,17 +71,17 @@ class SolanaRPCProvider(ABC):
         # Every single request will now wait here if it's too fast.
         await self.rate_limiter.wait()
 
-        # Create SSL context that uses system's CA certificates
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = True
-        ssl_context.verify_mode = ssl.CERT_REQUIRED
-
-        # Create connector with SSL context
-        connector = aiohttp.TCPConnector(ssl=ssl_context)
-
         logger.info(f"--> Sending RPC request to {self.name}: {payload.get('method')}")
         for attempt in range(self.max_retries):
             try:
+                # Create fresh SSL context and connector for each attempt
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = True
+                ssl_context.verify_mode = ssl.CERT_REQUIRED
+
+                # Fresh connector for each retry attempt
+                connector = aiohttp.TCPConnector(ssl=ssl_context)
+
                 async with aiohttp.ClientSession(connector=connector) as session:
                     async with session.post(self.rpc_url, json=payload, timeout=timeout) as response:
                         logger.info(f"<-- Received HTTP {response.status} from {self.name} for method {payload.get('method')}")
