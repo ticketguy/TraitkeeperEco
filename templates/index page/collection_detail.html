@@ -211,7 +211,7 @@
         /* Anime-style Mobile Bottom Bar */
         #mobile-bottom-bar {
             position: fixed;
-            bottom: 0;
+            bottom: 26px; 
             left: 0;
             right: 0;
             z-index: 50;
@@ -473,14 +473,6 @@
             padding: 0;
             margin-bottom: 1rem;
         }
-
-        /* Extra small screens - more compact */
-        @media (max-width: 375px) {
-            #mobile-stats-grid {
-                gap: 0.5rem;
-            }
-        }
-
         #mobile-stats-grid .stat-item {
             background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(20, 241, 149, 0.05));
             backdrop-filter: blur(10px);
@@ -492,13 +484,6 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeInUp 0.5s ease-out;
             animation-fill-mode: backwards;
-        }
-
-        /* Extra small screens - smaller padding */
-        @media (max-width: 375px) {
-            #mobile-stats-grid .stat-item {
-                padding: 0.5rem;
-            }
         }
         .dark #mobile-stats-grid .stat-item {
             background: linear-gradient(135deg, rgba(153, 69, 255, 0.18), rgba(20, 241, 149, 0.08));
@@ -519,30 +504,13 @@
             display: block;
             margin-bottom: 0.125rem;
             line-height: 1.3;
-            word-break: break-word;
         }
-
-        /* Extra small screens - smaller font */
-        @media (max-width: 375px) {
-            #mobile-stats-grid strong {
-                font-size: 1rem;
-            }
-        }
-
         #mobile-stats-grid span {
             font-size: 0.7rem;
             color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 700;
-        }
-
-        /* Extra small screens - smaller labels */
-        @media (max-width: 375px) {
-            #mobile-stats-grid span {
-                font-size: 0.625rem;
-                letter-spacing: 0.025em;
-            }
         }
         .dark #mobile-stats-grid span {
             color: #9ca3af;
@@ -622,66 +590,6 @@
     .heading-serif { font-family: var(--font-serif); font-weight: 700; }
     .fade-in { animation: fadeIn 0.6s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* --- Modal Enhancement Utilities --- */
-    /* Custom border-bottom-3 for enhanced tab styling */
-    .border-b-3 {
-        border-bottom-width: 3px;
-    }
-
-    /* Hide scrollbar while maintaining scroll functionality */
-    .scrollbar-hide {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-    }
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;  /* Chrome, Safari, and Opera */
-    }
-
-    /* Scale-in animation for forms */
-    @keyframes scaleIn {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    .animate-scale-in {
-        animation: scaleIn 0.2s ease-out;
-    }
-
-    /* Modal Navigation Arrow Hover Effects */
-    #prev-nft-btn:hover svg,
-    #next-nft-btn:hover svg,
-    #mobile-prev-nft-btn:hover svg,
-    #mobile-next-nft-btn:hover svg {
-        transform: scale(1.1);
-        transition: transform 0.2s ease;
-    }
-
-    /* Mobile responsive modal adjustments */
-    @media (max-width: 640px) {
-        #nft-detail-modal .modal-tab {
-            font-size: 0.75rem;
-            padding: 0.75rem 0.5rem;
-        }
-    }
-
-    /* Banner loading placeholder */
-    .banner-loading-placeholder {
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    /* Hide loading placeholder when media loads */
-    #banner-container img[style*="opacity: 1"] ~ .banner-loading-placeholder,
-    #banner-container video[style*="opacity: 1"] ~ .banner-loading-placeholder {
-        opacity: 0;
-        transition: opacity 0.5s ease-out;
-    }
 </style>
 {% endblock %}
 
@@ -689,51 +597,12 @@
 <div id="banner-container">
     <div class="absolute inset-0 w-full h-full z-0 overflow-hidden">
         {% if collection.banner_video_url %}
-            <!-- Optimized video with poster and error handling -->
-            <video
-                src="{{ collection.banner_video_url }}"
-                poster="{{ collection.banner_image_url|default:collection.image_url }}"
-                autoplay
-                loop
-                muted
-                playsinline
-                preload="metadata"
-                class="w-full h-full object-cover transition-opacity duration-500"
-                onloadeddata="this.style.opacity='1'"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-                style="opacity: 0">
-            </video>
-            <!-- Fallback image for video load failures -->
-            <img
-                src="{{ collection.banner_image_url|default:collection.image_url|default:'/static/img/nft-default.png' }}"
-                alt="{{ collection.name }} background"
-                class="w-full h-full object-cover"
-                style="display: none">
+            <video src="{{ collection.banner_video_url }}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
         {% elif collection.banner_image_url %}
-            <!-- Optimized banner image with loading states -->
-            <img
-                src="{{ collection.banner_image_url }}"
-                alt="{{ collection.name }} background"
-                loading="eager"
-                fetchpriority="high"
-                class="w-full h-full object-cover transition-opacity duration-500"
-                onload="this.style.opacity='1'"
-                onerror="this.src='{{ collection.image_url|default:'/static/img/nft-default.png' }}'"
-                style="opacity: 0">
+            <img src="{{ collection.banner_image_url }}" alt="{{ collection.name }} background" class="w-full h-full object-cover">
         {% else %}
-            <!-- Fallback collection image -->
-            <img
-                src="{{ collection.image_url|default:'/static/img/nft-default.png' }}"
-                alt="{{ collection.name }} background"
-                loading="eager"
-                fetchpriority="high"
-                class="w-full h-full object-cover blur-sm scale-105 transition-opacity duration-500"
-                onload="this.style.opacity='1'"
-                style="opacity: 0">
+            <img src="{{ collection.image_url|default:'/static/img/nft-default.png' }}" alt="{{ collection.name }} background" class="w-full h-full object-cover blur-sm scale-105">
         {% endif %}
-
-        <!-- Loading placeholder -->
-        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-black animate-pulse banner-loading-placeholder"></div>
     </div>
     <div class="absolute inset-0 w-full h-full bg-gradient-to-t from-black/50 to-black/10 z-10"></div>
 
@@ -759,24 +628,24 @@
     </div>
 </div>
 
-    <div class="absolute bottom-4 sm:bottom-6 md:bottom-8 lg:bottom-12 left-4 z-20">
-        <a href="#" class="text-white text-xs sm:text-sm font-semibold bg-black/40 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 transition-colors hover:bg-black/60">NFT Memories</a>
+    <div class="absolute bottom-20 left-4 z-20">
+        <a href="#" class="text-white text-sm font-semibold bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 transition-colors hover:bg-black/60">NFT Memories</a>
     </div>
 
-    <div class="absolute bottom-4 sm:bottom-6 md:bottom-8 lg:bottom-12 right-4 z-20 flex items-center gap-2 sm:gap-4 bg-black/40 backdrop-blur-sm rounded-lg p-2 sm:p-3 text-white">
-        <div class="flex items-center gap-1 sm:gap-2">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+    <div class="absolute bottom-20 right-4 z-20 flex items-center gap-4 bg-black/40 backdrop-blur-sm rounded-lg p-3 text-white">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             <div>
-                <strong class="font-bold text-sm sm:text-base">{{ collection_stats.total_supply|default:"0" }}</strong>
-                <span class="text-[10px] sm:text-xs opacity-80 ml-1">Items</span>
+                <strong class="font-bold">{{ collection_stats.total_supply|default:"0" }}</strong>
+                <span class="text-xs opacity-80">Items</span>
             </div>
         </div>
-        <div class="w-px h-6 sm:h-8 bg-white/20"></div>
-        <div class="flex items-center gap-1 sm:gap-2">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <div class="w-px h-8 bg-white/20"></div>
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <div>
-                <strong class="font-bold text-sm sm:text-base">{{ collection_stats.owners|default:"0" }}</strong>
-                <span class="text-[10px] sm:text-xs opacity-80 ml-1">Owners</span>
+                <strong class="font-bold">{{ collection_stats.owners|default:"0" }}</strong>
+                <span class="text-xs opacity-80">Owners</span>
             </div>
         </div>
     </div>
@@ -885,8 +754,8 @@
 
 
 <div class="tab-contents-container container mx-auto px-4">
-    <div id="nfts-tab-content" class="tab-content">
-        <div id="nfts-grid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
+    <div id="nfts-tab-content" class="tab-content">     
+        <div id="nfts-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {% for nft in nfts %}
             <div class="nft-card-wrapper relative">
                 <div class="nft-card group text-left bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-xl p-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1" data-nft-id="{{ nft.mint_address }}">
@@ -925,52 +794,27 @@
                                 <div class="text-center text-white/60 text-xs">or</div>
                                 {% endif %}
 
-                                <!-- Make Offer Form - Modern Design -->
-                                <form class="space-y-3" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
-                                    <!-- Offer Amount Input with Icon -->
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-4 w-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                            </svg>
-                                        </div>
-                                        <input type="number"
-                                               step="0.01"
-                                               min="0.01"
-                                               name="offer_amount"
-                                               placeholder="Your Offer (SOL)"
-                                               required
-                                               class="w-full pl-9 pr-3 py-2.5 text-sm bg-white/10 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 text-white placeholder-white/60 backdrop-blur-sm transition-all duration-200 hover:bg-white/15">
-                                    </div>
+                                <!-- Make Offer Form -->
+                                <form class="space-y-2" onsubmit="return handleOfferSubmit(event, '{{ nft.mint_address }}')">
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0.01"
+                                           name="offer_amount"
+                                           placeholder="Your Offer (SOL)"
+                                           required
+                                           class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white/50 backdrop-blur-sm">
 
-                                    <!-- Expiry Dropdown with Icon -->
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-4 w-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <select name="expiry_days"
-                                                class="w-full pl-9 pr-3 py-2.5 text-sm bg-white/10 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/15 appearance-none cursor-pointer">
-                                            <option value="1">Expires in 1 Day</option>
-                                            <option value="3" selected>Expires in 3 Days</option>
-                                            <option value="7">Expires in 7 Days</option>
-                                            <option value="14">Expires in 14 Days</option>
-                                            <option value="30">Expires in 30 Days</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <svg class="h-4 w-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
+                                    <select name="expiry_days"
+                                            class="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white backdrop-blur-sm">
+                                        <option value="1">1 Day</option>
+                                        <option value="3" selected>3 Days</option>
+                                        <option value="7">7 Days</option>
+                                        <option value="14">14 Days</option>
+                                        <option value="30">30 Days</option>
+                                    </select>
 
-                                    <!-- Submit Button with Icon -->
                                     <button type="submit"
-                                            class="w-full bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 border border-white/40 text-white text-sm font-bold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
+                                            class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
                                         Submit Offer
                                     </button>
                                 </form>
@@ -1149,45 +993,18 @@
     </script>
 
     <div id="activity-tab-content" class="tab-content fade-in hidden">
-        <!-- Tab Header -->
-        <div class="mb-6 pb-6 border-b-2 border-gradient-to-r from-primary/50 via-accent-light to-transparent dark:from-primary-light/50 dark:via-accent-dark">
-            <h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-accent-light dark:from-primary-light dark:to-accent-dark bg-clip-text text-transparent mb-2">Collection Activity</h2>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark">Recent transactions and events</p>
-        </div>
-
-        <!-- Activity Sorting Controls - Modern Design -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 gap-4 border-b-2 border-gray-200 dark:border-gray-800">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                    <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Filter Results</h3>
-            </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-                <label for="activity-sort" class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark whitespace-nowrap">
-                    Sort by:
-                </label>
-                <div class="relative flex-1 sm:flex-initial sm:min-w-[200px]">
-                    <select id="activity-sort" class="form-input-minimal w-full pl-10 pr-10 py-2.5 rounded-xl border-2 text-sm appearance-none cursor-pointer transition-all duration-200 hover:border-primary/50 focus:ring-2 focus:ring-primary">
-                        <option value="time_desc">🕐 Most Recent</option>
-                        <option value="time_asc">📅 Oldest First</option>
-                        <option value="price_desc">💸 Highest Price</option>
-                        <option value="price_asc">💰 Lowest Price</option>
-                        <option value="type">🏷️ Event Type</option>
-                    </select>
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                        </svg>
-                    </div>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
+        <!-- Activity Sorting Controls -->
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Collection Activity</h3>
+            <div class="flex items-center gap-2">
+                <label for="activity-sort" class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Sort by:</label>
+                <select id="activity-sort" class="form-input-minimal px-3 py-1 rounded-lg text-sm">
+                    <option value="time_desc">Most Recent</option>
+                    <option value="time_asc">Oldest First</option>
+                    <option value="price_desc">Highest Price</option>
+                    <option value="price_asc">Lowest Price</option>
+                    <option value="type">Event Type</option>
+                </select>
             </div>
         </div>
         <div id="activity-list" class="border-t border-gray-200 dark:border-gray-800">
@@ -1219,14 +1036,8 @@
     </div>
 
     <div id="about-tab-content" class="tab-content fade-in hidden">
-        <!-- Tab Header -->
-        <div class="mb-8 pb-6 border-b-2 border-gradient-to-r from-primary/50 via-accent-light to-transparent dark:from-primary-light/50 dark:via-accent-dark">
-            <h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-accent-light dark:from-primary-light dark:to-accent-dark bg-clip-text text-transparent mb-2">About Collection</h2>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark">Learn more about this collection and project</p>
-        </div>
-
         <div class="prose dark:prose-invert max-w-4xl text-text-secondary-light dark:text-text-secondary-dark">
-            <h3 class="heading-serif text-2xl mb-4 text-text-light dark:text-text-dark">Description</h3>
+            <h3 class="heading-serif text-2xl mb-4">Description</h3>
             <p class="mb-8">{{ collection.description|default:"No description provided for this collection."|linebreaksbr }}</p>
             
             <h3 class="heading-serif text-2xl mb-4">About the Project</h3>
@@ -1244,85 +1055,32 @@
     </div>
 
 
-<div id="nft-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-2 sm:p-4">
-    <!-- Previous NFT Arrow (Left) -->
-    <button id="prev-nft-btn" class="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 items-center justify-center bg-background-light dark:bg-accent-dark hover:bg-primary dark:hover:bg-primary rounded-full shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95 border-2 border-border-light dark:border-border-dark hover:border-primary">
-        <svg class="w-6 h-6 text-text-light dark:text-text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path>
-        </svg>
-    </button>
-
-    <!-- Modal Container -->
-    <div class="bg-background-light dark:bg-accent-dark rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] transform transition-all flex flex-col" role="dialog">
-        <!-- Modal Header with Enhanced Design -->
-        <div class="flex justify-between items-center border-b-2 border-border-light dark:border-border-dark p-3 sm:p-4 flex-shrink-0 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                    <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <h3 id="modal-nft-name" class="text-lg sm:text-xl font-semibold heading-serif text-text-light dark:text-text-dark truncate">NFT Name</h3>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <!-- Mobile Navigation Arrows -->
-                <button id="mobile-prev-nft-btn" class="lg:hidden w-9 h-9 flex items-center justify-center bg-accent-light dark:bg-gray-700 hover:bg-primary/20 dark:hover:bg-primary/20 rounded-lg transition-all duration-200">
-                    <svg class="w-5 h-5 text-text-light dark:text-text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
-                <button id="mobile-next-nft-btn" class="lg:hidden w-9 h-9 flex items-center justify-center bg-accent-light dark:bg-gray-700 hover:bg-primary/20 dark:hover:bg-primary/20 rounded-lg transition-all duration-200">
-                    <svg class="w-5 h-5 text-text-light dark:text-text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-                <!-- Close Button -->
-                <button id="close-nft-modal" type="button" class="w-9 h-9 flex items-center justify-center bg-accent-light dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-text-secondary-light dark:text-text-secondary-dark hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-all duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+<div id="nft-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="bg-background-light dark:bg-accent-dark rounded-lg shadow-xl w-full max-w-4xl m-4 transform transition-all max-h-[90vh] flex flex-col" role="dialog">
+        <div class="flex justify-between items-center border-b p-4 dark:border-border-dark flex-shrink-0">
+            <h3 id="modal-nft-name" class="text-xl font-semibold heading-serif text-text-light dark:text-text-dark">NFT Name</h3>
+            <button id="close-nft-modal" type="button" class="text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
-        <!-- Modal Body with Improved Mobile Responsiveness -->
-        <div class="p-3 sm:p-4 md:p-6 overflow-y-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
-
-                <!-- NFT Image Section -->
+        <div class="p-6 overflow-y-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        
                 <div class="lg:col-span-2">
-                    <div class="relative group">
-                        <img id="modal-nft-image" src="" alt="NFT Image" class="w-full rounded-xl shadow-2xl aspect-square object-cover transition-transform duration-300 group-hover:scale-[1.02]">
-                        <div class="absolute inset-0 rounded-xl bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-
-                    <!-- Performance Badge -->
-                    <div class="mt-4 sm:mt-6 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 rounded-xl p-4 border-2 border-primary/30">
-                        <div class="flex items-center justify-between">
-                            <div class="flex flex-col">
-                                <strong id="modal-nft-performance" class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">--%</strong>
-                                <span class="text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Trait Performance</span>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                                <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                </svg>
-                            </div>
+                    <img id="modal-nft-image" src="" alt="NFT Image" class="w-full rounded-lg shadow-lg aspect-square object-cover">
+            
+                    <div class="mt-6">
+                        <div class="flex flex-col">
+                            <strong id="modal-nft-performance" class="text-3xl font-bold text-text-light dark:text-text-dark">--%</strong>
+                            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Performance</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- NFT Details Section -->
                 <div class="lg:col-span-3">
-                    <a href="#" id="modal-nft-collection-link" class="font-bold text-base sm:text-lg text-primary hover:underline inline-flex items-center gap-2">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                    </a>
-                    <p class="text-xs sm:text-sm text-text-secondary-light mt-1">Owned by <a href="#" id="modal-nft-owner-link" class="text-primary font-medium hover:underline"></a></p>
-
-                    <!-- Price & Actions Container -->
-                    <div class="bg-gradient-to-br from-accent-light to-accent-light/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl p-4 sm:p-5 my-4 sm:my-6 border-2 border-border-light dark:border-border-dark">
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <a href="#" id="modal-nft-collection-link" class="font-bold text-lg text-primary hover:underline"></a>
+                    <p class="text-sm text-text-secondary-light mt-1">Owned by <a href="#" id="modal-nft-owner-link" class="text-primary font-medium hover:underline"></a></p>
+                    <div class="bg-accent-light dark:bg-gray-700/50 rounded-lg p-4 my-6">
+                        <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Current Price</p>
                                 <p id="modal-nft-price" class="text-2xl font-bold text-text-light dark:text-text-dark">-- SOL</p>
@@ -1337,89 +1095,49 @@
                                         <button id="buy-now-btn" class="bg-primary text-brand-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary-dark transition-colors" style="display: none;">Buy Now</button>
                                     </div>
 
-                                    <!-- Make Offer Form (Hidden by default) - Ultra-Modern Design -->
-                                    <div id="modal-offer-form" class="hidden mt-3 p-6 bg-gradient-to-br from-primary/15 via-purple-500/8 to-green-400/5 dark:from-primary/25 dark:via-purple-500/15 dark:to-green-400/10 border-2 border-primary/50 rounded-3xl shadow-2xl animate-scale-in backdrop-blur-md hover:shadow-primary/20 transition-all duration-300">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                                                    <svg class="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                                    </svg>
-                                                </div>
-                                                <h4 class="text-base font-bold text-text-light dark:text-text-dark">Make an Offer</h4>
-                                            </div>
-                                            <button id="close-modal-offer-form" class="w-8 h-8 rounded-full bg-background-light dark:bg-accent-dark hover:bg-red-50 dark:hover:bg-red-900/20 text-text-secondary-light dark:text-text-secondary-dark hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 flex items-center justify-center">
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
+                                    <!-- Make Offer Form (Hidden by default) -->
+                                    <div id="modal-offer-form" class="hidden mt-2 p-4 bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border-2 border-primary/30 rounded-xl shadow-lg animate-scale-in">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-sm font-bold text-text-light dark:text-text-dark">Make an Offer</h4>
+                                            <button id="close-modal-offer-form" class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors">
+                                                <i class="fas fa-times"></i>
                                             </button>
                                         </div>
 
-                                        <form id="modal-offer-form-submit" class="space-y-4" onsubmit="return handleModalOfferSubmit(event)">
-                                            <!-- Offer Amount Input - Enhanced -->
+                                        <form id="modal-offer-form-submit" class="space-y-3" onsubmit="return handleModalOfferSubmit(event)">
                                             <div>
-                                                <label class="flex items-center gap-2 text-sm font-bold text-text-light dark:text-text-dark mb-3">
-                                                    <div class="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-                                                        <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                                        </svg>
-                                                    </div>
-                                                    Your Offer Amount
-                                                </label>
-                                                <div class="relative group">
-                                                    <input type="number"
-                                                           step="0.01"
-                                                           min="0.01"
-                                                           name="offer_amount"
-                                                           placeholder="0.00"
-                                                           required
-                                                           class="w-full px-5 py-4 text-base font-semibold bg-white/50 dark:bg-gray-900/50 border-2 border-primary/30 dark:border-primary/40 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/30 focus:border-primary text-text-light dark:text-text-dark transition-all duration-300 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 placeholder-text-secondary-light/40 dark:placeholder-text-secondary-dark/40 backdrop-blur-sm">
-                                                    <div class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none">
-                                                        <span class="text-sm font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">SOL</span>
-                                                    </div>
-                                                </div>
+                                                <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">Your Offer (SOL)</label>
+                                                <input type="number"
+                                                       step="0.01"
+                                                       min="0.01"
+                                                       name="offer_amount"
+                                                       placeholder="0.00"
+                                                       required
+                                                       class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
                                             </div>
 
-                                            <!-- Expiry Dropdown - Enhanced -->
                                             <div>
-                                                <label class="flex items-center gap-2 text-sm font-bold text-text-light dark:text-text-dark mb-3">
-                                                    <div class="w-5 h-5 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                                                        <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                        </svg>
-                                                    </div>
-                                                    Offer Expiration
+                                                <label class="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                                                    Expiry (Days)
                                                 </label>
-                                                <div class="relative group">
-                                                    <select name="expiry_days"
-                                                            class="w-full px-5 py-4 text-base font-semibold bg-white/50 dark:bg-gray-900/50 border-2 border-green-500/30 dark:border-green-500/40 rounded-2xl focus:outline-none focus:ring-4 focus:ring-green-500/30 focus:border-green-500 text-text-light dark:text-text-dark appearance-none cursor-pointer transition-all duration-300 hover:border-green-500/60 hover:shadow-lg hover:shadow-green-500/10 backdrop-blur-sm">
-                                                        <option value="1">⏱️ 1 Day</option>
-                                                        <option value="3" selected>📅 3 Days (Recommended)</option>
-                                                        <option value="7">📆 7 Days</option>
-                                                        <option value="14">🗓️ 14 Days</option>
-                                                        <option value="30">📊 30 Days</option>
-                                                    </select>
-                                                    <div class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none">
-                                                        <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                                                        </svg>
-                                                    </div>
-                                                </div>
+                                                <select name="expiry_days"
+                                                        class="w-full px-3 py-2 text-sm bg-background-light dark:bg-accent-dark border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-light dark:text-text-dark">
+                                                    <option value="1">1 Day</option>
+                                                    <option value="3" selected>3 Days</option>
+                                                    <option value="7">7 Days</option>
+                                                    <option value="14">14 Days</option>
+                                                    <option value="30">30 Days</option>
+                                                </select>
                                             </div>
 
-                                            <!-- Action Buttons - Ultra-Modern -->
-                                            <div class="flex gap-3 pt-3">
+                                            <div class="flex gap-2">
                                                 <button type="submit"
-                                                        class="flex-1 bg-gradient-to-r from-primary via-purple-600 to-primary-dark hover:from-purple-600 hover:via-primary hover:to-purple-700 text-white text-base font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-3 group relative overflow-hidden">
-                                                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                                                    <svg class="h-5 w-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                                                    </svg>
-                                                    <span class="relative z-10">Submit Offer</span>
+                                                        class="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                                                    Submit Offer
                                                 </button>
                                                 <button type="button"
                                                         id="cancel-modal-offer"
-                                                        class="px-6 py-4 text-base font-bold text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-600 rounded-2xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-lg hover:shadow-xl">
+                                                        class="px-4 py-2 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark transition-colors">
                                                     Cancel
                                                 </button>
                                             </div>
@@ -1459,33 +1177,12 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Enhanced Modal Tabs with Mobile Optimization -->
-                    <div class="border-b-2 border-border-light dark:border-border-dark mt-6 sm:mt-8">
-                        <nav class="flex space-x-2 sm:space-x-4 md:space-x-6 -mb-px overflow-x-auto scrollbar-hide">
-                            <button data-tab="traits" class="modal-tab flex items-center gap-2 text-xs sm:text-sm font-semibold py-3 px-3 sm:px-4 border-b-3 border-primary text-primary whitespace-nowrap transition-all duration-200 rounded-t-lg bg-primary/5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                                </svg>
-                                Traits
-                            </button>
-                            <button data-tab="details" class="modal-tab flex items-center gap-2 text-xs sm:text-sm font-semibold py-3 px-3 sm:px-4 border-b-3 border-transparent text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark hover:border-primary/50 whitespace-nowrap transition-all duration-200 rounded-t-lg hover:bg-primary/5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Details
-                            </button>
-                            <button data-tab="offers" class="modal-tab flex items-center gap-2 text-xs sm:text-sm font-semibold py-3 px-3 sm:px-4 border-b-3 border-transparent text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark hover:border-primary/50 whitespace-nowrap transition-all duration-200 rounded-t-lg hover:bg-primary/5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                </svg>
-                                Offers
-                            </button>
-                            <button data-tab="memories" class="modal-tab flex items-center gap-2 text-xs sm:text-sm font-semibold py-3 px-3 sm:px-4 border-b-3 border-transparent text-text-secondary-light dark:text-text-secondary-dark hover:text-text-light dark:hover:text-text-dark hover:border-primary/50 whitespace-nowrap transition-all duration-200 rounded-t-lg hover:bg-primary/5">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Memories
-                            </button>
+                    <div class="border-b dark:border-border-dark">
+                        <nav class="flex space-x-6 -mb-px">
+                            <button data-tab="traits" class="modal-tab text-sm font-medium py-3 border-b-2 border-primary text-primary">Traits</button>
+                            <button data-tab="details" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Details</button>
+                            <button data-tab="offers" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Offers</button>
+                            <button data-tab="memories" class="modal-tab text-sm font-medium py-3 border-b-2 border-transparent text-text-secondary-light hover:text-text-light dark:hover:text-text-secondary-dark">Memories</button>
                         </nav>
                     </div>
                     <div class="pt-6">
@@ -1518,13 +1215,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Next NFT Arrow (Right) -->
-    <button id="next-nft-btn" class="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 items-center justify-center bg-background-light dark:bg-accent-dark hover:bg-primary dark:hover:bg-primary rounded-full shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95 border-2 border-border-light dark:border-border-dark hover:border-primary">
-        <svg class="w-6 h-6 text-text-light dark:text-text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
-        </svg>
-    </button>
 </div>
 
 <!-- Auction Creation Modal -->
@@ -1682,58 +1372,26 @@
 
         <!-- Mobile Items Filters Content -->
         <div id="mobile-items-content" class="mobile-tab-panel">
-            <!-- Search Input - Modern Design -->
+            <!-- Search Input -->
             <div class="mb-4">
-                <label class="flex items-center gap-2 text-sm font-semibold mb-2 text-text-light dark:text-text-dark">
-                    <svg class="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    Search NFTs
-                </label>
-                <div class="relative">
-                    <input type="text"
-                           id="mobile-search-input"
-                           placeholder="Search by name, trait, or #number..."
-                           class="form-input-minimal w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200 hover:border-primary/50 focus:ring-2 focus:ring-primary">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                </div>
+                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Search NFTs</label>
+                <input type="text" id="mobile-search-input" placeholder="Search by name, trait, or #number..." class="form-input-minimal w-full">
             </div>
 
-            <!-- Sort By - Modern Design -->
+            <!-- Sort By -->
             <div class="mb-4">
-                <label class="flex items-center gap-2 text-sm font-semibold mb-2 text-text-light dark:text-text-dark">
-                    <svg class="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path>
-                    </svg>
-                    Sort By
-                </label>
-                <div class="relative">
-                    <select id="mobile-sort-select" class="form-input-minimal w-full pl-10 pr-10 py-3 rounded-xl border-2 appearance-none cursor-pointer transition-all duration-200 hover:border-primary/50 focus:ring-2 focus:ring-primary">
-                        <option value="trait_perf_desc">📈 Trait Performance: High to Low</option>
-                        <option value="trait_perf_asc">📉 Trait Performance: Low to High</option>
-                        <option value="vitality_desc">⚡ Vitality: High to Low</option>
-                        <option value="vitality_asc">🔋 Vitality: Low to High</option>
-                        <option value="rarity_desc">💎 Rarity: Rare to Common</option>
-                        <option value="rarity_asc">🎯 Rarity: Common to Rare</option>
-                        <option value="price_asc">💰 Price: Low to High</option>
-                        <option value="price_desc">💸 Price: High to Low</option>
-                        <option value="recent">🕐 Recently Listed</option>
-                    </select>
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                        </svg>
-                    </div>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
+                <label class="block text-sm font-semibold mb-2 text-text-light dark:text-text-dark">Sort By</label>
+                <select id="mobile-sort-select" class="form-input-minimal w-full">
+                    <option value="trait_perf_desc">Trait Performance: High to Low</option>
+                    <option value="trait_perf_asc">Trait Performance: Low to High</option>
+                    <option value="vitality_desc">Vitality: High to Low</option>
+                    <option value="vitality_asc">Vitality: Low to High</option>
+                    <option value="rarity_desc">Rarity: Rare to Common</option>
+                    <option value="rarity_asc">Rarity: Common to Rare</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="recent">Recently Listed</option>
+                </select>
             </div>
 
             <!-- Trait Filters (Collapsible) -->
