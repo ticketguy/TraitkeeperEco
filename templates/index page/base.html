@@ -1344,10 +1344,17 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             <p id="password-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit"
-                            class="w-full py-3.5 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]">
-                            Sign In
+                        <!-- Submit Button with Loading State -->
+                        <button type="submit" id="login-submit-btn"
+                            class="w-full py-3.5 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                            <span class="login-btn-text">Sign In</span>
+                            <span class="login-btn-spinner hidden inline-flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Signing in...
+                            </span>
                         </button>
 
                         <p id="login-error-display" class="text-red-500 text-sm mt-2 hidden text-center bg-red-50 dark:bg-red-900/20 py-2 px-3 rounded-lg"></p>
@@ -1604,6 +1611,31 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
 
             setInterval(updateTimestamps, 30000);
             updateTimestamps();
+
+            // ==================================================
+            // Login Form Loading States
+            // ==================================================
+            const emailLoginForm = document.getElementById('email-login-form');
+            if (emailLoginForm) {
+                emailLoginForm.addEventListener('submit', function() {
+                    const submitBtn = document.getElementById('login-submit-btn');
+                    const btnText = submitBtn.querySelector('.login-btn-text');
+                    const btnSpinner = submitBtn.querySelector('.login-btn-spinner');
+
+                    if (submitBtn && btnText && btnSpinner) {
+                        // Disable button and show loading state
+                        submitBtn.disabled = true;
+                        btnText.classList.add('hidden');
+                        btnSpinner.classList.remove('hidden');
+
+                        // Hide any previous errors
+                        const errorDisplay = document.getElementById('login-error-display');
+                        if (errorDisplay) {
+                            errorDisplay.classList.add('hidden');
+                        }
+                    }
+                });
+            }
 
             // ==================================================
             // Wallet Modal Tab Switching
