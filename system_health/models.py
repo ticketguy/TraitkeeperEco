@@ -305,3 +305,91 @@ class HealthShareToken(models.Model):
         self.view_count += 1
         self.last_accessed = timezone.now()
         self.save(update_fields=['view_count', 'last_accessed'])
+
+
+class ServiceUptime(models.Model):
+    """
+    Tracks daily uptime percentages for each service (like QuickNode's uptime dashboard).
+    One record per service per day, showing uptime percentage over 90 days.
+    """
+
+    class ServiceName(models.TextChoices):
+        MAIN = 'main', 'Web Server'
+        INDEXER_LIVE = 'indexer-live', 'Live Indexer'
+        INDEXER_SCHEDULED = 'indexer-scheduled', 'Scheduled Indexer'
+        VITALITY = 'vitality-analytics', 'Vitality Analytics'
+        HEALTH = 'health', 'Health Monitor'
+        POSTGRES = 'postgres', 'PostgreSQL'
+        REDIS = 'redis', 'Redis Cache'
+        CONFIG_LISTENER = 'config-listener', 'Config Listener'
+
+    service_name = models.CharField(max_length=50, choices=ServiceName.choices)
+    date = models.DateField(db_index=True)
+
+    # Uptime metrics
+    uptime_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Daily uptime percentage (0-100)"
+    )
+    total_checks = models.IntegerField(default=0, help_text="Total health checks performed")
+    successful_checks = models.IntegerField(default=0, help_text="Number of successful checks")
+    failed_checks = models.IntegerField(default=0, help_text="Number of failed checks")
+    avg_response_time_ms = models.FloatField(null=True, blank=True, help_text="Average response time in milliseconds")
+    downtime_minutes = models.FloatField(default=0, help_text="Total downtime in minutes")
+    incidents_count = models.IntegerField(default=0, help_text="Number of downtime incidents")
+
+    # Additional metadata
+    metadata = models.JSONField(default=dict, help_text="Additional uptime metrics")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Service Uptime"
+        verbose_name_plural = "Service Uptime Records"
+        ordering = ['-date', 'service_name']
+        unique_together = [['service_name', 'date']]
+        indexes = [
+            models.Index(fields=['service_name', '-date']),
+            models.Index(fields=['-date']),
+            models.Index(fields=['uptime_percentage']),
+        ]
+
+    def __str__(self):
+        return f"{self.service_name} - {self.date}: {self.uptime_percentage}% uptime"
+
+    @property
+    def is_operational(self) -> bool:
+        """Check if service was operational (>99% uptime)"""
+        return self.uptime_percentage >= 99.0
+
+    @property
+    def status_class(self) -> str:
+        """CSS class for uptime status"""
+        if self.uptime_percentage >= 99.5:
+            return 'success'
+        elif self.uptime_percentage >= 95.0:
+            return 'warning'
+        else:
+            return 'error'
+
+    @classmethod
+    def get_service_uptime_history(cls, service_name: str, days: int = 90):
+        """Get uptime history for a specific service over N days"""
+        cutoff = timezone.now().date() - timezone.timedelta(days=days)
+        return cls.objects.filter(
+            service_name=service_name,
+            date__gte=cutoff
+        ).order_by('date')
+
+    @classmethod
+    def calculate_overall_uptime(cls, service_name: str, days: int = 90):
+        """Calculate overall uptime percentage for a service over N days"""
+        history = cls.get_service_uptime_history(service_name, days)
+        if not history:
+            return 0.0
+
+        total_uptime = sum(record.uptime_percentage for record in history)
+        return round(total_uptime / len(history), 2)

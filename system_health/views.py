@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import timedelta
+from django.db import models
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser # Use IsAdminUser for staff-only access
 from rest_framework.response import Response
@@ -933,3 +934,135 @@ def shared_health_stats(request, token):
 def shared_health_page(request, token):
     """Render public page for shared health stats (no auth required)."""
     return render(request, 'system_health/shared_health.html', {'token': token})
+
+
+# ============================================================================
+# SERVICE UPTIME API ENDPOINTS (QuickNode-style dashboard)
+# ============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def service_uptime_history(request):
+    """Get uptime history for all services (90-day view like QuickNode)."""
+    try:
+        from .models import ServiceUptime
+        from datetime import timedelta
+
+        days = int(request.GET.get('days', 90))
+        cutoff_date = timezone.now().date() - timedelta(days=days)
+
+        # Get all services
+        services = ServiceUptime.ServiceName.choices
+
+        services_data = []
+        for service_value, service_label in services:
+            # Get uptime history for this service
+            uptime_records = ServiceUptime.objects.filter(
+                service_name=service_value,
+                date__gte=cutoff_date
+            ).order_by('date')
+
+            if not uptime_records:
+                # No data yet - mark as operational with placeholder
+                services_data.append({
+                    'service_name': service_value,
+                    'service_label': service_label,
+                    'overall_uptime': 100.0,
+                    'status': 'Operational',
+                    'status_class': 'success',
+                    'uptime_history': []
+                })
+                continue
+
+            # Calculate overall uptime
+            total_uptime = sum(float(record.uptime_percentage) for record in uptime_records)
+            overall_uptime = round(total_uptime / len(uptime_records), 1)
+
+            # Build daily uptime array
+            uptime_history = [{
+                'date': record.date.isoformat(),
+                'uptime': float(record.uptime_percentage),
+                'incidents': record.incidents_count,
+                'downtime_minutes': record.downtime_minutes
+            } for record in uptime_records]
+
+            # Determine status
+            if overall_uptime >= 99.9:
+                status = 'Operational'
+                status_class = 'success'
+            elif overall_uptime >= 95.0:
+                status = 'Degraded'
+                status_class = 'warning'
+            else:
+                status = 'Issues'
+                status_class = 'error'
+
+            services_data.append({
+                'service_name': service_value,
+                'service_label': service_label,
+                'overall_uptime': overall_uptime,
+                'status': status,
+                'status_class': status_class,
+                'uptime_history': uptime_history
+            })
+
+        return Response({
+            'days': days,
+            'services': services_data,
+            'generated_at': timezone.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"Service uptime history API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch uptime history.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def service_uptime_summary(request):
+    """Get uptime summary stats for all services."""
+    try:
+        from .models import ServiceUptime
+        from django.db.models import Avg, Min, Max, Count
+        from datetime import timedelta
+
+        days = int(request.GET.get('days', 90))
+        cutoff_date = timezone.now().date() - timedelta(days=days)
+
+        # Aggregate stats across all services
+        stats = ServiceUptime.objects.filter(
+            date__gte=cutoff_date
+        ).aggregate(
+            avg_uptime=Avg('uptime_percentage'),
+            min_uptime=Min('uptime_percentage'),
+            max_uptime=Max('uptime_percentage'),
+            total_incidents=Count('id', filter=models.Q(incidents_count__gt=0))
+        )
+
+        # Count services with 100% uptime
+        perfect_uptime_count = ServiceUptime.objects.filter(
+            date__gte=cutoff_date,
+            uptime_percentage=100
+        ).values('service_name').distinct().count()
+
+        return Response({
+            'avg_uptime': round(float(stats['avg_uptime'] or 0), 2),
+            'min_uptime': round(float(stats['min_uptime'] or 0), 2),
+            'max_uptime': round(float(stats['max_uptime'] or 0), 2),
+            'total_incidents': stats['total_incidents'],
+            'perfect_uptime_services': perfect_uptime_count,
+            'days_analyzed': days
+        })
+
+    except Exception as e:
+        logger.error(f"Service uptime summary API error: {e}", exc_info=True)
+        return Response({'error': 'Failed to fetch uptime summary.'}, status=500)
+
+
+@login_required
+def uptime_dashboard(request):
+    """Render QuickNode-style uptime dashboard page."""
+    if not request.user.is_staff:
+        return render(request, 'admin/permission_denied.html', status=403)
+
+    return render(request, 'system_health/uptime_dashboard.html')
