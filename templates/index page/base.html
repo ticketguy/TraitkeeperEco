@@ -821,7 +821,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 <div class="mobile-header-right flex items-center space-x-1 xs:space-x-2">
                     {% if user.is_authenticated %}
                     <div class="relative">
-                        <a href="{% url 'notifications:list' %}"
+                        <button id="notification-toggle-mobile" type="button"
                             class="text-text-light dark:text-text-dark hover:text-primary transition relative faint-glow-hover inline-block text-shadow-header">
                             <i class="fas fa-bell text-base xs:text-lg"></i>
                             {% if unread_notifications_count > 0 %}
@@ -829,7 +829,7 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 class="absolute top-0 right-0 bg-red-500 text-white text-[10px] xs:text-xs rounded-full w-4 xs:w-5 h-4 xs:h-5 flex items-center justify-center animate-pulse">{{
                                 unread_notifications_count }}</span>
                             {% endif %}
-                        </a>
+                        </button>
                     </div>
                     <!-- Updated User Profile Display for Mobile -->
                     <div class="user-profile relative flex items-center space-x-2 animate-slide-up">
@@ -1391,6 +1391,152 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                 Continue with Google
                             </span>
                         </a>
+
+                        <!-- Sign Up Toggle -->
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Don't have an account?
+                                <button type="button" id="show-signup-form" class="text-primary hover:text-primary-dark font-semibold hover:underline transition-colors">
+                                    Sign up
+                                </button>
+                            </p>
+                        </div>
+                    </form>
+
+                    <!-- Signup Form (Initially Hidden) -->
+                    <form id="email-signup-form" method="POST" action="{% url 'wallet:email_signup' %}" class="space-y-5 hidden">
+                        {% csrf_token %}
+
+                        <!-- Username Input -->
+                        <div>
+                            <label for="signup_username" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                Username
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                </div>
+                                <input type="text" id="signup_username" name="username"
+                                    placeholder="Choose a username"
+                                    autocomplete="username"
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
+                                    required>
+                            </div>
+                            <p id="signup-username-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
+                        </div>
+
+                        <!-- Email Input -->
+                        <div>
+                            <label for="signup_email" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                Email
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <input type="email" id="signup_email" name="email"
+                                    placeholder="Enter your email"
+                                    autocomplete="email"
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
+                                    required>
+                            </div>
+                            <p id="signup-email-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div>
+                            <label for="signup_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                Password
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <input type="password" id="signup_password" name="password1"
+                                    autocomplete="new-password"
+                                    placeholder="Choose a password"
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
+                                    required>
+                            </div>
+                            <p id="signup-password-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
+                        </div>
+
+                        <!-- Confirm Password Input -->
+                        <div>
+                            <label for="signup_password2" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                Confirm Password
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <input type="password" id="signup_password2" name="password2"
+                                    autocomplete="new-password"
+                                    placeholder="Confirm your password"
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300"
+                                    required>
+                            </div>
+                            <p id="signup-password2-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
+                        </div>
+
+                        <!-- Submit Button with Loading State -->
+                        <button type="submit" id="signup-submit-btn"
+                            class="w-full py-3.5 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                            <span class="signup-btn-text">Create Account</span>
+                            <span class="signup-btn-spinner hidden inline-flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Creating account...
+                            </span>
+                        </button>
+
+                        <p id="signup-error-display" class="text-red-500 text-sm mt-2 hidden text-center bg-red-50 dark:bg-red-900/20 py-2 px-3 rounded-lg"></p>
+
+                        <!-- Divider -->
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                            </div>
+                            <div class="relative flex justify-center">
+                                <span class="px-4 py-1 bg-white dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 rounded-full">
+                                    Or continue with
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Google OAuth in Signup -->
+                        <a href="{% provider_login_url 'google' process='login' %}"
+                            class="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-primary transition-colors">
+                                Continue with Google
+                            </span>
+                        </a>
+
+                        <!-- Login Toggle -->
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Already have an account?
+                                <button type="button" id="show-login-form" class="text-primary hover:text-primary-dark font-semibold hover:underline transition-colors">
+                                    Sign in
+                                </button>
+                            </p>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -1503,6 +1649,100 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             });
                         }
                     });
+                });
+            }
+
+            // Notification Toggle Handlers (Desktop & Mobile)
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationToggleMobile = document.getElementById('notification-toggle-mobile');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+            const notificationDropdownMobile = document.getElementById('notification-dropdown-mobile');
+
+            // Desktop notification toggle
+            if (notificationToggle && notificationDropdown) {
+                notificationToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationDropdown.classList.toggle('hidden');
+                });
+            }
+
+            // Mobile notification toggle
+            if (notificationToggleMobile && notificationDropdownMobile) {
+                notificationToggleMobile.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationDropdownMobile.classList.toggle('hidden');
+                });
+            }
+
+            // Close notification dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                // Close desktop dropdown if open and click is outside
+                if (notificationDropdown && !notificationDropdown.classList.contains('hidden')) {
+                    if (!notificationDropdown.contains(e.target) && !notificationToggle.contains(e.target)) {
+                        notificationDropdown.classList.add('hidden');
+                    }
+                }
+
+                // Close mobile dropdown if open and click is outside
+                if (notificationDropdownMobile && !notificationDropdownMobile.classList.contains('hidden')) {
+                    if (!notificationDropdownMobile.contains(e.target) && !notificationToggleMobile.contains(e.target)) {
+                        notificationDropdownMobile.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Logout Button Handlers (Desktop & Mobile)
+            const logoutButtonDesktop = document.getElementById('disconnect-wallet-desktop');
+            const logoutButtonMobile = document.getElementById('disconnect-wallet-mobile');
+
+            function handleLogout(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Create a hidden form to submit logout POST request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "account_logout" %}';
+
+                // Add CSRF token
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                form.appendChild(csrfInput);
+
+                // Append form to body and submit
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            if (logoutButtonDesktop) {
+                logoutButtonDesktop.addEventListener('click', handleLogout);
+            }
+
+            if (logoutButtonMobile) {
+                logoutButtonMobile.addEventListener('click', handleLogout);
+            }
+
+            // Login/Signup Form Toggle
+            const loginForm = document.getElementById('email-login-form');
+            const signupForm = document.getElementById('email-signup-form');
+            const showSignupBtn = document.getElementById('show-signup-form');
+            const showLoginBtn = document.getElementById('show-login-form');
+
+            if (showSignupBtn && signupForm && loginForm) {
+                showSignupBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    loginForm.classList.add('hidden');
+                    signupForm.classList.remove('hidden');
+                });
+            }
+
+            if (showLoginBtn && loginForm && signupForm) {
+                showLoginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    signupForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
                 });
             }
 
