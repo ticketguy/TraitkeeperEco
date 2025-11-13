@@ -730,7 +730,7 @@ def vitality_metrics(request):
         from marketplace.models import NFTVitalityHistory, CollectionVitalityHistory
         from django.utils import timezone
         from datetime import timedelta
-        from django.db.models import Count, Avg, Q
+        from django.db.models import Count, Avg, Q, Sum
 
         # Get time range (default last 24 hours)
         cutoff = timezone.now() - timedelta(hours=24)
