@@ -1652,17 +1652,51 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                 });
             }
 
-            // Notification Toggle Handlers (Desktop & Mobile)
+            // Notification Toggle Handlers (Desktop & Mobile) with Menu Exclusivity
             const notificationToggle = document.getElementById('notification-toggle');
             const notificationToggleMobile = document.getElementById('notification-toggle-mobile');
             const notificationDropdown = document.getElementById('notification-dropdown');
             const notificationDropdownMobile = document.getElementById('notification-dropdown-mobile');
+            const profileMenuDesktop = document.getElementById('user-profile-menu-desktop');
+            const profileMenuMobile = document.getElementById('user-profile-menu-mobile');
+            const walletModal = document.getElementById('wallet-modal');
+            const walletBackdrop = document.getElementById('wallet-backdrop');
+
+            // Helper function to close all menus
+            function closeAllMenus(except = null) {
+                const menus = [
+                    notificationDropdown,
+                    notificationDropdownMobile,
+                    profileMenuDesktop,
+                    profileMenuMobile
+                ];
+
+                menus.forEach(menu => {
+                    if (menu && menu !== except && !menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                    }
+                });
+
+                // Close wallet modal if open
+                if (walletModal && walletModal !== except && !walletModal.classList.contains('hidden')) {
+                    walletModal.classList.add('hidden', 'opacity-0', 'scale-95');
+                }
+                if (walletBackdrop && !walletBackdrop.classList.contains('hidden')) {
+                    walletBackdrop.classList.add('hidden');
+                }
+            }
 
             // Desktop notification toggle
             if (notificationToggle && notificationDropdown) {
                 notificationToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    notificationDropdown.classList.toggle('hidden');
+                    const isHidden = notificationDropdown.classList.contains('hidden');
+                    closeAllMenus(notificationDropdown);
+                    if (isHidden) {
+                        notificationDropdown.classList.remove('hidden');
+                    } else {
+                        notificationDropdown.classList.add('hidden');
+                    }
                 });
             }
 
@@ -1670,24 +1704,108 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
             if (notificationToggleMobile && notificationDropdownMobile) {
                 notificationToggleMobile.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    notificationDropdownMobile.classList.toggle('hidden');
+                    const isHidden = notificationDropdownMobile.classList.contains('hidden');
+                    closeAllMenus(notificationDropdownMobile);
+                    if (isHidden) {
+                        notificationDropdownMobile.classList.remove('hidden');
+                    } else {
+                        notificationDropdownMobile.classList.add('hidden');
+                    }
                 });
             }
 
-            // Close notification dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                // Close desktop dropdown if open and click is outside
-                if (notificationDropdown && !notificationDropdown.classList.contains('hidden')) {
-                    if (!notificationDropdown.contains(e.target) && !notificationToggle.contains(e.target)) {
-                        notificationDropdown.classList.add('hidden');
-                    }
-                }
+            // Profile Dropdown Handlers with Menu Exclusivity
+            const profileLinks = document.querySelectorAll('.profile-link');
 
-                // Close mobile dropdown if open and click is outside
-                if (notificationDropdownMobile && !notificationDropdownMobile.classList.contains('hidden')) {
-                    if (!notificationDropdownMobile.contains(e.target) && !notificationToggleMobile.contains(e.target)) {
-                        notificationDropdownMobile.classList.add('hidden');
+            profileLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    // Determine which profile menu to toggle
+                    const parentHeader = this.closest('.desktop-header, .mobile-header');
+                    const profileMenu = parentHeader ?
+                        (parentHeader.classList.contains('desktop-header') ? profileMenuDesktop : profileMenuMobile) :
+                        null;
+
+                    if (profileMenu) {
+                        const isHidden = profileMenu.classList.contains('hidden');
+                        closeAllMenus(profileMenu);
+                        if (isHidden) {
+                            profileMenu.classList.remove('hidden');
+                        } else {
+                            profileMenu.classList.add('hidden');
+                        }
                     }
+                });
+            });
+
+            // Wallet Modal Handlers with Menu Exclusivity
+            const walletToggleDesktop = document.getElementById('wallet-dropdown-toggle');
+            const walletToggleMobile = document.getElementById('wallet-dropdown-toggle-mobile');
+            const closeWalletBtns = document.querySelectorAll('.close-wallet-options');
+
+            function openWalletModal() {
+                closeAllMenus(walletModal);
+                if (walletModal && walletBackdrop) {
+                    walletModal.classList.remove('hidden', 'opacity-0', 'scale-95');
+                    walletModal.classList.add('opacity-100', 'scale-100');
+                    walletBackdrop.classList.remove('hidden');
+                }
+            }
+
+            function closeWalletModal() {
+                if (walletModal && walletBackdrop) {
+                    walletModal.classList.add('opacity-0', 'scale-95');
+                    walletBackdrop.classList.add('hidden');
+                    setTimeout(() => {
+                        walletModal.classList.add('hidden');
+                    }, 200);
+                }
+            }
+
+            if (walletToggleDesktop) {
+                walletToggleDesktop.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openWalletModal();
+                });
+            }
+
+            if (walletToggleMobile) {
+                walletToggleMobile.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openWalletModal();
+                });
+            }
+
+            closeWalletBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeWalletModal();
+                });
+            });
+
+            // Close wallet modal when clicking backdrop
+            if (walletBackdrop) {
+                walletBackdrop.addEventListener('click', closeWalletModal);
+            }
+
+            // Close all menus when clicking outside
+            document.addEventListener('click', function(e) {
+                // Check if click is inside any menu
+                const clickedInsideMenu =
+                    (notificationDropdown && notificationDropdown.contains(e.target)) ||
+                    (notificationDropdownMobile && notificationDropdownMobile.contains(e.target)) ||
+                    (profileMenuDesktop && profileMenuDesktop.contains(e.target)) ||
+                    (profileMenuMobile && profileMenuMobile.contains(e.target)) ||
+                    (walletModal && walletModal.contains(e.target)) ||
+                    (notificationToggle && notificationToggle.contains(e.target)) ||
+                    (notificationToggleMobile && notificationToggleMobile.contains(e.target));
+
+                // Check if clicked on profile link
+                const clickedOnProfileLink = e.target.closest('.profile-link');
+
+                if (!clickedInsideMenu && !clickedOnProfileLink) {
+                    closeAllMenus();
                 }
             });
 
