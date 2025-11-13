@@ -168,18 +168,10 @@ class NFTDataService:
             collection.reviewed_at = timezone.now()
             await sync_to_async(collection.save)()
 
-            # We must wrap this synchronous DB call in sync_to_async
-            @sync_to_async
-            def get_content_type_id_async():
-                return ContentType.objects.get_for_model(PendingCollection).pk
-
-            # Call the async helper to get the ID
-            pending_collection_content_type_id = await get_content_type_id_async()
-
             # Log the action and send a notification.
             await sync_to_async(AdminLogEntry.objects.create)(
                 user_id=rejected_by_user.id,
-                content_type_id=pending_collection_content_type_id,
+                content_type_id=ContentType.objects.get_for_model(PendingCollection).pk,
                 object_id=collection.id, object_repr=str(collection),
                 action_flag=2, change_message="Rejected collection"
             )

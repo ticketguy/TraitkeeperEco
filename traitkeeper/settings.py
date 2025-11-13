@@ -378,19 +378,6 @@ ACCOUNT_EMAIL_AUTHENTICATION = True  # Allow authentication via email
 SOCIALACCOUNT_LOGIN_ON_GET = True  # Allow social login without POST request
 
 # Google OAuth settings for social login.
-# IMPORTANT: You must add the following redirect URIs to your Google Cloud Console:
-# For Production: https://traitkeeper.xyz/accounts/google/login/callback/
-#                 https://www.traitkeeper.xyz/accounts/google/login/callback/
-# For Development: http://localhost:8000/accounts/google/login/callback/
-#                  http://127.0.0.1:8000/accounts/google/login/callback/
-#
-# To configure in Google Cloud Console:
-# 1. Go to https://console.cloud.google.com/
-# 2. Select your project
-# 3. Navigate to "APIs & Services" > "Credentials"
-# 4. Click on your OAuth 2.0 Client ID
-# 5. Add the redirect URIs above to "Authorized redirect URIs"
-# 6. Click "Save"
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {

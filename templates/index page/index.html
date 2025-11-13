@@ -419,6 +419,16 @@
                             {% endfor %}
                         </div>
 
+                        <!-- Navigation Dots -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-1">
+                            {% for collection in featured_collections %}
+                            <button class="carousel-dot w-0.5 h-0.5 rounded-full transition-all duration-300 {% if forloop.first %}bg-primary w-2{% else %}bg-white/50 hover:bg-white/75{% endif %}"
+                                    data-slide="{{ forloop.counter0 }}"
+                                    aria-label="Go to slide {{ forloop.counter }}">
+                            </button>
+                            {% endfor %}
+                        </div>
+
                         <!-- Previous/Next Arrows (only show if more than 1 collection) -->
                         {% if featured_collections|length > 1 %}
                         <button class="carousel-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm group"
@@ -451,8 +461,17 @@
                                 this.bindEvents();
                                 this.startAutoPlay();
                             },
-
+                            
                             bindEvents() {
+                                // Dot navigation
+                                document.querySelectorAll('.carousel-dot').forEach(dot => {
+                                    dot.addEventListener('click', (e) => {
+                                        const slideIndex = parseInt(e.target.dataset.slide);
+                                        this.goToSlide(slideIndex);
+                                        this.resetAutoPlay();
+                                    });
+                                });
+                                
                                 // Arrow navigation
                                 const prevBtn = document.querySelector('.carousel-prev');
                                 const nextBtn = document.querySelector('.carousel-next');
@@ -496,7 +515,18 @@
                                     slide.classList.remove('opacity-100', 'z-10');
                                     slide.classList.add('opacity-0', 'z-0');
                                 });
-
+                                
+                                // Update dots
+                                document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                                    if (i === index) {
+                                        dot.classList.add('bg-primary', 'w-4');
+                                        dot.classList.remove('bg-white/50', 'w-1.5');
+                                    } else {
+                                        dot.classList.remove('bg-primary', 'w-4');
+                                        dot.classList.add('bg-white/50', 'w-1.5');
+                                    }
+                                });
+                                
                                 // Show target slide
                                 const targetSlide = document.querySelector(`.featured-carousel-slide[data-slide-index="${index}"]`);
                                 if (targetSlide) {
