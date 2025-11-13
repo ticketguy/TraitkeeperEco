@@ -52,8 +52,8 @@ urlpatterns = [
     path('api/share/<str:token>/', views.shared_health_stats, name='api_shared_health_stats'),
     path('share/<str:token>/', views.shared_health_page, name='shared_health_page'),
 
-    # Uptime Dashboard endpoints
+    # Service Uptime Dashboard (QuickNode-style)
     path('uptime/', views.uptime_dashboard, name='uptime_dashboard'),
-    path('api/uptime/history/', views.uptime_history_api, name='api_uptime_history'),
-    path('api/uptime/summary/', views.uptime_summary_api, name='api_uptime_summary'),
+    path('api/uptime/history/', views.service_uptime_history, name='api_uptime_history'),
+    path('api/uptime/summary/', views.service_uptime_summary, name='api_uptime_summary'),
 ]

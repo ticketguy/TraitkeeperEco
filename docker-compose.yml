@@ -219,6 +219,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./logs:/var/log/traitkeeper
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for health checks
     depends_on:
       postgres:
         condition: service_healthy
