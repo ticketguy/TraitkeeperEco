@@ -599,8 +599,8 @@ def nft_collection_action(request, address, action):
         if not request.user.has_perm('nft_data.change_nftcollection'):
             messages.error(request, "You do not have permission to list collections.")
             return redirect('admin:index')
-        
-        result = nft_data_service.list_collection(collection.address)
+
+        result = async_to_sync(nft_data_service.list_collection)(collection.address)
         
         if result["success"]:
             messages.success(request, f"Collection '{collection.name}' has been listed.")
@@ -615,8 +615,8 @@ def nft_collection_action(request, address, action):
         if not request.user.has_perm('nft_data.change_nftcollection'):
             messages.error(request, "You do not have permission to delist collections.")
             return redirect('admin:index')
-        
-        result = nft_data_service.delist_collection(collection.address)
+
+        result = async_to_sync(nft_data_service.delist_collection)(collection.address)
         
         if result["success"]:
             messages.success(request, f"Collection '{collection.name}' has been delisted.")
