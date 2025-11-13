@@ -51,4 +51,9 @@ urlpatterns = [
     path('api/share/generate/', views.generate_share_token, name='api_generate_share_token'),
     path('api/share/<str:token>/', views.shared_health_stats, name='api_shared_health_stats'),
     path('share/<str:token>/', views.shared_health_page, name='shared_health_page'),
+
+    # Uptime Dashboard endpoints
+    path('uptime/', views.uptime_dashboard, name='uptime_dashboard'),
+    path('api/uptime/history/', views.uptime_history_api, name='api_uptime_history'),
+    path('api/uptime/summary/', views.uptime_summary_api, name='api_uptime_summary'),
 ]

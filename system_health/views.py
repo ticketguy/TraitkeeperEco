@@ -729,7 +729,7 @@ def vitality_metrics(request):
         from marketplace.models import NFTVitalityHistory, CollectionVitalityHistory
         from django.utils import timezone
         from datetime import timedelta
-        from django.db.models import Count, Avg, Q
+        from django.db.models import Count, Avg, Q, Sum
 
         # Get time range (default last 24 hours)
         cutoff = timezone.now() - timedelta(hours=24)
@@ -933,3 +933,173 @@ def shared_health_stats(request, token):
 def shared_health_page(request, token):
     """Render public page for shared health stats (no auth required)."""
     return render(request, 'system_health/shared_health.html', {'token': token})
+
+
+# ============================================================================
+# UPTIME DASHBOARD VIEWS
+# ============================================================================
+
+@login_required
+def uptime_dashboard(request):
+    """Render the uptime dashboard page."""
+    return render(request, 'system_health/uptime.html')
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def uptime_history_api(request):
+    """API endpoint for 90-day uptime history."""
+    try:
+        from .models import ServiceUptime
+        from datetime import timedelta
+
+        # Get last 90 days
+        end_date = timezone.now().date()
+        start_date = end_date - timedelta(days=90)
+
+        # Get all services
+        services_data = []
+        service_choices = ServiceHealthCheck.SERVICE_CHOICES
+
+        total_incidents = 0
+        operational_services = 0
+        total_services = len(service_choices)
+        all_response_times = []
+        all_uptimes = []
+
+        for service_key, service_name in service_choices:
+            # Get uptime records for this service
+            uptime_records = ServiceUptime.objects.filter(
+                service_name=service_key,
+                date__gte=start_date,
+                date__lte=end_date
+            ).order_by('date')
+
+            # Build daily data array (fill missing days with None)
+            daily_data = []
+            current_date = start_date
+            records_dict = {record.date: record for record in uptime_records}
+
+            while current_date <= end_date:
+                if current_date in records_dict:
+                    record = records_dict[current_date]
+                    daily_data.append({
+                        'date': current_date.isoformat(),
+                        'uptime_percentage': float(record.uptime_percentage),
+                        'incidents': record.incidents_count,
+                        'downtime_minutes': float(record.downtime_minutes),
+                    })
+
+                    # Aggregate for summary
+                    if record.avg_response_time_ms:
+                        all_response_times.append(float(record.avg_response_time_ms))
+                    all_uptimes.append(float(record.uptime_percentage))
+                    total_incidents += record.incidents_count
+                else:
+                    daily_data.append({
+                        'date': current_date.isoformat(),
+                        'uptime_percentage': None,
+                        'incidents': 0,
+                        'downtime_minutes': 0,
+                    })
+
+                current_date += timedelta(days=1)
+
+            # Calculate average uptime for this service
+            service_uptime_values = [d['uptime_percentage'] for d in daily_data if d['uptime_percentage'] is not None]
+            avg_uptime = sum(service_uptime_values) / len(service_uptime_values) if service_uptime_values else 0
+
+            # Check if operational (>99% uptime)
+            if avg_uptime >= 99:
+                operational_services += 1
+
+            services_data.append({
+                'name': service_key,
+                'display_name': service_name,
+                'uptime_percentage': round(avg_uptime, 2),
+                'daily_data': daily_data,
+            })
+
+        # Calculate summary statistics
+        overall_uptime = sum(all_uptimes) / len(all_uptimes) if all_uptimes else 0
+        avg_response_time = sum(all_response_times) / len(all_response_times) if all_response_times else 0
+
+        return Response({
+            'services': services_data,
+            'summary': {
+                'overall_uptime': round(overall_uptime, 2),
+                'operational_services': operational_services,
+                'total_services': total_services,
+                'total_incidents': total_incidents,
+                'avg_response_time': round(avg_response_time, 2),
+            },
+            'period': {
+                'start_date': start_date.isoformat(),
+                'end_date': end_date.isoformat(),
+                'days': 90,
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Uptime history API error: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def uptime_summary_api(request):
+    """API endpoint for uptime summary statistics."""
+    try:
+        from .models import ServiceUptime
+        from datetime import timedelta
+
+        # Get last 30 days
+        end_date = timezone.now().date()
+        start_date = end_date - timedelta(days=30)
+
+        # Aggregate statistics
+        uptime_stats = ServiceUptime.objects.filter(
+            date__gte=start_date,
+            date__lte=end_date
+        ).aggregate(
+            avg_uptime=Avg('uptime_percentage'),
+            total_incidents=Count('id', filter=Q(incidents_count__gt=0)),
+            avg_response=Avg('avg_response_time_ms'),
+            total_downtime=Sum('downtime_minutes'),
+        )
+
+        # Get per-service summary
+        service_summaries = []
+        for service_key, service_name in ServiceHealthCheck.SERVICE_CHOICES:
+            service_stats = ServiceUptime.objects.filter(
+                service_name=service_key,
+                date__gte=start_date,
+                date__lte=end_date
+            ).aggregate(
+                avg_uptime=Avg('uptime_percentage'),
+                incidents=Sum('incidents_count'),
+                downtime=Sum('downtime_minutes'),
+            )
+
+            service_summaries.append({
+                'name': service_key,
+                'display_name': service_name,
+                'uptime': round(service_stats['avg_uptime'] or 0, 2),
+                'incidents': service_stats['incidents'] or 0,
+                'downtime_hours': round((service_stats['downtime'] or 0) / 60, 2),
+            })
+
+        return Response({
+            'period_days': 30,
+            'overall': {
+                'uptime_percentage': round(uptime_stats['avg_uptime'] or 0, 2),
+                'total_incidents': uptime_stats['total_incidents'] or 0,
+                'avg_response_time_ms': round(uptime_stats['avg_response'] or 0, 2),
+                'total_downtime_hours': round((uptime_stats['total_downtime'] or 0) / 60, 2),
+            },
+            'services': service_summaries,
+        })
+
+    except Exception as e:
+        logger.error(f"Uptime summary API error: {e}", exc_info=True)
+        return Response({'error': str(e)}, status=500)
