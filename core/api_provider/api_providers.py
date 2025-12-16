@@ -14,6 +14,8 @@ from asgiref.sync import sync_to_async
 from django.utils.functional import cached_property
 from admin_panel.models import PrimaryProviderSetting
 from indexer.quota_manager import ProviderQuotaManager
+from core.api_provider.magic_eden_provider import MagicEdenProvider
+from core.api_provider.tensor_provider import TensorProvider
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +75,7 @@ class APIProviderManager:
             return self._rpc_providers_cache
 
         logger.info("First-time access: Initializing providers from database...")
-        
+
         @sync_to_async
         def _get_providers_from_db():
             initialized_providers = {}
@@ -90,6 +92,26 @@ class APIProviderManager:
                         logger.info(f"Initialized provider {provider_name}")
                     except Exception as e:
                         logger.error(f"Failed to initialize {provider_name}: {e}")
+
+            # Initialize marketplace providers from environment variables
+            if hasattr(settings, 'MAGIC_EDEN_API_KEY') and settings.MAGIC_EDEN_API_KEY:
+                try:
+                    initialized_providers['magic_eden'] = MagicEdenProvider(
+                        api_key=settings.MAGIC_EDEN_API_KEY
+                    )
+                    logger.info("Initialized Magic Eden provider from environment")
+                except Exception as e:
+                    logger.error(f"Failed to initialize Magic Eden provider: {e}")
+
+            if hasattr(settings, 'TENSOR_API_KEY') and settings.TENSOR_API_KEY:
+                try:
+                    initialized_providers['tensor'] = TensorProvider(
+                        api_key=settings.TENSOR_API_KEY
+                    )
+                    logger.info("Initialized Tensor provider from environment")
+                except Exception as e:
+                    logger.error(f"Failed to initialize Tensor provider: {e}")
+
             return initialized_providers
 
         self._rpc_providers_cache = await _get_providers_from_db()
