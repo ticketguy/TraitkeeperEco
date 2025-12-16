@@ -429,13 +429,15 @@ def auto_resolve_stale_alerts():
 
                 # Check if redis alert
                 elif 'redis' in alert_msg_lower:
-                    if current_services.get('redis', {}).get('status') == 'connected':
+                    redis_info = current_services.get('redis') if isinstance(current_services, dict) else None
+                    if isinstance(redis_info, dict) and redis_info.get('status') == 'connected':
                         should_resolve = True
                         resolution_reason = "Redis connection restored"
 
                 # Check if database alert
                 elif 'database' in alert_msg_lower or 'postgres' in alert_msg_lower:
-                    if current_services.get('database', {}).get('status') == 'connected':
+                    db_info = current_services.get('database') if isinstance(current_services, dict) else None
+                    if isinstance(db_info, dict) and db_info.get('status') == 'connected':
                         should_resolve = True
                         resolution_reason = "Database connection restored"
 
