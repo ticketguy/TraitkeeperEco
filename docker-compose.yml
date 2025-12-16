@@ -220,6 +220,8 @@ services:
       - ./logs:/app/logs
       - ./logs:/var/log/traitkeeper
       - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for health checks
+    group_add:
+      - "999"  # Add docker group to allow socket access
     depends_on:
       postgres:
         condition: service_healthy
