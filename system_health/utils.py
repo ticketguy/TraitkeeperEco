@@ -394,6 +394,12 @@ def auto_resolve_stale_alerts():
         # Get current system health
         health_check = system_monitor.check_health()
         current_services = health_check.get('services', {})
+
+        # Safety check: ensure current_services is a dict
+        if not isinstance(current_services, dict):
+            logger.warning(f"current_services is not a dict, got {type(current_services)}: {current_services}")
+            current_services = {}
+
         current_alerts = set(health_check.get('alerts', []))
 
         # Get all unresolved alerts
