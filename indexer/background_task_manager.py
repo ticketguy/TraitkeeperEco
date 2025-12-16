@@ -190,7 +190,10 @@ class BackgroundTaskManager:
                 logger.info(f"Processing historical events for {collection.address}")
                 await self.indexer_service.process_onchain_events(collection.address)
 
-               
+                # Fetch and store market stats from Tensor/Magic Eden APIs
+                logger.info(f"Fetching market stats for {collection.address}")
+                await self.indexer_service.fetch_and_store_all_market_stats(collection)
+
                 logger.info(f"Updating metrics after historical scan for {collection.address}")
                 await self.indexer_service.update_collection_after_retrieval(collection.address)
                 logger.info(f"Finished processing historical events for {collection.address}")

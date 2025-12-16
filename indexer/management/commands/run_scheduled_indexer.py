@@ -64,10 +64,14 @@ class Command(BaseCommand):
             for collection in collections:
                 try:
                     logger.info(f"🔍 Processing {collection.name} ({collection.address[:16]}...)")
-                    
+
                     # Process on-chain events (historical data)
                     await self.indexer_service.process_onchain_events(collection.address)
-                    
+
+                    # Fetch and store market stats from Tensor/Magic Eden APIs
+                    logger.info(f"📊 Fetching market stats for {collection.name}...")
+                    await self.indexer_service.fetch_and_store_all_market_stats(collection)
+
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
                     
