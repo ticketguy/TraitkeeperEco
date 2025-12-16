@@ -60,6 +60,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     curl \
     ca-certificates \
+    procps \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
