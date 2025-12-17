@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.urls import reverse
-from .models import AdminUser, AdminLoginAttempt, AdminLogEntry, PrimaryProviderSetting
+from .models import AdminUser, AdminLoginAttempt, AdminLogEntry, PrimaryProviderSetting, MarketplaceProviderSetting
 from traitkeeper.admin_site import admin_site
 from traitkeeper.admin_utils import AdvancedFilterAdmin
 from django.contrib.contenttypes.models import ContentType
@@ -553,9 +553,61 @@ class PrimaryProviderSettingAdmin(admin.ModelAdmin):
             action_flag=3, # 3 is for 'deletion'
         )
 
+class MarketplaceProviderSettingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active', 'base_url', 'created_at', 'updated_at')
+    list_editable = ('is_active',)
+    readonly_fields = ('created_at', 'updated_at')
+
+    def save_model(self, request, obj, form, change):
+        """
+        Override save_model to publish a config update message to Redis.
+        """
+        # Save the object first, as usual
+        super().save_model(request, obj, form, change)
+
+        # Now, send the signal
+        try:
+            # Create a standard (synchronous) redis client
+            redis_client = redis.from_url(settings.REDIS_URL)
+            # Publish the 'reload' message to the channel
+            redis_client.publish(REDIS_CHANNEL, "reload")
+            logger.info(f"Published 'reload' signal to {REDIS_CHANNEL} after saving MarketplaceProviderSetting.")
+        except Exception as e:
+            logger.error(f"Could not publish config update to Redis: {e}")
+
+    def log_change(self, request, object, message):
+        AdminLogEntry.objects.log_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(object).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=2,
+            change_message=str(message),
+        )
+
+    def log_addition(self, request, object, message):
+         AdminLogEntry.objects.log_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(object).pk,
+            object_id=object.pk,
+            object_repr=str(object),
+            action_flag=1,
+            change_message=str(message),
+        )
+
+    def log_deletion(self, request, object, object_repr):
+        AdminLogEntry.objects.log_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(object).pk,
+            object_id=object.pk,
+            object_repr=object_repr,
+            action_flag=3,
+        )
+
 admin_site.register(AdminUser, AdminUserAdmin)
 admin_site.register(AdminLoginAttempt, AdminLoginAttemptAdmin)
 admin_site.register(AdminLogEntry, AdminLogEntryAdmin)
 admin_site.register(Group, GroupAdmin)
 
 admin_site.register(PrimaryProviderSetting, PrimaryProviderSettingAdmin)
+admin_site.register(MarketplaceProviderSetting, MarketplaceProviderSettingAdmin)

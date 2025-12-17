@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 from asgiref.sync import sync_to_async
 from django.utils.functional import cached_property
-from admin_panel.models import PrimaryProviderSetting
+from admin_panel.models import PrimaryProviderSetting, MarketplaceProviderSetting
 from indexer.quota_manager import ProviderQuotaManager
 from core.api_provider.magic_eden_provider import MagicEdenProvider
 from core.api_provider.tensor_provider import TensorProvider
@@ -93,24 +93,27 @@ class APIProviderManager:
                     except Exception as e:
                         logger.error(f"Failed to initialize {provider_name}: {e}")
 
-            # Initialize marketplace providers from environment variables
-            if hasattr(settings, 'MAGIC_EDEN_API_KEY') and settings.MAGIC_EDEN_API_KEY:
+            # Initialize marketplace providers from database
+            marketplace_providers = MarketplaceProviderSetting.objects.filter(is_active=True)
+            for mp_setting in marketplace_providers:
+                provider_name = mp_setting.name.lower()
                 try:
-                    initialized_providers['magic_eden'] = MagicEdenProvider(
-                        api_key=settings.MAGIC_EDEN_API_KEY
-                    )
-                    logger.info("Initialized Magic Eden provider from environment")
+                    if provider_name == 'magic_eden':
+                        base_url = mp_setting.base_url if mp_setting.base_url else None
+                        initialized_providers['magic_eden'] = MagicEdenProvider(
+                            api_key=mp_setting.api_key,
+                            base_url=base_url
+                        )
+                        logger.info(f"Initialized Magic Eden provider from database")
+                    elif provider_name == 'tensor':
+                        initialized_providers['tensor'] = TensorProvider(
+                            api_key=mp_setting.api_key
+                        )
+                        logger.info(f"Initialized Tensor provider from database")
+                    else:
+                        logger.warning(f"Unknown marketplace provider: {provider_name}")
                 except Exception as e:
-                    logger.error(f"Failed to initialize Magic Eden provider: {e}")
-
-            if hasattr(settings, 'TENSOR_API_KEY') and settings.TENSOR_API_KEY:
-                try:
-                    initialized_providers['tensor'] = TensorProvider(
-                        api_key=settings.TENSOR_API_KEY
-                    )
-                    logger.info("Initialized Tensor provider from environment")
-                except Exception as e:
-                    logger.error(f"Failed to initialize Tensor provider: {e}")
+                    logger.error(f"Failed to initialize marketplace provider {provider_name}: {e}")
 
             return initialized_providers
 

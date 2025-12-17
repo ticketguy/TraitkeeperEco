@@ -168,9 +168,9 @@ class PrimaryProviderSetting(models.Model):
     rpc_url = models.URLField(max_length=200)
     api_key = models.CharField(max_length=100, blank=True, null=True)
     ws_url = models.CharField(
-        max_length=200, 
-        blank=True, 
-        null=True, 
+        max_length=200,
+        blank=True,
+        null=True,
         help_text="WebSocket URL for real-time subscriptions (optional)"
     )  # Changed from URLField to CharField
     is_active = models.BooleanField(default=True)
@@ -190,3 +190,38 @@ class PrimaryProviderSetting(models.Model):
             # Ensure only one provider is primary
             PrimaryProviderSetting.objects.filter(is_primary=True).exclude(pk=self.pk).update(is_primary=False)
         super().save(*args, **kwargs)
+
+
+class MarketplaceProviderSetting(models.Model):
+    """
+    Configuration for marketplace API providers (Magic Eden, Tensor, etc.)
+    These are different from RPC providers as they provide market data, not blockchain RPC.
+    """
+    name = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Provider name (e.g., 'magic_eden', 'tensor')"
+    )
+    api_key = models.CharField(
+        max_length=200,
+        help_text="API key for the marketplace provider"
+    )
+    base_url = models.URLField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text="Optional custom base URL (uses provider default if empty)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this provider is active and should be used"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Marketplace Provider Setting'
+        verbose_name_plural = 'Marketplace Provider Settings'
+
+    def __str__(self):
+        return f"Marketplace Provider: {self.name} ({'Active' if self.is_active else 'Inactive'})"
