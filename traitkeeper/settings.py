@@ -406,6 +406,10 @@ QUICKNODE_ENDPOINT = os.getenv('QUICKNODE_ENDPOINT')
 SOLANA_RPC_URL = os.getenv('SOLANA_RPC_URL')
 PRIMARY_RPC_PROVIDER = os.getenv('PRIMARY_RPC_PROVIDER')
 
+# Marketplace API keys
+MAGIC_EDEN_API_KEY = os.getenv('MAGIC_EDEN_API_KEY')
+TENSOR_API_KEY = os.getenv('TENSOR_API_KEY')
+
 # -----------------------------------------------------------------------------
 # Caching Configuration
 # -----------------------------------------------------------------------------
