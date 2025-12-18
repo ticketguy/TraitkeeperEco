@@ -198,9 +198,9 @@ class TensorProvider:
             logger.error(f"Error checking Tensor availability: {str(e)}")
             return False
 
-    async def find_collection_symbol(self, collection_address: str, collection_name: str = None) -> Optional[tuple]:
+    async def find_collection_symbol(self, collection_address: str, collection_name: str = None) -> Optional[str]:
         """
-        Finds a collection's Tensor UUID and its priority tier.
+        Finds a collection's Tensor UUID.
 
         It follows a multi-step process:
         1. Checks the local database for a stored, verified identifier.
@@ -212,10 +212,8 @@ class TensorProvider:
             collection_name (str): The name of the collection, used for API searching.
 
         Returns:
-            Optional[tuple]: A tuple containing (uuid, priority_tier), or (None, priority_tier).
+            Optional[str]: The Tensor UUID string, or None if not found.
         """
-        priority_tier = 'INACTIVE'  # Default priority if not found
-
         try:
             from indexer.models import MarketplaceIdentifier
             from nft_data.models import NFTCollection
@@ -224,18 +222,15 @@ class TensorProvider:
             collection = await sync_to_async(
                 NFTCollection.objects.filter(address=collection_address).first
             )()
-            
+
             if collection:
-                # If the collection is found, we know its priority tier.
-                priority_tier = collection.priority_tier
-                
                 # Check if we have a stored identifier for Tensor for this collection.
                 marketplace_id = await sync_to_async(
                     MarketplaceIdentifier.objects.filter(collection=collection, marketplace='tensor').first
                 )()
                 if marketplace_id and marketplace_id.identifier_value:
                     logger.info(f"Tensor: Found UUID in DB: {marketplace_id.identifier_value}")
-                    return marketplace_id.identifier_value, priority_tier
+                    return marketplace_id.identifier_value
 
             # Step 2: (Fallback) If not in DB, search the Tensor API by the on-chain address.
             logger.info(f"Tensor: UUID not in DB. Searching API by address: {collection_address}")
@@ -244,7 +239,7 @@ class TensorProvider:
                 uuid = find_response['collId']
                 logger.info(f"Tensor: Found UUID via address search: {uuid}")
                 await self._store_collection_uuid(collection_address, uuid) # Save for next time
-                return uuid, priority_tier
+                return uuid
 
             # Step 3: (Fallback) If still not found, search the Tensor API by name.
             if collection_name:
@@ -253,14 +248,14 @@ class TensorProvider:
                 if uuid:
                     logger.info(f"Tensor: Found UUID via name search: {uuid}")
                     await self._store_collection_uuid(collection_address, uuid) # Save for next time
-                    return uuid, priority_tier
+                    return uuid
 
         except Exception as e:
             logger.error(f"Tensor: Error finding collection UUID for {collection_address}: {e}")
 
-        # If all lookups fail, return None for the UUID.
+        # If all lookups fail, return None.
         logger.warning(f"Tensor: Could not find UUID for {collection_address} after all checks.")
-        return None, priority_tier
+        return None
 
     async def get_collection_data(self, collection_symbol: str, collection_address: str, priority_tier: str) -> Dict:
         """
@@ -624,10 +619,7 @@ class TensorProvider:
                 collection=collection,
                 marketplace='tensor',
                 defaults={
-                    'identifier_type': 'uuid',
-                    'identifier_value': uuid,
-                    'is_verified': True,
-                    'last_verified': timezone.now()
+                    'identifier_value': uuid
                 }
             )
             
@@ -691,10 +683,17 @@ class TensorProvider:
             collection_address = collection_info['address']
             collection_name = collection_info.get('name')
             try:
-                # Find the UUID and priority tier for the collection.
-                uuid, priority = await self.find_collection_symbol(collection_address, collection_name)
-                
+                # Find the UUID for the collection.
+                uuid = await self.find_collection_symbol(collection_address, collection_name)
+
                 if uuid:
+                    # Get priority from collection object
+                    from nft_data.models import NFTCollection
+                    collection = await sync_to_async(
+                        NFTCollection.objects.filter(address=collection_address).first
+                    )()
+                    priority = collection.priority_tier if collection else 'INACTIVE'
+
                     # Pass all required info to the main data fetching method.
                     data = await self.get_collection_data(uuid, collection_address, priority)
                     results[collection_address] = data

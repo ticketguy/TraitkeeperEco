@@ -67,7 +67,7 @@ class MagicEdenProvider:
     
     def __init__(self, api_key: str = None, base_url: str = "https://api-mainnet.magiceden.dev/v2"):
         self.api_key = api_key
-        self.base_url = base_url.rstrip('/')
+        self.base_url = (base_url or "https://api-mainnet.magiceden.dev/v2").rstrip('/')
         self.name = "magic_eden"
         self.max_retries = 3
         self.rate_limiter = RateLimiter()
