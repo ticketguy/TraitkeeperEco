@@ -366,8 +366,8 @@ class MagicEdenProvider:
             result["raw_data"] = stats_response
 
             # Step 5: Cache the successful result with a priority-aware TTL.
+            await cache_manager.set(cache_key, result, CacheType.PROVIDER, collection_address)
             ttl = cache_manager.get_ttl(CacheType.PROVIDER, priority_tier)
-            await cache_manager.set(cache_key, result, ttl=ttl)
             logger.info(f"💾 Cached ME data for '{clean_slug}' with priority '{priority_tier}' (TTL: {ttl}s)")
         else:
             result["error"] = f"Collection '{clean_slug}' not found on Magic Eden"
