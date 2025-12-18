@@ -224,46 +224,40 @@ def get_authoritative_floor_price(collection):
 
 ---
 
-## 💡 Future: Footer Aggregated Floor Price
+## 💡 Aggregated Data Indicators (Frontend)
 
-**Planned Enhancement:**
+**Implemented Enhancement:**
 
-Display aggregated marketplace floor prices in the website footer (similar to SOL price and TPS):
+Visual indicators mark aggregated data (floor price, volume) across the frontend to show users that the data comes from multiple sources.
+
+### Visual Result:
 
 ```
-TraitKeeper Footer:
-┌────────────────────────────────────────────────┐
-│ SOL: $98.45 | TPS: 3,542                       │
-│ Avg Floor (Top 50): 2.34 SOL | 24h Vol: 15.2K │
-└────────────────────────────────────────────────┘
+Before:
+Floor: 2.34 SOL
+
+After:
+Floor: 2.34 SOL ⓘ
+       └─ [Tooltip: Aggregated from Magic Eden, Tensor & Blockchain]
+
+Footer:
+SOL: $98.45 | TPS: 3,542 | ⓘ Aggregated Data | Support
 ```
 
-**Calculation:**
-```python
-def get_aggregated_floor_stats():
-    """Calculate aggregated floor price for top collections"""
+### Implementation:
+- ⓘ icon next to all aggregated metrics (floor, volume, listed count)
+- Tooltip on hover: "Aggregated from Magic Eden, Tensor & Blockchain"
+- Footer legend explains what the icon means
+- Responsive (desktop + mobile)
+- Dark mode support
 
-    # Get top 50 VIP collections
-    top_collections = NFTCollection.objects.filter(
-        priority_tier='VIP',
-        is_listed=True
-    ).order_by('-volume_24h')[:50]
+### Files:
+- CSS: `static/css/data-source-indicator.css` ✅ Created
+- Component: `templates/index page/components/data_indicator.html` 🔨 To create
+- Guide: [IMPLEMENTATION_AGGREGATED_DATA_INDICATORS.md](./IMPLEMENTATION_AGGREGATED_DATA_INDICATORS.md) ✅
 
-    # Average their floor prices
-    avg_floor = top_collections.aggregate(Avg('floor_price'))
-
-    # Sum 24h volume
-    total_volume = top_collections.aggregate(Sum('volume_24h'))
-
-    return {
-        'avg_floor_sol': avg_floor,
-        'total_volume_24h': total_volume
-    }
-```
-
-**Update Frequency:** Every 5 minutes
-
-**Status:** 📋 In backlog (not yet implemented)
+### Status:
+📝 CSS Ready | 📋 Implementation Pending (see guide above)
 
 ---
 

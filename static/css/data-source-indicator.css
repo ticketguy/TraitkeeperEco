@@ -1,0 +1,112 @@
+/* Data Source Indicator Component */
+.data-source-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    position: relative;
+}
+
+.data-source-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 11px;
+    color: #6b7280;
+    background: rgba(107, 114, 128, 0.1);
+    border-radius: 50%;
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.data-source-icon:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    transform: scale(1.1);
+}
+
+/* Tooltip */
+.data-source-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1f2937;
+    color: #f3f4f6;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 1000;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.data-source-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1f2937 transparent transparent transparent;
+}
+
+.data-source-indicator:hover .data-source-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Dark mode support */
+.dark .data-source-icon {
+    color: #9ca3af;
+    background: rgba(156, 163, 175, 0.1);
+}
+
+.dark .data-source-icon:hover {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.15);
+}
+
+.dark .data-source-tooltip {
+    background-color: #374151;
+    color: #f9fafb;
+}
+
+.dark .data-source-tooltip::after {
+    border-color: #374151 transparent transparent transparent;
+}
+
+/* Footer legend */
+.data-sources-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.dark .data-sources-legend {
+    color: #9ca3af;
+}
+
+.legend-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 11px;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 50%;
+}
+
+.dark .legend-icon {
+    color: #60a5fa;
+}
