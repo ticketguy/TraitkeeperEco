@@ -1331,19 +1331,19 @@
                 <span>Performance</span>
             </div>
             <div class="stat-item">
-                <strong id="mobile-floor">-- SOL</strong>
+                <strong id="mobile-floor">-- SOL{% include "index page/components/data_indicator.html" %}</strong>
                 <span>Floor Price</span>
             </div>
             <div class="stat-item">
-                <strong id="mobile-volume-24h">-- SOL</strong>
+                <strong id="mobile-volume-24h">-- SOL{% include "index page/components/data_indicator.html" %}</strong>
                 <span>24h Volume</span>
             </div>
             <div class="stat-item">
-                <strong id="mobile-total-vol">-- SOL</strong>
+                <strong id="mobile-total-vol">-- SOL{% include "index page/components/data_indicator.html" %}</strong>
                 <span>Total Volume</span>
             </div>
             <div class="stat-item">
-                <strong id="mobile-market-cap">-- SOL</strong>
+                <strong id="mobile-market-cap">-- SOL{% include "index page/components/data_indicator.html" %}</strong>
                 <span>Market Cap</span>
             </div>
         </div>
@@ -1988,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="stat-divider"></div>
             <div class="stat-item">
                 <div class="flex items-baseline justify-center">
-                    <strong>${floorPrice} SOL</strong>
+                    <strong>${floorPrice} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong>
                     <strong class="text-sm ml-1 text-gray-400">${floorChange}%</strong>
                 </div>
                 <span>Floor</span>
@@ -1996,15 +1996,15 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="stat-divider"></div>
             <div class="stat-item">
                 <div class="flex items-baseline justify-center">
-                    <strong>${volume24h} SOL</strong>
+                    <strong>${volume24h} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong>
                     <strong class="text-sm ml-1 text-gray-400">${volumeChange}%</strong>
                 </div>
                 <span>24h Vol</span>
             </div>
             <div class="stat-divider hidden md:block"></div>
-            <div class="stat-item hidden md:block"><strong>${totalVolume} SOL</strong><span>Total Vol</span></div>
+            <div class="stat-item hidden md:block"><strong>${totalVolume} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>Total Vol</span></div>
             <div class="stat-divider hidden lg:block"></div>
-            <div class="stat-item hidden lg:block"><strong>${marketCap} SOL</strong><span>Market Cap</span></div>
+            <div class="stat-item hidden lg:block"><strong>${marketCap} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>Market Cap</span></div>
             <div class="stat-divider hidden lg:block"></div>
             <div class="stat-item hidden lg:block"><strong>${bidsCount}</strong><span>Bids</span></div>
         `;
@@ -2021,10 +2021,10 @@ document.addEventListener("DOMContentLoaded", function () {
             mobileStatsGrid.innerHTML = `
                 <div class="stat-item"><strong>${vitality}</strong><span>Vitality</span></div>
                 <div class="stat-item"><strong>${performance}</strong><span>Performance</span></div>
-                <div class="stat-item"><strong>${floorPrice} SOL</strong><span>Floor (${floorChange}%)</span></div>
-                <div class="stat-item"><strong>${volume24h} SOL</strong><span>24h Vol (${volumeChange}%)</span></div>
-                <div class="stat-item"><strong>${totalVolume} SOL</strong><span>Total Vol</span></div>
-                <div class="stat-item"><strong>${marketCap} SOL</strong><span>Market Cap</span></div>
+                <div class="stat-item"><strong>${floorPrice} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>Floor (${floorChange}%)</span></div>
+                <div class="stat-item"><strong>${volume24h} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>24h Vol (${volumeChange}%)</span></div>
+                <div class="stat-item"><strong>${totalVolume} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>Total Vol</span></div>
+                <div class="stat-item"><strong>${marketCap} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></strong><span>Market Cap</span></div>
             `;
         }
     }

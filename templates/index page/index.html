@@ -239,7 +239,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Volume</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
+                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL{% include "index page/components/data_indicator.html" %}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -247,7 +247,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                            {{ collection_stats.market_cap|floatformat:2 }} SOL{% include "index page/components/data_indicator.html" %}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -278,7 +278,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">24h Volume</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL
+                            {{ collection_stats.total_volume_24h|floatformat:2 }} SOL{% include "index page/components/data_indicator.html" %}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -286,7 +286,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                            {{ collection_stats.market_cap|floatformat:2 }} SOL{% include "index page/components/data_indicator.html" %}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -405,12 +405,12 @@
                                             <div class="w-px h-8 bg-white/20"></div>
                                             <div class="flex-1">
                                                 <span class="text-xs opacity-80 block">Floor</span>
-                                                <strong class="text-lg font-bold">{{ collection.floor_price|floatformat:2|default:"--" }} SOL</strong>
+                                                <strong class="text-lg font-bold">{{ collection.floor_price|floatformat:2|default:"--" }} SOL{% include "index page/components/data_indicator.html" %}</strong>
                                             </div>
                                             <div class="w-px h-8 bg-white/20"></div>
                                             <div class="flex-1">
                                                 <span class="text-xs opacity-80 block">24h Vol</span>
-                                                <strong class="text-lg font-bold">{{ collection.volume_24h|floatformat:2|default:"--" }} SOL</strong>
+                                                <strong class="text-lg font-bold">{{ collection.volume_24h|floatformat:2|default:"--" }} SOL{% include "index page/components/data_indicator.html" %}</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -639,7 +639,7 @@
                                         </span>
                                     </td>
                                     <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
-                                        {{ collection.volume|floatformat:2 }} SOL
+                                        {{ collection.volume|floatformat:2 }} SOL{% include "index page/components/data_indicator.html" %}
                                     </td>
                                     <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
                                         {{ collection.sales_24h|default:0 }}
@@ -1191,7 +1191,7 @@
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Floor Price</span>
-                <span id="collection-modal-floor" class="block text-lg font-bold text-text-light dark:text-text-dark">-- SOL</span>
+                <span id="collection-modal-floor" class="block text-lg font-bold text-text-light dark:text-text-dark">-- SOL{% include "index page/components/data_indicator.html" %}</span>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">24h Change</span>
@@ -1199,11 +1199,11 @@
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Volume (24h)</span>
-                <span id="collection-modal-volume" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
+                <span id="collection-modal-volume" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL{% include "index page/components/data_indicator.html" %}</span>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Market Cap</span>
-                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
+                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL{% include "index page/components/data_indicator.html" %}</span>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Holders</span>
@@ -1439,7 +1439,7 @@
                                     <div class="p-2 xs:p-3 sm:p-4">
                                         <h3 class="text-sm xs:text-base sm:text-lg font-semibold text-text-light dark:text-text-dark mb-1">${sweep.collection}</h3>
                                         <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Buyer: @${sweep.buyer_address.slice(0, 8)}</p>
-                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Items: ${sweep.num_items} | Volume: ${sweep.total_volume.toFixed(2)} SOL</p>
+                                        <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Items: ${sweep.num_items} | Volume: ${sweep.total_volume.toFixed(2)} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></p>
                                         <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Price Movement: ${sweep.price_movement.toFixed(2)}%</p>
                                         ${sweep.target_traits ? `
                                             <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">Targeted Traits: ${sweep.target_traits.map(t => `${t.trait_type}: ${t.trait_value} (${t.frequency.toFixed(2)}%)`).join(', ')}</p>
@@ -1577,9 +1577,9 @@
                                                 ${vitalityScore > 0 ? vitalityScore : '--'}
                                             </span>
                                         </div>
-                                        
+
                                         <div class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                            ${collection.volume.toFixed(2)} SOL
+                                            ${collection.volume.toFixed(2)} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span>
                                         </div>
                                     </a>
                                 </td>
@@ -1615,10 +1615,10 @@
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${index + 1}</td>
                                     <td class="p-1 xs:p-2 sm:p-3 font-bold text-primary text-[10px] xs:text-xs sm:text-sm truncate">${trait.trait_name}: ${trait.trait_value}</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm truncate">${trait.collection}</td>
-                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.volume.toFixed(2)} SOL</td>
-                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.floor_price.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.volume.toFixed(2)} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.floor_price.toFixed(2)} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.sales}</td>
-                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.market_cap.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.market_cap.toFixed(2)} SOL<span class="data-source-indicator"><span class="data-source-icon">ⓘ</span><span class="data-source-tooltip">Aggregated from Magic Eden, Tensor & Blockchain</span></span></td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-green-600 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">↑ ${trait.trend_percentage}%</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.count}</td>
                                 </tr>

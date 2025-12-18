@@ -40,7 +40,18 @@
       "Bash(\"templates/index page/base.html.tmp\")",
       "Bash(docker restart:*)",
       "Bash(npm run minify:js:*)",
-      "Bash(MSYS_NO_PATHCONV=1 docker logs:*)"
+      "Bash(MSYS_NO_PATHCONV=1 docker logs:*)",
+      "Bash(tasklist:*)",
+      "Bash(MSYS_NO_PATHCONV=1 sc query:*)",
+      "Bash(powershell \"Get-Service | Where-Object {$_DisplayName -like ''*postgres*''}\")",
+      "Bash(wmic service:*)",
+      "Bash(docker-compose:*)",
+      "Bash(make dev-minimal:*)",
+      "Bash(netstat:*)",
+      "Bash(MSYS_NO_PATHCONV=1 tasklist:*)",
+      "Bash(git push)",
+      "Bash(python manage.py shell:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []
