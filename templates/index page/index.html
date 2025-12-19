@@ -396,7 +396,7 @@
                                         <div class="flex items-center gap-4 text-white drop-shadow-lg">
                                             <div class="flex-1">
                                                 <span class="text-xs opacity-80 block">Vitality Score</span>
-                                                {% with v_score=collection.vitality_score|default:50.0 %}
+                                                {% with v_score=collection.vitality.vitality_score|default:50.0 %}
                                                 <strong class="text-lg font-bold {% if v_score > 75 %}text-green-400{% elif v_score < 40 %}text-red-400{% else %}text-white{% endif %}">
                                                     {{ v_score|floatformat:1 }}
                                                 </strong>
@@ -609,7 +609,7 @@
                             <tbody id="top-collections-table">
                                 {% for collection in top_collections %}
                                 <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg collection-row"
-                                    data-vitality="{{ collection.vitality_score|default:0 }}"
+                                    data-vitality="{{ collection.vitality.vitality_score|default:0 }}"
                                     data-volume="{{ collection.volume|default:0 }}"
                                     data-sales="{{ collection.sales_24h|default:0 }}">
                                     <td class="p-1 xs:p-2">
@@ -624,8 +624,8 @@
                                         </a>
                                     </td>
                                     <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                        <span class="vitality-value font-bold" data-score="{{ collection.vitality_score|default:0 }}">
-                                            {{ collection.vitality_score|floatformat:1|default:"--" }}
+                                        <span class="vitality-value font-bold" data-score="{{ collection.vitality.vitality_score|default:0 }}">
+                                            {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
                                         </span>
                                     </td>
                                     <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
