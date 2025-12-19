@@ -36,6 +36,8 @@ class WebhookService:
         """
         Process incoming webhook payload from Helius or QuickNode.
 
+        This method NEVER raises exceptions to prevent stream termination.
+
         Args:
             payload: Raw webhook payload (format varies by provider)
 
@@ -94,8 +96,10 @@ class WebhookService:
             return stats
 
         except Exception as e:
-            logger.error(f"Error processing webhook payload: {e}", exc_info=True)
-            raise
+            # NEVER raise - always return stats to prevent stream termination
+            logger.error(f"Critical error processing webhook payload: {e}", exc_info=True)
+            stats['failed'] = stats.get('total_events', 1)  # Mark all as failed
+            return stats
 
     async def _process_single_event(self, event_data: Dict) -> str:
         """
@@ -118,8 +122,12 @@ class WebhookService:
             if nft_event:
                 logger.info(f"[{signature}] Successfully processed webhook event")
 
-                # Trigger downstream processing if needed
-                await self._trigger_downstream_processing(nft_event)
+                # Trigger downstream processing (wrapped in try-except to not fail main flow)
+                try:
+                    await self._trigger_downstream_processing(nft_event)
+                except Exception as downstream_error:
+                    # Log but don't fail the webhook
+                    logger.warning(f"[{signature}] Downstream processing failed: {downstream_error}")
 
                 return 'processed'
             else:
@@ -127,6 +135,7 @@ class WebhookService:
                 return 'skipped'
 
         except Exception as e:
+            # Always log full exception but still return a valid status
             logger.error(f"[{signature}] Failed to process webhook event: {e}", exc_info=True)
             return 'failed'
 
@@ -197,7 +206,7 @@ class WebhookService:
             # Only trigger vitality updates for significant events
             if event_type in ['SALE', 'LISTING', 'DELISTING']:
                 # Import here to avoid circular dependency
-                from marketplace.services.vitality_service import VitalityCalculationService
+                from marketplace.vitality_service import VitalityCalculationService
 
                 # Schedule vitality recalculation (don't await, run in background)
                 collection = await sync_to_async(lambda: nft_event.collection)()
@@ -215,7 +224,7 @@ class WebhookService:
     async def _recalculate_vitality(self, collection_address: str):
         """Background task to recalculate vitality for a collection."""
         try:
-            from marketplace.services.vitality_service import VitalityCalculationService
+            from marketplace.vitality_service import VitalityCalculationService
 
             vitality_service = VitalityCalculationService()
             await vitality_service.calculate_collection_vitality(collection_address)
