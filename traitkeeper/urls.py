@@ -39,7 +39,7 @@ urlpatterns = [
     # Site pages or apps URLs
     path('nftmemories', include('nftmemories.urls')),
     path('nft-data/', include('nft_data.urls')),
-   # path('indexer/', include('indexer.urls')),
+    path('indexer/', include('indexer.urls')),  # ✅ Webhook endpoint enabled
 
 
     path('marketplace/', include('marketplace.urls')),
