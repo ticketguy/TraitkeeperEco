@@ -13,7 +13,9 @@ class NFTEventSerializer(serializers.ModelSerializer):
         return [{'type': tv.trait_type.name, 'value': tv.value} for tv in obj.trait_values.all()]
 
 class CollectionMarketStatsSerializer(serializers.ModelSerializer):
+    collection_address = serializers.CharField(source='collection.address', read_only=True)
+
     class Meta:
         model = CollectionMarketStats
-        fields = ['collection_address', 'floor_price', 'volume_24h', 'average_price_24h', 'velocity_24h', 'performance_score', 'total_volume', 'total_supply', 'listed_count', 'timestamp']
+        fields = ['collection_address', 'source', 'floor_price', 'volume_24h', 'sales_count_24h', 'owners_count', 'listed_count', 'total_supply', 'timestamp']
 
