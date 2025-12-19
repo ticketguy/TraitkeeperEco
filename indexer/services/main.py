@@ -255,13 +255,10 @@ class IndexerService:
                                 defaults={
                                     'floor_price': stats_data.get('floor_price'),
                                     'volume_24h': stats_data.get('volume_24h'),
-                                    'total_volume': stats_data.get('total_volume'),
                                     'listed_count': stats_data.get('listed_count'),
                                     'total_supply': stats_data.get('total_supply'),
-                                    'average_price_24h': stats_data.get('avg_price_24h'),
-                                    'highest_bid': stats_data.get('highest_bid'),
-                                    'market_cap': stats_data.get('market_cap'),
                                     'sales_count_24h': stats_data.get('sales_count_24h'),
+                                    'owners_count': stats_data.get('owners_count'),
                                     'raw_data': raw_data
                                 }
                             )
