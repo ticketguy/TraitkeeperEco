@@ -39,10 +39,10 @@ class Command(BaseCommand):
         while self.is_running and not self.shutdown_event.is_set():
             try:
                 await self._run_collection_indexing()
-                
-                # Wait 15 minutes before next run
-                logger.info("⏳ Next scheduled run in 15 minutes...")
-                await asyncio.sleep(900)  # 15 minutes
+
+                # Wait 5 minutes before next run
+                logger.info("⏳ Next scheduled run in 5 minutes...")
+                await asyncio.sleep(300)  # 5 minutes
                 
             except asyncio.CancelledError:
                 logger.info("🛑 Scheduler cancelled, shutting down...")

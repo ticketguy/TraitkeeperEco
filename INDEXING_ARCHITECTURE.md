@@ -15,9 +15,9 @@ TraitKeeper uses a **3-tier indexing system** to collect NFT data efficiently:
    ├─ Data: NFT transactions as they happen
    └─ Service: indexer-live
 
-2. MARKET STATS UPDATER - Every 15 minutes         💹 CONTINUOUS
+2. MARKET STATS UPDATER - Every 5 minutes          💹 CONTINUOUS
    ├─ Source: Magic Eden & Tensor APIs
-   ├─ Frequency: Every 15 minutes
+   ├─ Frequency: Every 5 minutes
    ├─ Data: Floor price, volume, sales count
    ├─ Speed: ~10 seconds per run
    └─ Service: indexer-scheduled
@@ -40,7 +40,7 @@ TraitKeeper uses a **3-tier indexing system** to collect NFT data efficiently:
 
 ### 2. Market Stats Updater
 **When:** Always running in production
-**Purpose:** Keep frontend market data fresh
+**Purpose:** Keep frontend market data fresh (updates every 5 minutes)
 **Use Case:** Display current floor prices, volumes on website
 
 ### 3. Incremental Indexer
@@ -139,9 +139,9 @@ docker-compose logs -f indexer-incremental
 | Service | Frequency | Calls/Run | Daily Total |
 |---------|-----------|-----------|-------------|
 | Live Indexer | Real-time | Variable | ~1,000-5,000 |
-| Market Stats | 15 min (96x/day) | 4 API calls | 384 calls |
+| Market Stats | 5 min (288x/day) | 4 API calls | 1,152 calls |
 | Incremental | 4 hours (6x/day) | ~200 RPC | 1,200 calls |
-| **TOTAL** | | | **~2,500-6,500/day** |
+| **TOTAL** | | | **~3,300-7,400/day** |
 
 ### Previous (Broken) Setup:
 - Scheduled indexer fetching 1000 transactions every 15 minutes
@@ -193,12 +193,12 @@ When adding a new collection:
 ## Performance Optimization
 
 ### Current Settings (Optimized):
-- Market stats: 15 minutes (fast API calls)
+- Market stats: 5 minutes (fast API calls)
 - Incremental: 4 hours, last 24h only (light RPC usage)
 - Stagger delay: 2-5 seconds between collections
 
 ### If You Need to Adjust:
-- **More frequent stats:** Change `asyncio.sleep(900)` in `run_scheduled_indexer.py`
+- **More frequent stats:** Change `asyncio.sleep(300)` in `run_scheduled_indexer.py`
 - **Longer catch-up window:** Change `timedelta(hours=24)` in `run_incremental_indexer.py`
 - **More aggressive catching:** Change `limit=100` to higher value (costs more RPC)
 

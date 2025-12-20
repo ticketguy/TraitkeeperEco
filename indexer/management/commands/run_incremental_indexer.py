@@ -13,7 +13,7 @@ Usage:
 import asyncio
 import logging
 import signal
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from asgiref.sync import sync_to_async
@@ -123,7 +123,7 @@ class Command(BaseCommand):
                 # Check if transaction is within last 24 hours
                 block_time = sig_data.get('blockTime')
                 if block_time:
-                    tx_time = timezone.datetime.fromtimestamp(block_time, tz=timezone.utc)
+                    tx_time = datetime.fromtimestamp(block_time, tz=dt_timezone.utc)
                     if tx_time >= cutoff_time:
                         recent_sigs.append(sig_data['signature'])
 

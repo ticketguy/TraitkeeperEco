@@ -51,7 +51,10 @@
       "Bash(MSYS_NO_PATHCONV=1 tasklist:*)",
       "Bash(git push)",
       "Bash(python manage.py shell:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose exec main python manage.py shell:*)",
+      "Bash(docker stop:*)"
     ],
     "deny": [],
     "ask": []
