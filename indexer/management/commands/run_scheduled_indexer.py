@@ -65,16 +65,22 @@ class Command(BaseCommand):
                 try:
                     logger.info(f"📊 Fetching market stats for {collection.name} ({collection.address[:16]}...)")
 
-                    # ONLY fetch and store market stats from Tensor/Magic Eden APIs
+                    # 1. Fetch and store market stats from Tensor/Magic Eden APIs
                     # NOTE: Historical on-chain indexing (process_onchain_events) should NOT run periodically
                     # as it's expensive and meant for one-time backfills only
                     await self.indexer_service.fetch_and_store_all_market_stats(collection)
+
+                    # 2. ALSO update aggregated metrics (creates AggregatedCollectionStats)
+                    # This processes NFT events + market stats to create analytics data
+                    # Vitality calculations depend on this!
+                    logger.info(f"📊 Calculating aggregated metrics for {collection.name}...")
+                    await self.indexer_service.metrics_service.update_collection_metrics(collection)
 
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
 
                 except Exception as e:
-                    logger.error(f"❌ Failed to fetch stats for {collection.name}: {e}")
+                    logger.error(f"❌ Failed to process {collection.name}: {e}")
                     continue
             
             logger.info(f"✅ Completed scheduled indexing for {len(collections)} collections")
