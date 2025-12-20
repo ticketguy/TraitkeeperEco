@@ -807,7 +807,7 @@ class MarketAggregationService:
                 # Get the closest historical record to the cutoff time
                 historical_record = await sync_to_async(
                     CollectionMarketStats.objects.filter(
-                        collection_address=collection.address,
+                        collection=collection,  # ForeignKey, not collection_address
                         source='aggregated',  # Use aggregated historical data
                         timestamp__lte=cutoff_time
                     ).order_by('-timestamp').first
@@ -1016,9 +1016,15 @@ class MarketAggregationService:
         listed_count = base_data.get('listed_count', 0)
         bid_count = base_data.get('bid_count', 0)
         floor_price = base_data.get('floor_price', 0)
-        
+
+        # Calculate volume depth (protect against division by zero)
+        if floor_price > 0:
+            volume_depth_score = min(volume_24h / (floor_price * 10), 1.0) * 40
+        else:
+            volume_depth_score = 0
+
         liquidity_score = (
-            (min(volume_24h / (floor_price * 10), 1.0) * 40) +  # Volume depth
+            volume_depth_score +  # Volume depth
             (min(listed_count / 50, 1.0) * 35) +  # Listing depth
             (min(bid_count / 20, 1.0) * 25)  # Bid depth
         )
