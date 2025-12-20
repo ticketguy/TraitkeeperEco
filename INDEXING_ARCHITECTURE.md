@@ -48,11 +48,13 @@ TraitKeeper uses a **3-tier indexing system** to collect NFT data efficiently:
 **Purpose:** Safety net for missed transactions
 **Use Case:** Webhook fails, API downtime, network issues
 
-### 4. Historical Backfill (MANUAL ONLY)
+### 4. Historical Backfill (MANUAL OR AUTO)
 **When:** One-time setup or adding new collection
-**Purpose:** Load historical data from blockchain
-**Command:** `python manage.py fetch_market_stats_now`
-**Note:** Do NOT run periodically - very expensive!
+**Purpose:** Load ALL historical data from blockchain (collection creation to present)
+**Command:** `python manage.py backfill_collection <address>`
+**Auto-trigger:** Runs automatically when new collection is added via admin
+**Note:** Fetches COMPLETE history using pagination, not just 1000 transactions
+**Warning:** Do NOT run periodically - very expensive and time-consuming!
 
 ## Data Flow
 

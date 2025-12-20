@@ -60,40 +60,99 @@ class IndexerService:
         except Exception as e:
             logger.error(f"Error in update_collection_after_retrieval: {e}", exc_info=True)
 
-    async def process_onchain_events(self, collection_address: str):
+    async def process_onchain_events(self, collection_address: str, max_signatures: int = None):
             """
-            Fetches and processes historical on-chain events for a given collection address.
-            This corrected version fetches the signature history of the collection itself.
+            Fetches and processes ALL historical on-chain events for a collection.
+
+            Uses pagination to fetch the complete transaction history from collection creation.
+
+            Args:
+                collection_address: The collection's on-chain address
+                max_signatures: Optional limit for testing (default: None = fetch all)
             """
-            logger.info(f"Starting DIRECT indexing for collection: {collection_address}")
-            
-            # 1. Get a healthy, available provider using your existing manager.
+            logger.info(f"Starting COMPLETE historical indexing for collection: {collection_address}")
+            logger.info(f"⚠️  This will fetch ALL transactions from collection creation")
+
+            # 1. Get a healthy, available provider
             provider = await self.provider_manager.get_rpc_provider(collection_address)
             if not provider:
                 logger.error(f"Could not get an available provider for {collection_address}. Aborting.")
                 return
 
             try:
-                # 2. Get the transaction signatures that involved the collection address directly.
-                # This is the key change in logic. We're asking for the collection's history.
-                logger.info(f"Fetching transaction signatures for collection address: {collection_address}")
-                # You can increase the limit as needed.
-                signatures_data = await provider.get_signatures_for_address(collection_address, limit=1000)
-                
-                if not signatures_data:
+                all_signatures = []
+                before_signature = None
+                page_num = 0
+
+                # 2. Paginate through ALL signatures
+                logger.info(f"📚 Starting pagination to fetch complete history...")
+
+                while True:
+                    page_num += 1
+                    logger.info(f"📄 Fetching page {page_num}...")
+
+                    # Fetch batch of signatures (1000 at a time)
+                    signatures_data = await provider.get_signatures_for_address(
+                        collection_address,
+                        limit=1000,
+                        before=before_signature
+                    )
+
+                    if not signatures_data:
+                        logger.info(f"✅ Reached end of history at page {page_num}")
+                        break
+
+                    batch_size = len(signatures_data)
+                    all_signatures.extend([s['signature'] for s in signatures_data])
+                    logger.info(f"   Found {batch_size} signatures (Total: {len(all_signatures)})")
+
+                    # Check if we've hit optional limit
+                    if max_signatures and len(all_signatures) >= max_signatures:
+                        logger.info(f"⚠️  Reached max_signatures limit: {max_signatures}")
+                        all_signatures = all_signatures[:max_signatures]
+                        break
+
+                    # If we got less than 1000, we've reached the end
+                    if batch_size < 1000:
+                        logger.info(f"✅ Complete history fetched (last page had {batch_size} signatures)")
+                        break
+
+                    # Set 'before' to the oldest signature from this batch for next page
+                    before_signature = signatures_data[-1]['signature']
+
+                    # Small delay to avoid rate limiting
+                    await asyncio.sleep(0.5)
+
+                if not all_signatures:
                     logger.warning(f"No transaction history found for collection address {collection_address}.")
                     return
 
-                signatures_to_fetch = [s['signature'] for s in signatures_data]
-                logger.info(f"Found {len(signatures_to_fetch)} signatures. Fetching full transaction details...")
-                
-                # 3. Get the full transaction data for those signatures.
-                transactions = await provider.get_transactions(signatures_to_fetch)
+                logger.info(f"📊 TOTAL SIGNATURES FOUND: {len(all_signatures)}")
+                logger.info(f"🔄 Processing transactions in batches...")
 
-                # 4. Process each valid transaction using your parser.
-                for tx in transactions:
-                    if tx:
-                        await self.parser.parse_and_store_event(tx)
+                # 3. Process signatures in batches to avoid overwhelming the parser
+                BATCH_SIZE = 100
+                total_batches = (len(all_signatures) + BATCH_SIZE - 1) // BATCH_SIZE
+
+                for i in range(0, len(all_signatures), BATCH_SIZE):
+                    batch = all_signatures[i:i + BATCH_SIZE]
+                    batch_num = (i // BATCH_SIZE) + 1
+
+                    logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} transactions)...")
+
+                    # Fetch full transaction data for this batch
+                    transactions = await provider.get_transactions(batch)
+
+                    # Parse each transaction
+                    for tx in transactions:
+                        if tx:
+                            await self.parser.parse_and_store_event(tx)
+
+                    # Delay between batches
+                    await asyncio.sleep(1)
+
+                logger.info(f"✅ COMPLETE historical indexing finished for {collection_address}")
+                logger.info(f"   Total transactions processed: {len(all_signatures)}")
 
             except Exception as e:
                 logger.error(f"Failed to process event history for collection {collection_address}: {e}", exc_info=True)
