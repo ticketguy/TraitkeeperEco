@@ -248,10 +248,11 @@ class IndexerService:
             NEW & CORRECTED: Fetches raw market stats in parallel from all active API providers
             and stores them in the CollectionMarketStats model.
             """
-            logger.info(f"Fetching all market stats for {collection.name} ({collection.address})")
+            logger.info(f"📡 Fetching market stats from APIs for {collection.name} ({collection.address[:16]}...)")
 
             # Define all providers that supply market-level stats
             providers_to_query = ['magic_eden', 'tensor']
+            logger.info(f"   → Querying {len(providers_to_query)} providers: {providers_to_query}")
             
             # --- Helper function to encapsulate the logic for one provider ---
             async def _fetch_provider_stats(provider_name: str):
@@ -299,11 +300,14 @@ class IndexerService:
                     provider_name = result.get('source')
                     stats_data = result.get('stats', {})
                     raw_data = result.get('raw_data', {}) # Store the complete raw response
-                    
+
                     try:
                         # Ensure provider result is a dict before using .get
                         if not isinstance(result, dict):
                             raise RuntimeError(f"Invalid provider result: {result}")
+
+                        logger.info(f"   💾 Storing {provider_name} data: Floor={stats_data.get('floor_price', 0)}, "
+                                   f"Vol 24h={stats_data.get('volume_24h', 0)}, Listed={stats_data.get('listed_count', 0)}")
 
                         # Wrap the DB upsert in a sync function so sync_to_async receives a proper callable
                         @sync_to_async
@@ -326,7 +330,8 @@ class IndexerService:
 
                         saved_tuple = await _upsert_collection_market_stats()
                         saved_obj, created = saved_tuple
-                        logger.info(f"Successfully stored market stats from '{provider_name}' for {collection.name}.")
+                        action = "Created" if created else "Updated"
+                        logger.info(f"   ✅ {action} CollectionMarketStats record for '{provider_name}'")
                     except Exception as e:
                         # Use str(e) instead of e.get(...)
                         logger.error(f"Failed to save market stats from '{provider_name}' to database: {e}")

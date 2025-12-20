@@ -125,7 +125,7 @@ class MarketAggregationService:
                 return cached_metrics
 
             # Step 1: READ pre-fetched data from the database
-            logger.info(f"Reading pre-fetched market stats from DB for {collection.name}")
+            logger.info(f"📖 [STEP 1/7] Reading pre-fetched market stats from DB for {collection.name}")
             latest_stats_records = await sync_to_async(list)(
                 CollectionMarketStats.objects.filter(
                     collection=collection
@@ -134,10 +134,12 @@ class MarketAggregationService:
 
             if not latest_stats_records:
                 logger.warning(
-                    f"No market stats found in DB for {collection.address}. "
+                    f"⚠️  No market stats found in DB for {collection.address}. "
                     f"Cannot calculate metrics."
                 )
                 return None
+
+            logger.info(f"✅ Found {len(latest_stats_records)} market stat sources: {[r.source for r in latest_stats_records]}")
 
             # Convert DB records to raw data sources format
             raw_data_sources = {}
@@ -153,13 +155,12 @@ class MarketAggregationService:
                 }
 
             # Step 2: ENRICH data for sources with incomplete info
+            logger.info(f"🔧 [STEP 2/7] Enriching data sources with derived metrics for {collection.name}")
             providers_needing_derivation = ['magic_eden']  # Add others as needed
+            enriched_count = 0
             for provider_name in providers_needing_derivation:
                 if provider_name in raw_data_sources and raw_data_sources[provider_name]['success']:
-                    logger.info(
-                        f"Data from '{provider_name}' found. "
-                        f"Running calculations to derive missing fields."
-                    )
+                    logger.info(f"   → Deriving missing fields for '{provider_name}'")
                     base_data = raw_data_sources[provider_name]['data']
                     derived_data = await self._derive_missing_fields(
                         collection,
@@ -168,34 +169,62 @@ class MarketAggregationService:
                     )
                     # Add the newly calculated fields back into the data dictionary
                     raw_data_sources[provider_name]['data'].update(derived_data)
-            
+                    enriched_count += 1
+                    logger.info(f"   ✅ Derived {len(derived_data)} fields: {list(derived_data.keys())}")
+
+            if enriched_count == 0:
+                logger.info(f"   ⊘ No sources required enrichment")
+
             # Step 3: Process and validate all source data
+            logger.info(f"✔️  [STEP 3/7] Validating and scoring data quality for {collection.name}")
             processed_sources = await self._process_and_validate_source_data(raw_data_sources)
+            successful_count = sum(1 for s in processed_sources.values() if s.get('success', False))
+            logger.info(f"✅ Validated {successful_count}/{len(processed_sources)} sources successfully")
             
             # Step 4: Create aggregated metrics with source attribution
+            logger.info(f"🔀 [STEP 4/7] Aggregating metrics from multiple sources for {collection.name}")
             aggregated_metrics = await self._create_intelligent_aggregated_metrics(
                 processed_sources
             )
-            
+            if aggregated_metrics.get('success'):
+                sources_used = aggregated_metrics['metadata']['sources_used']
+                logger.info(f"✅ Aggregated data from {len(sources_used)} sources: {sources_used}")
+                logger.info(f"   → Floor: {aggregated_metrics['data'].get('floor_price', 0)}, "
+                           f"Volume 24h: {aggregated_metrics['data'].get('volume_24h', 0)}, "
+                           f"Listed: {aggregated_metrics['data'].get('listed_count', 0)}")
+            else:
+                logger.warning(f"⚠️  Aggregation failed for {collection.name}")
+
             # Step 5: Calculate final analytics and derived metrics
+            logger.info(f"📊 [STEP 5/7] Calculating analytics and derived metrics for {collection.name}")
             enhanced_metrics = await self._calculate_analytics_and_derived_metrics(
                 collection,
                 aggregated_metrics,
                 processed_sources
             )
-            
+            if enhanced_metrics.get('success'):
+                logger.info(f"✅ Calculated derived metrics:")
+                logger.info(f"   → Market Efficiency: {enhanced_metrics['data'].get('market_efficiency_score', 0):.1f}")
+                logger.info(f"   → Holder Confidence: {enhanced_metrics['data'].get('holder_confidence_index', 0):.1f}")
+                logger.info(f"   → Liquidity Health: {enhanced_metrics['data'].get('liquidity_health_score', 0):.1f}")
+                logger.info(f"   → Overall Health: {enhanced_metrics['data'].get('overall_health_score', 0):.1f}")
+
             # Step 6: Store the final aggregated record
+            logger.info(f"💾 [STEP 6/7] Storing aggregated record to database for {collection.name}")
             await self._store_aggregated_record(collection, enhanced_metrics)
+            logger.info(f"✅ Database record updated successfully")
 
             # Step 7: Cache the final result
+            logger.info(f"🗂️  [STEP 7/7] Caching final metrics for {collection.name}")
             await save_metrics_cache(
                 cache_key,
                 enhanced_metrics,
                 timeout=3600,
                 collection_address=collection.address
             )
-            
-            logger.info(f"Successfully updated multi-source metrics for {collection.name}")
+            logger.info(f"✅ Metrics cached for 1 hour")
+
+            logger.info(f"🎉 Successfully completed all 7 steps for {collection.name}")
             return enhanced_metrics
             
         except Exception as e:
