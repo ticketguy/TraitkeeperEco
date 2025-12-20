@@ -63,20 +63,18 @@ class Command(BaseCommand):
             
             for collection in collections:
                 try:
-                    logger.info(f"🔍 Processing {collection.name} ({collection.address[:16]}...)")
+                    logger.info(f"📊 Fetching market stats for {collection.name} ({collection.address[:16]}...)")
 
-                    # Process on-chain events (historical data)
-                    await self.indexer_service.process_onchain_events(collection.address)
-
-                    # Fetch and store market stats from Tensor/Magic Eden APIs
-                    logger.info(f"📊 Fetching market stats for {collection.name}...")
+                    # ONLY fetch and store market stats from Tensor/Magic Eden APIs
+                    # NOTE: Historical on-chain indexing (process_onchain_events) should NOT run periodically
+                    # as it's expensive and meant for one-time backfills only
                     await self.indexer_service.fetch_and_store_all_market_stats(collection)
 
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
-                    
+
                 except Exception as e:
-                    logger.error(f"❌ Failed to index {collection.name}: {e}")
+                    logger.error(f"❌ Failed to fetch stats for {collection.name}: {e}")
                     continue
             
             logger.info(f"✅ Completed scheduled indexing for {len(collections)} collections")
