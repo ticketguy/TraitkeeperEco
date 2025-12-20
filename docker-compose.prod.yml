@@ -269,6 +269,52 @@ services:
         max-size: "15m"
         max-file: "5"
 
+  # Incremental Indexer (Catches missed transactions every 4 hours)
+  indexer-incremental:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-incremental
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '🔄 Incremental Indexer: Starting transaction catch-up service...' &&
+        python manage.py run_incremental_indexer
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_incremental_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - traitkeeper-network
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "15m"
+        max-file: "5"
+
   # ===================================================================
   # ANALYTICS SERVICES
   # ===================================================================
@@ -426,24 +472,25 @@ networks:
 # Resource Allocation Summary
 # ==================================================
 # Total Limits (maximum):
-#   CPU: 13.5 cores
-#   Memory: 13.26 GB
+#   CPU: 15.0 cores
+#   Memory: 14.76 GB
 #
 # Total Reservations (guaranteed):
-#   CPU: 3.3 cores
-#   Memory: 3.5 GB
+#   CPU: 3.8 cores
+#   Memory: 4.0 GB
 #
 # ==================================================
 # Service Resource Breakdown
 # ==================================================
-# postgres:        2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
-# redis:           1 CPU / 1GB RAM (limits)    | 0.25 CPU / 256MB (reserved)
-# web:             4 CPU / 4GB RAM (limits)    | 1.0 CPU / 1GB (reserved)
-# indexer-live:    2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
-# indexer-sched:   1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
-# vitality:        1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
-# health:          0.5 CPU / 512MB RAM (limits)| 0.1 CPU / 128MB (reserved)
-# config:          0.5 CPU / 256MB RAM (limits)| 0.1 CPU / 64MB (reserved)
+# postgres:         2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
+# redis:            1 CPU / 1GB RAM (limits)    | 0.25 CPU / 256MB (reserved)
+# web:              4 CPU / 4GB RAM (limits)    | 1.0 CPU / 1GB (reserved)
+# indexer-live:     2 CPU / 2GB RAM (limits)    | 0.5 CPU / 512MB (reserved)
+# indexer-sched:    1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
+# indexer-incr:     1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
+# vitality:         1.5 CPU / 1.5GB RAM (limits)| 0.5 CPU / 512MB (reserved)
+# health:           0.5 CPU / 512MB RAM (limits)| 0.1 CPU / 128MB (reserved)
+# config:           0.5 CPU / 256MB RAM (limits)| 0.1 CPU / 64MB (reserved)
 # ==================================================
 #
 # Recommended Production Server:

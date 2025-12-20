@@ -144,6 +144,37 @@ services:
     networks:
       - traitkeeper-network-dev
 
+  # Incremental Indexer (Catches missed transactions every 4 hours)
+  indexer-incremental:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-incremental-dev
+    command: >
+      sh -c "
+        echo '🔄 Dev Incremental Indexer: Starting transaction catch-up service...' &&
+        python manage.py run_incremental_indexer
+      "
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/app  # Hot reload
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      main:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[r]un_incremental_indexer' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - traitkeeper-network-dev
+
   # ===================================================================
   # ANALYTICS SERVICES (Development)
   # ===================================================================
