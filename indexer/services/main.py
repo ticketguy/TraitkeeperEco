@@ -308,6 +308,7 @@ class IndexerService:
                         # Wrap the DB upsert in a sync function so sync_to_async receives a proper callable
                         @sync_to_async
                         def _upsert_collection_market_stats():
+                            from django.utils import timezone
                             return CollectionMarketStats.objects.update_or_create(
                                 collection=collection,
                                 source=provider_name,
@@ -318,7 +319,8 @@ class IndexerService:
                                     'total_supply': stats_data.get('total_supply'),
                                     'sales_count_24h': stats_data.get('sales_count_24h'),
                                     'owners_count': stats_data.get('owners_count'),
-                                    'raw_data': raw_data
+                                    'raw_data': raw_data,
+                                    'timestamp': timezone.now()  # FIX: Update timestamp on every save
                                 }
                             )
 
