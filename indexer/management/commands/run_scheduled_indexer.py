@@ -73,7 +73,7 @@ class Command(BaseCommand):
                     # 2. ALSO update aggregated metrics (creates AggregatedCollectionStats)
                     # This processes NFT events + market stats to create analytics data
                     # Vitality calculations depend on this!
-                    logger.info(f"📊 Calculating aggregated metrics for {collection.name}...")
+                    logger.info(f"Calculating aggregated metrics for {collection.name}...")
                     await self.indexer_service.metrics_service.update_collection_metrics(collection)
 
                     # Stagger requests to avoid API rate limits
