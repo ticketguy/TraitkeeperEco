@@ -107,6 +107,12 @@ class TransactionParserService:
 
             logger.info(f"--- [PARSER] STARTING PARSE FOR SIGNATURE: {signature} ---")
 
+            # --- OPTIMIZATION: Pre-filter by collection before expensive parsing ---
+            has_tracked_collection = await self._has_tracked_collection(normalized_tx)
+            if not has_tracked_collection:
+                logger.debug(f"[{signature}] No tracked collections involved. Skipping parsing.")
+                return None  # Skip silently - not a parsing error, just not relevant
+
             # --- Call the tiered parser ---
             parsed_event = await self._parse_transaction_with_tiers(normalized_tx)
 
@@ -2074,15 +2080,76 @@ class TransactionParserService:
         except Exception as e:
             logger.error(f"Failed to update NFT owner for {mint}: {e}")
 
+    async def _has_tracked_collection(self, normalized_tx: dict) -> bool:
+        """
+        PERFORMANCE OPTIMIZATION: Quick check if transaction involves any tracked collections.
+
+        This runs BEFORE expensive parsing to avoid wasting CPU on irrelevant transactions.
+        Extracts all potential NFT mint addresses and collection addresses from the raw
+        transaction data and checks if any match collections in our database.
+
+        ONLY does database lookups - NO API calls.
+
+        Args:
+            normalized_tx: Normalized transaction data
+
+        Returns:
+            True if transaction might involve a tracked collection, False otherwise
+        """
+        try:
+            potential_addresses = set()
+
+            # 1. Extract all account keys (includes all participants)
+            account_keys = normalized_tx.get('account_keys', [])
+            if account_keys:
+                potential_addresses.update(account_keys)
+
+            # 2. Extract mint addresses from token balance changes
+            meta = normalized_tx.get('meta', {})
+            for balance_list in ['preTokenBalances', 'postTokenBalances']:
+                balances = meta.get(balance_list, [])
+                for balance in balances:
+                    mint = balance.get('mint')
+                    if mint:
+                        potential_addresses.add(mint)
+
+            if not potential_addresses:
+                # No addresses found - allow parsing as fail-safe
+                return True
+
+            # 3. Quick DB check: Do any addresses match our tracked collections?
+            has_collection_match = await sync_to_async(
+                NFTCollection.objects.filter(address__in=potential_addresses).exists
+            )()
+
+            if has_collection_match:
+                return True
+
+            # 4. Check if any mint addresses belong to NFTs in our tracked collections
+            # This catches transactions where the collection address isn't directly in the tx
+            has_nft_match = await sync_to_async(
+                NFT.objects.filter(
+                    mint_address__in=potential_addresses,
+                    collection__isnull=False
+                ).exists
+            )()
+
+            return has_nft_match
+
+        except Exception as e:
+            logger.warning(f"Error in collection pre-filter check: {e}")
+            # On error, return True to allow parsing (fail-safe)
+            return True
+
     async def _get_collection_for_mint(self, mint_address: str) -> Optional[str]:
         """
         Find the collection address for a given mint.
-        
+
         Checks the database first, then falls back to asking providers.
-        
+
         Args:
             mint_address: The NFT mint address
-            
+
         Returns:
             Collection address or None
         """
