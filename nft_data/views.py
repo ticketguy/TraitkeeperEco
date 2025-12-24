@@ -44,7 +44,7 @@ def submit_collection(request):
             messages.success(
                 request,
                 "✅ Collection submitted successfully! We're verifying it on-chain. "
-                "You'll be notified once validation is complete."
+                "Check back soon or contact an admin for status updates."
             )
             return redirect('submit_collection')
         else:

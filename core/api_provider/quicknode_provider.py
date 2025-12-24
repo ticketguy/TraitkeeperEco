@@ -66,11 +66,11 @@ class QuickNodeProvider(SolanaRPCProvider):
                 
                 # 5. Set the real, authenticated values
                 self.api_key = api_key
-                
+
                 full_rpc_url = rpc_url.rstrip('/')
                 if api_key and api_key not in full_rpc_url:
-                    full_rpc_url = f"{full_rpc_url}/{api_key}"
-                
+                    full_rpc_url = f"{full_rpc_url}/{api_key}/"  # Add trailing slash for QuickNode
+
                 self.rpc_url = full_rpc_url
                 self.ws_url = (provider_setting.ws_url if provider_setting and provider_setting.ws_url 
                                else self.rpc_url.replace('https', 'wss'))
