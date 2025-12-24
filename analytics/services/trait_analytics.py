@@ -512,10 +512,15 @@ class TraitAnalyticsService:
                             f"floor={floor_price}, supply={total_nfts}"
                         )
                     except AggregatedCollectionStats.DoesNotExist:
-                        # Fallback to get_latest_stats() if aggregated stats not available
-                        latest_stats = collection.get_latest_stats()
-                        floor_price = latest_stats.floor_price if latest_stats else 0.01
-                        total_nfts = latest_stats.total_supply if latest_stats else 0
+                        # Fallback to CollectionMarketStats if aggregated stats not available
+                        from indexer.models import CollectionMarketStats
+
+                        latest_stats = CollectionMarketStats.objects.filter(
+                            collection=collection
+                        ).order_by('-timestamp').first()
+
+                        floor_price = latest_stats.floor_price if (latest_stats and latest_stats.floor_price) else 0.01
+                        total_nfts = latest_stats.total_supply if (latest_stats and latest_stats.total_supply) else 0
                         logger.warning(
                             f"⚠️ No aggregated stats for {collection.name}, using fallback: "
                             f"floor={floor_price}, supply={total_nfts}"

@@ -96,18 +96,40 @@ def trigger_backfill_for_new_collection(sender, instance, created, **kwargs):
     # Only trigger for newly created collections that are listed
     if created and instance.is_listed:
         logger.info(f"🆕 New collection added: {instance.name}")
-        logger.info(f"📚 Triggering automatic historical backfill...")
+        logger.info(f"📚 Queuing automatic historical backfill as background task...")
 
         try:
-            # Import here to avoid circular dependency
-            from django.core.management import call_command
+            # Import background task manager and task classes
+            from indexer.background_task_manager import background_task_manager, Task, TaskPriority
+            from indexer.services import IndexerService
 
-            # Run backfill in background thread to avoid blocking
-            # Note: This uses call_command which handles async internally
-            call_command('backfill_collection', instance.address)
+            # Create async task function
+            async def backfill_task():
+                """Background task to backfill collection history."""
+                indexer = IndexerService()
 
-            logger.info(f"✅ Backfill queued for {instance.name}")
+                # Fetch historical transactions
+                logger.info(f"🔍 Fetching historical transactions for {instance.name}...")
+                await indexer.process_onchain_events(instance.address)
+
+                # Fetch current market stats
+                logger.info(f"📊 Fetching market stats for {instance.name}...")
+                await indexer.fetch_and_store_all_market_stats(instance)
+
+                logger.info(f"✅ Backfill complete for {instance.name}")
+
+            # Queue the backfill as a background task (no deadlock)
+            task = Task(
+                id=f"backfill_{instance.address}_{int(timezone.now().timestamp())}",
+                name=f"Backfill {instance.name}",
+                function=backfill_task,
+                args=(),
+                priority=TaskPriority.HIGH
+            )
+            background_task_manager.add_task(task)
+
+            logger.info(f"✅ Backfill task queued for {instance.name}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to trigger backfill for {instance.name}: {e}", exc_info=True)
+            logger.error(f"❌ Failed to queue backfill for {instance.name}: {e}", exc_info=True)
             # Don't raise - collection is still saved, backfill can be run manually

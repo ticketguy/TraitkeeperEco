@@ -176,11 +176,29 @@ class SolanaRPCProvider(ABC):
             
         return all_transactions
 
-    async def get_signatures_for_address(self, address: str, limit: int = 100) -> Optional[List[Dict]]:
-        """Fetches raw signature history for a given wallet or token address."""
+    async def get_signatures_for_address(self, address: str, limit: int = 100, before: str = None) -> Optional[List[Dict]]:
+        """
+        Fetches raw signature history for a given wallet or token address.
+
+        Args:
+            address: The wallet or token address to query
+            limit: Maximum number of signatures to return (default: 100, max: 1000)
+            before: Start searching backwards from this signature (for pagination)
+
+        Returns:
+            List of signature data dictionaries, or None if the request fails
+        """
+        params = [address, {"limit": limit}]
+
+        # Add 'before' parameter for pagination if provided
+        if before:
+            params[1]["before"] = before
+
         payload = {
-            "jsonrpc": "2.0", "id": 1, "method": "getSignaturesForAddress",
-            "params": [address, {"limit": limit}]
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getSignaturesForAddress",
+            "params": params
         }
         response = await self._async_post(payload)
         return response.get("result") if response else None
