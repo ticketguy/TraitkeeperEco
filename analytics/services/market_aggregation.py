@@ -144,15 +144,30 @@ class MarketAggregationService:
             # Convert DB records to raw data sources format
             raw_data_sources = {}
             for record in latest_stats_records:
+                floor_price_value = float(record.floor_price) if record.floor_price else 0.0
+                logger.info(f"🔍 DEBUG: {record.source} - DB floor_price={record.floor_price}, converted={floor_price_value}")
+
                 raw_data_sources[record.source] = {
                     'source': record.source,
                     'success': True,
-                    'data': record.raw_data,
+                    'data': {
+                        'floor_price': floor_price_value,
+                        'volume_24h': float(record.volume_24h) if record.volume_24h else 0.0,
+                        'listed_count': record.listed_count or 0,
+                        'total_supply': record.total_supply or 0,
+                        'sales_count_24h': record.sales_count_24h or 0,
+                        'owners_count': record.owners_count or 0,
+                        # Add any other fields from the model that might be useful
+                    },
                     'metadata': {
                         'data_freshness': record.timestamp,
                         'source_authority': 'high'
                     }
                 }
+
+            logger.info(f"🔍 DEBUG: raw_data_sources keys: {list(raw_data_sources.keys())}")
+            for source_name, source_data in raw_data_sources.items():
+                logger.info(f"🔍 DEBUG: {source_name} data - floor={source_data['data']['floor_price']}, success={source_data['success']}")
 
             # Step 2: ENRICH data for sources with incomplete info
             logger.info(f"🔧 [STEP 2/7] Enriching data sources with derived metrics for {collection.name}")
@@ -589,16 +604,25 @@ class MarketAggregationService:
         
         # Floor price: Use minimum across marketplaces (true market floor) - no blockchain
         floor_prices = {}
+        logger.info(f"🔍 DEBUG AGGREGATION: Processing {len(successful_sources)} successful sources: {list(successful_sources.keys())}")
+
         for name, source in successful_sources.items():
+            logger.info(f"🔍 DEBUG AGGREGATION: Checking {name} - in allowed list: {name in ['magic_eden', 'tensor', 'traitkeeper']}")
+            logger.info(f"🔍 DEBUG AGGREGATION: {name} floor_price from data: {source['data'].get('floor_price', 0)}")
+
             if name in ['magic_eden', 'tensor', 'traitkeeper']:
                 floor = source['data'].get('floor_price', 0)
+                logger.info(f"🔍 DEBUG AGGREGATION: {name} floor={floor}, floor > 0: {floor > 0}")
                 if floor > 0:
                     floor_prices[name] = floor
-        
+
+        logger.info(f"🔍 DEBUG AGGREGATION: Collected floor_prices: {floor_prices}")
+
         if floor_prices:
             min_floor = min(floor_prices.values())
             floor_source = min(floor_prices.items(), key=lambda x: x[1])[0]
             aggregated_data['floor_price'] = min_floor
+            logger.info(f"🔍 DEBUG AGGREGATION: Set aggregated floor_price to {min_floor}")
             source_attribution['floor_price'] = {
                 'value': min_floor,
                 'source': floor_source,
@@ -606,6 +630,8 @@ class MarketAggregationService:
                 'all_sources': floor_prices,
                 'confidence': successful_sources[floor_source]['quality_score']
             }
+        else:
+            logger.warning(f"🔍 DEBUG AGGREGATION: No valid floor prices found! Setting to 0")
         
         # Volume: Use blockchain + traitkeeper (avoid double counting marketplace volumes)
         volume_24h = 0
