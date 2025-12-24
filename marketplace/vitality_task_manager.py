@@ -144,23 +144,23 @@ class VitalityTaskManager:
         Schedule vitality calculation tasks based on collection priority.
 
         Collection priorities and intervals:
-        - VIP: Every 15 minutes
-        - ACTIVE: Every 60 minutes (1 hour)
-        - INACTIVE: Every 240 minutes (4 hours)
+        - VIP: Every 5 minutes
+        - ACTIVE: Every 30 minutes
+        - INACTIVE: Every 120 minutes (2 hours)
         """
         now = timezone.now()
-        
+
         # Use sync_to_async for the database query
         collections = await sync_to_async(list)(NFTCollection.objects.filter(is_listed=True))
 
         for collection in collections:
             # Determine recalculation interval based on priority
             if collection.priority_tier == 'VIP':
-                interval_minutes, priority = 15, TaskPriority.HIGH
+                interval_minutes, priority = 5, TaskPriority.HIGH
             elif collection.priority_tier == 'ACTIVE':
-                interval_minutes, priority = 60, TaskPriority.MEDIUM
+                interval_minutes, priority = 30, TaskPriority.MEDIUM
             else:  # INACTIVE
-                interval_minutes, priority = 240, TaskPriority.LOW
+                interval_minutes, priority = 120, TaskPriority.LOW
             
             # Use await for the async check
             if await self._should_recalculate(collection, interval_minutes):

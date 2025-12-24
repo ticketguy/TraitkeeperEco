@@ -30,9 +30,9 @@ class Command(BaseCommand):
         ]
         
         logger.info("✅ Vitality analytics service started")
-        logger.info("   - VIP collections: Every 15 minutes")
-        logger.info("   - Active collections: Every 60 minutes")
-        logger.info("   - Inactive collections: Every 4 hours")
+        logger.info("   - VIP collections: Every 5 minutes")
+        logger.info("   - Active collections: Every 30 minutes")
+        logger.info("   - Inactive collections: Every 2 hours")
         
         # Wait for shutdown signal
         await self.shutdown_event.wait()
