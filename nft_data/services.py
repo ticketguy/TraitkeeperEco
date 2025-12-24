@@ -273,15 +273,16 @@ class NFTDataService:
             logger.info(f"Processing collection: {address}")
             try:
                 # Delegate the complex fetching and storing logic to the retrieval service.
-                result = await self.nft_retrieval_service.fetch_and_store_collection(address)
-                if result.get("success"):
+                # Returns list with collection data on success, empty list on failure
+                result = await self.nft_retrieval_service.fetch_collections_by_collection(address)
+                if result and len(result) > 0:
                     logger.info(f"Successfully stored collection {address}")
                     successful += 1
                     # After storing, tell the indexer to start processing it.
                     await self.indexer_service.update_collection_after_retrieval(address)
                 else:
                     failed += 1
-                    errors[address] = result.get("error", "Unknown retrieval error.")
+                    errors[address] = "Collection retrieval returned empty result"
             except Exception as e:
                 logger.error(f"An exception occurred while populating {address}: {e}", exc_info=True)
                 failed += 1
