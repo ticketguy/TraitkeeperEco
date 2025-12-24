@@ -65,14 +65,6 @@ class MetricsCalculationService:
         self.trait_analytics = TraitAnalyticsService()
         self.wallet_analytics = WalletAnalyticsService()
 
-        # Initialize vitality calculation service
-        try:
-            from marketplace.vitality_service import VitalityCalculationService
-            self.vitality_service = VitalityCalculationService()
-        except ImportError:
-            self.vitality_service = None
-            logger.warning("VitalityCalculationService not available")
-
         # Keep API provider manager for backward compatibility if needed
         try:
             from core.api_provider.api_providers import APIProviderManager
@@ -87,30 +79,21 @@ class MetricsCalculationService:
     
     async def update_collection_metrics(self, collection: NFTCollection):
         """
-        Update market metrics AND vitality for a collection.
+        Update market metrics for a collection.
 
         DELEGATES TO:
         - MarketAggregationService (for market metrics)
-        - VitalityCalculationService (for vitality scores)
+
+        NOTE: Vitality calculations are handled separately by the vitality-analytics container
+        based on collection priority (VIP: 15min, ACTIVE: 60min, INACTIVE: 4hr)
 
         This is a backward compatibility wrapper. Direct usage:
         >>> from analytics.services import MarketAggregationService
         >>> service = MarketAggregationService()
         >>> await service.update_collection_metrics(collection)
         """
-        # Step 1: Update market metrics (creates/updates AggregatedCollectionStats)
-        result = await self.market_aggregation.update_collection_metrics(collection)
-
-        # Step 2: Calculate vitality for the collection (if service is available)
-        if self.vitality_service:
-            try:
-                logger.info(f"Calculating vitality for collection: {collection.name}")
-                await self.vitality_service.calculate_collection_vitality(collection)
-                logger.info(f"✅ Vitality calculated for {collection.name}")
-            except Exception as e:
-                logger.error(f"Failed to calculate vitality for {collection.name}: {e}", exc_info=True)
-
-        return result
+        # Update market metrics (creates/updates AggregatedCollectionStats)
+        return await self.market_aggregation.update_collection_metrics(collection)
     
     async def update_trait_metrics(
         self,
