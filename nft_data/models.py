@@ -278,7 +278,16 @@ class PendingCollection(TimeStampedModel):
     creator = models.CharField(max_length=255, blank=True)  # Add this
     description = models.TextField(blank=True)  # Add this
     image_url = models.URLField(max_length=1000, blank=True)  # Add this
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('validating', 'Validating'),
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected')
+        ],
+        default='validating'
+    )
     
     submitted_by = models.CharField(max_length=255)
     social_media_links = models.JSONField(null=True, blank=True)

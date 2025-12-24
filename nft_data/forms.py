@@ -51,37 +51,12 @@ class CollectionSubmissionForm(forms.ModelForm):
             raise forms.ValidationError("This collection has already been approved and added.")
         # Check against current instance (useful for edits, though this form might be for creation only)
         current_pk = self.instance.pk if self.instance else None
-        if PendingCollection.objects.filter(mint_address=mint_address, status='pending').exclude(pk=current_pk).exists():
+        if PendingCollection.objects.filter(mint_address=mint_address).exclude(pk=current_pk, status='rejected').exists():
             raise forms.ValidationError("This collection has already been submitted and is pending review.")
 
-        # 🔗 Step 3: Perform a live check using the CollectionValidator service
-        try:
-            # Instantiate the main retrieval service which holds the validator
-            logger.debug(f"Instantiating NFTRetrievalService for validation of {mint_address}")
-            retrieval_service = NFTRetrievalService()
-
-            # Call the validator's method asynchronously via async_to_sync
-            logger.debug(f"Calling validator.validate_collection for {mint_address}")
-            is_valid_on_chain = async_to_sync(retrieval_service.validator.validate_collection)(mint_address)
-            logger.debug(f"Validation result for {mint_address}: {is_valid_on_chain}")
-
-            if not is_valid_on_chain:
-                raise forms.ValidationError(
-                    "Validation Failed: We couldn't find a valid NFT collection on-chain at this address. "
-                    "Please double-check the address. It should be the collection/group address, "
-                    "not an individual NFT's mint address."
-                )
-            logger.info(f"✅ Successfully validated collection on-chain: {mint_address}")
-
-        except forms.ValidationError:
-             raise # Re-raise validation errors immediately
-        except Exception as e:
-            # Log the unexpected error
-            logger.error(f"❌ Unexpected error during live validation for {mint_address}: {e}", exc_info=True)
-            # Raise a user-friendly validation error
-            raise forms.ValidationError(
-                f"A service error occurred while validating the collection: {e}. Please try again later or contact support."
-            )
+        # ✅ On-chain validation now happens in background task (instant UX)
+        # User doesn't have to wait for RPC calls
+        logger.info(f"✅ Basic validation passed for {mint_address} - on-chain validation will run in background")
 
         return mint_address
 

@@ -2,14 +2,12 @@
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils import timezone
 import logging
-# No longer need csrf_exempt
-# from django.views.decorators.csrf import csrf_exempt
 
-# Removed unused imports: AdminUser, AdminNotification, async_to_sync, etc.
-# These responsibilities are moved to the form and signals.
 from .forms import CollectionSubmissionForm
-from .models import NFTCollection, PendingCollection # Kept for context if needed
+from .models import NFTCollection, PendingCollection
+from indexer.background_task_manager import background_task_manager, Task, TaskPriority
 
 logger = logging.getLogger(__name__)
 
@@ -22,17 +20,32 @@ def submit_collection(request):
     """
     if request.method == 'POST':
         form = CollectionSubmissionForm(request.POST)
-        # All complex validation now happens inside form.is_valid()
+        # Basic validation: format, duplicates, required fields (no RPC calls)
         if form.is_valid():
-            # The form has already validated the mint address, checked for duplicates,
-            # and confirmed it's a real collection via an API call.
             submission = form.save(commit=False)
             submission.submitted_by = request.user.username if request.user.is_authenticated else "Anonymous"
-            
-            # The post_save signal will automatically fire here, sending the notification.
-            submission.save() 
-            
-            messages.success(request, "Collection submitted successfully! It will be reviewed by an admin.")
+            submission.status = 'validating'  # Start in validating status
+
+            # Save immediately - user gets instant feedback
+            submission.save()
+
+            # Queue background task for on-chain validation
+            from .tasks import validate_collection_onchain
+            task = Task(
+                id=f"validate_collection_{submission.mint_address}_{int(timezone.now().timestamp())}",
+                name=f"Validate Collection {submission.name}",
+                function=validate_collection_onchain,
+                args=(submission.id,),
+                priority=TaskPriority.HIGH
+            )
+            background_task_manager.add_task(task)
+
+            logger.info(f"✅ Collection {submission.mint_address} submitted - queued for background validation")
+            messages.success(
+                request,
+                "✅ Collection submitted successfully! We're verifying it on-chain. "
+                "You'll be notified once validation is complete."
+            )
             return redirect('submit_collection')
         else:
             # If the form is invalid, errors are automatically attached to the form
