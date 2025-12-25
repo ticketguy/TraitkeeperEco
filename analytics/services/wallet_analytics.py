@@ -342,6 +342,7 @@ class WalletAnalyticsService:
                 'diversification_score': diversification_score,
                 'influence_score': influence_score,
                 'first_seen': all_txns[0].timestamp,
+                'last_activity': all_txns[-1].timestamp,
                 # ML preparation fields
                 'behavior_features': {
                     'hold_time': avg_hold_time,
