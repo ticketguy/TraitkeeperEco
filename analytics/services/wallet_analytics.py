@@ -199,10 +199,7 @@ class WalletAnalyticsService:
                 if behavior_profile:
                     await sync_to_async(WalletBehaviorProfile.objects.update_or_create)(
                         wallet_address=address,
-                        defaults={
-                            **behavior_profile,
-                            'last_analyzed': now
-                        }
+                        defaults=behavior_profile
                     )
                     behavior_profiles_created += 1
             
