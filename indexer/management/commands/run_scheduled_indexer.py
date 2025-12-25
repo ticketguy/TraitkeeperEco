@@ -18,15 +18,18 @@ class Command(BaseCommand):
     def __init__(self):
         super().__init__()
         self.shutdown_event = asyncio.Event()
-        self.indexer_service = IndexerService()
+        self.indexer_service = None  # Initialize later to avoid DB access during app init
         self.is_running = False
 
     async def main(self):
         """Main async logic for scheduled indexing."""
+        # Initialize IndexerService here (after Django is fully loaded)
+        self.indexer_service = IndexerService()
+
         logger.info("=" * 80)
         logger.info("⏰ STARTING SCHEDULED INDEXER")
         logger.info("=" * 80)
-        
+
         self.is_running = True
         
         # Start the main scheduler loop
@@ -52,64 +55,54 @@ class Command(BaseCommand):
                 await asyncio.sleep(60)  # Wait 1 minute before retry
 
     async def _run_collection_indexing(self):
-        """Index historical data for all listed collections."""
+        """Index historical data and calculate comprehensive analytics for all listed collections."""
         try:
             # Get all listed collections
             collections = await sync_to_async(list)(
                 NFTCollection.objects.filter(is_listed=True)
             )
-            
+
             logger.info(f"📊 Starting scheduled indexing for {len(collections)} collections...")
-            
+
+            # Step 1: Fetch market stats from APIs for all collections
             for collection in collections:
                 try:
                     logger.info(f"📊 Fetching market stats for {collection.name} ({collection.address[:16]}...)")
 
-                    # 1. Fetch and store market stats from Tensor/Magic Eden APIs
+                    # Fetch and store market stats from Tensor/Magic Eden APIs
                     # NOTE: Historical on-chain indexing (process_onchain_events) should NOT run periodically
                     # as it's expensive and meant for one-time backfills only
                     await self.indexer_service.fetch_and_store_all_market_stats(collection)
-
-                    # 2. Update aggregated market metrics (creates AggregatedCollectionStats)
-                    logger.info(f"Calculating market metrics for {collection.name}...")
-                    await self.indexer_service.metrics_service.update_collection_metrics(collection)
-
-                    # 3. Update trait analytics (TraitPerformanceScore, uses NFTEvent data from live indexer)
-                    logger.info(f"Calculating trait analytics for {collection.name}...")
-                    await self.indexer_service.metrics_service.update_trait_metrics(
-                        collection.address,
-                        force_update=False  # Uses activity-based skipping
-                    )
 
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
 
                 except Exception as e:
-                    logger.error(f"❌ Failed to process {collection.name}: {e}")
+                    logger.error(f"❌ Failed to fetch market stats for {collection.name}: {e}")
                     continue
 
-            logger.info(f"✅ Completed scheduled indexing for {len(collections)} collections")
+            logger.info(f"✅ Completed fetching market stats for {len(collections)} collections")
 
-            # 4. Run cross-collection analytics ONCE at the end
-            try:
-                logger.info("📊 Running cross-collection analytics (wallet prominence, trending/top traits)...")
+            # Step 2: Calculate comprehensive analytics (market + trait + wallet + trending/top traits)
+            # This uses MetricsCalculationService.calculate_comprehensive_metrics() which:
+            # - Updates market metrics (AggregatedCollectionStats)
+            # - Updates trait analytics (TraitPerformanceScore) with activity-based skipping
+            # - Calculates wallet prominence (WalletProminence, WalletBehaviorProfile)
+            # - Calculates trending traits (TrendingTrait)
+            # - Calculates top traits (TopTrait)
+            logger.info("📊 Running comprehensive analytics calculation...")
+            collection_addresses = [c.address for c in collections]
 
-                # Wallet prominence
-                await self.indexer_service.metrics_service.calculate_wallet_prominence()
-                logger.info("✅ Wallet prominence calculated")
+            result = await self.indexer_service.metrics_service.calculate_comprehensive_metrics(
+                collection_addresses=collection_addresses
+            )
 
-                # Trending traits (uses sync method, need to wrap)
-                from asgiref.sync import sync_to_async
-                await sync_to_async(self.indexer_service.metrics_service.calculate_and_store_trending_traits)()
-                logger.info("✅ Trending traits calculated")
+            if result.get('success'):
+                logger.info("✅ Comprehensive analytics calculation completed successfully")
+                logger.info(f"   Summary: {result.get('message', 'No message')}")
+            else:
+                logger.error(f"❌ Comprehensive analytics calculation failed: {result.get('error', 'Unknown error')}")
 
-                # Top traits (uses sync method, need to wrap)
-                await sync_to_async(self.indexer_service.metrics_service.calculate_and_store_top_traits)()
-                logger.info("✅ Top traits calculated")
-
-            except Exception as e:
-                logger.error(f"❌ Cross-collection analytics failed: {e}", exc_info=True)
-            
         except Exception as e:
             logger.error(f"❌ Collection indexing failed: {e}", exc_info=True)
 
