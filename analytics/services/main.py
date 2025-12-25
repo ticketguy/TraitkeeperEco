@@ -262,8 +262,8 @@ class MetricsCalculationService:
                 # Run calculations in parallel but with error handling
                 additional_results = await asyncio.gather(
                     self.wallet_analytics.calculate_wallet_prominence(),
-                    async_to_sync(self.trait_analytics.calculate_and_store_trending_traits)(),
-                    async_to_sync(self.trait_analytics.calculate_and_store_top_traits)(),
+                    sync_to_async(self.trait_analytics.calculate_and_store_trending_traits)(),
+                    sync_to_async(self.trait_analytics.calculate_and_store_top_traits)(),
                     return_exceptions=True
                 )
                 
