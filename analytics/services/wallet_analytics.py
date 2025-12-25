@@ -185,7 +185,6 @@ class WalletAnalyticsService:
                         'transaction_count': total_txns,
                         'transaction_volume': total_volume,
                         'collections_count': collections_interacted,
-                        'high_value_transactions': high_value_txns,
                         'prominence_score': prominence_score,
                         'last_updated': now
                     }
