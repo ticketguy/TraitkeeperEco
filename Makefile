@@ -76,31 +76,31 @@ help:
 
 # Development environment (all services)
 dev:
-	docker-compose -f docker-compose.dev.yml up --build
+	docker compose -f docker compose.dev.yml up --build
 
 # Development environment in background
 dev-bg:
-	docker-compose -f docker-compose.dev.yml up -d --build
+	docker compose -f docker compose.dev.yml up -d --build
 
 # Production environment
 prod:
-	docker-compose -f docker-compose.yml up -d --build
+	docker compose -f docker compose.yml up -d --build
 
 # Stop all development containers
 down:
-	docker-compose -f docker-compose.dev.yml down
+	docker compose -f docker compose.dev.yml down
 
 # Restart all development containers
 restart:
-	docker-compose -f docker-compose.dev.yml restart
+	docker compose -f docker compose.dev.yml restart
 
 # Rebuild development containers without cache
 rebuild:
-	docker-compose -f docker-compose.dev.yml build --no-cache
+	docker compose -f docker compose.dev.yml build --no-cache
 
 # Clean everything (including development volumes)
 clean:
-	docker-compose -f docker-compose.dev.yml down -v
+	docker compose -f docker compose.dev.yml down -v
 	docker system prune -f
 
 # ===================================================================
@@ -109,19 +109,19 @@ clean:
 
 # Minimal dev setup (DB + Redis + Web only)
 dev-minimal:
-	docker-compose -f docker-compose.dev.yml up -d postgres redis main
+	docker compose -f docker compose.dev.yml up -d postgres redis main
 
 # Web server only
 dev-web:
-	docker-compose -f docker-compose.dev.yml up -d main
+	docker compose -f docker compose.dev.yml up -d main
 
 # Web + both indexers
 dev-indexing:
-	docker-compose -f docker-compose.dev.yml up -d postgres redis main indexer-live indexer-scheduled
+	docker compose -f docker compose.dev.yml up -d postgres redis main indexer-live indexer-scheduled
 
 # Web + analytics
 dev-analytics:
-	docker-compose -f docker-compose.dev.yml up -d postgres redis main vitality-analytics
+	docker compose -f docker compose.dev.yml up -d postgres redis main vitality-analytics
 
 # ===================================================================
 # INDIVIDUAL SERVICE MANAGEMENT
@@ -129,32 +129,32 @@ dev-analytics:
 
 # Start individual services
 start-live:
-	docker-compose -f docker-compose.dev.yml up -d indexer-live
+	docker compose -f docker compose.dev.yml up -d indexer-live
 
 start-scheduled:
-	docker-compose -f docker-compose.dev.yml up -d indexer-scheduled
+	docker compose -f docker compose.dev.yml up -d indexer-scheduled
 
 start-vitality:
-	docker-compose -f docker-compose.dev.yml up -d vitality-analytics
+	docker compose -f docker compose.dev.yml up -d vitality-analytics
 
 start-health:
-	docker-compose -f docker-compose.dev.yml up -d health
+	docker compose -f docker compose.dev.yml up -d health
 
 # Restart individual services
 restart-live:
-	docker-compose -f docker-compose.dev.yml restart indexer-live
+	docker compose -f docker compose.dev.yml restart indexer-live
 
 restart-scheduled:
-	docker-compose -f docker-compose.dev.yml restart indexer-scheduled
+	docker compose -f docker compose.dev.yml restart indexer-scheduled
 
 restart-vitality:
-	docker-compose -f docker-compose.dev.yml restart vitality-analytics
+	docker compose -f docker compose.dev.yml restart vitality-analytics
 
 restart-health:
-	docker-compose -f docker-compose.dev.yml restart health
+	docker compose -f docker compose.dev.yml restart health
 
 restart-web:
-	docker-compose -f docker-compose.dev.yml restart main
+	docker compose -f docker compose.dev.yml restart main
 
 # ===================================================================
 # LOGS & MONITORING
@@ -162,30 +162,30 @@ restart-web:
 
 # View all logs
 logs:
-	docker-compose -f docker-compose.dev.yml logs -f
+	docker compose -f docker compose.dev.yml logs -f
 
 # View specific service logs
 logs-web:
-	docker-compose -f docker-compose.dev.yml logs -f main
+	docker compose -f docker compose.dev.yml logs -f main
 
 logs-live:
-	docker-compose -f docker-compose.dev.yml logs -f indexer-live
+	docker compose -f docker compose.dev.yml logs -f indexer-live
 
 logs-scheduled:
-	docker-compose -f docker-compose.dev.yml logs -f indexer-scheduled
+	docker compose -f docker compose.dev.yml logs -f indexer-scheduled
 
 logs-vitality:
-	docker-compose -f docker-compose.dev.yml logs -f vitality-analytics
+	docker compose -f docker compose.dev.yml logs -f vitality-analytics
 
 logs-health:
-	docker-compose -f docker-compose.dev.yml logs -f health
+	docker compose -f docker compose.dev.yml logs -f health
 
 logs-config:
-	docker-compose -f docker-compose.dev.yml logs -f config-listener
+	docker compose -f docker compose.dev.yml logs -f config-listener
 
 # Show container status
 status:
-	docker-compose -f docker-compose.dev.yml ps
+	docker compose -f docker compose.dev.yml ps
 
 # ===================================================================
 # DATABASE & MIGRATIONS
@@ -193,23 +193,23 @@ status:
 
 # Run migrations
 migrate:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py migrate
+	docker compose -f docker compose.dev.yml exec main python manage.py migrate
 
 # Create new migrations
 makemigrations:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py makemigrations
+	docker compose -f docker compose.dev.yml exec main python manage.py makemigrations
 
 # Django shell
 shell:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py shell
+	docker compose -f docker compose.dev.yml exec main python manage.py shell
 
 # PostgreSQL shell
 dbshell:
-	docker-compose -f docker-compose.dev.yml exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+	docker compose -f docker compose.dev.yml exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 
 # Redis CLI
 redis-cli:
-	docker-compose -f docker-compose.dev.yml exec redis redis-cli
+	docker compose -f docker compose.dev.yml exec redis redis-cli
 
 # ===================================================================
 # TESTING & DEBUGGING
@@ -217,15 +217,15 @@ redis-cli:
 
 # Run tests
 test:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py test
+	docker compose -f docker compose.dev.yml exec main python manage.py test
 
 # Bash shell in main container
 bash:
-	docker-compose -f docker-compose.dev.yml exec main bash
+	docker compose -f docker compose.dev.yml exec main bash
 
 # Collect static files
 collectstatic:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py collectstatic --noinput
+	docker compose -f docker compose.dev.yml exec main python manage.py collectstatic --noinput
 
 # ===================================================================
 # UTILITY COMMANDS
@@ -233,32 +233,32 @@ collectstatic:
 
 # Create admin superuser
 admin-superuser:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py createadminsuperuser
+	docker compose -f docker compose.dev.yml exec main python manage.py createadminsuperuser
 
 # Create superuser
 superuser:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py createsuperuser
+	docker compose -f docker compose.dev.yml exec main python manage.py createsuperuser
 
 # Flush database
 flush:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py flush --noinput
+	docker compose -f docker compose.dev.yml exec main python manage.py flush --noinput
 
 # Calculate vitality (manual trigger)
 calc-vitality:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py calculate_vitality --all
+	docker compose -f docker compose.dev.yml exec main python manage.py calculate_vitality --all
 
 # Calculate vitality for specific collection
 calc-vitality-collection:
 	@read -p "Enter collection address: " addr; \
-	docker-compose -f docker-compose.dev.yml exec main python manage.py calculate_vitality --collection $$addr
+	docker compose -f docker compose.dev.yml exec main python manage.py calculate_vitality --collection $$addr
 
 # Show Django settings
 settings:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py diffsettings
+	docker compose -f docker compose.dev.yml exec main python manage.py diffsettings
 
 # Check deployment
 check:
-	docker-compose -f docker-compose.dev.yml exec main python manage.py check --deploy
+	docker compose -f docker compose.dev.yml exec main python manage.py check --deploy
 
 # ===================================================================
 # DOCKER MAINTENANCE
