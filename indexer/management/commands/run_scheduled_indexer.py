@@ -70,11 +70,16 @@ class Command(BaseCommand):
                     # as it's expensive and meant for one-time backfills only
                     await self.indexer_service.fetch_and_store_all_market_stats(collection)
 
-                    # 2. ALSO update aggregated metrics (creates AggregatedCollectionStats)
-                    # This processes NFT events + market stats to create analytics data
-                    # Vitality calculations depend on this!
-                    logger.info(f"Calculating aggregated metrics for {collection.name}...")
+                    # 2. Update aggregated market metrics (creates AggregatedCollectionStats)
+                    logger.info(f"Calculating market metrics for {collection.name}...")
                     await self.indexer_service.metrics_service.update_collection_metrics(collection)
+
+                    # 3. Update trait analytics (TraitPerformanceScore, uses NFTEvent data from live indexer)
+                    logger.info(f"Calculating trait analytics for {collection.name}...")
+                    await self.indexer_service.metrics_service.update_trait_metrics(
+                        collection.address,
+                        force_update=False  # Uses activity-based skipping
+                    )
 
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
@@ -82,8 +87,28 @@ class Command(BaseCommand):
                 except Exception as e:
                     logger.error(f"❌ Failed to process {collection.name}: {e}")
                     continue
-            
+
             logger.info(f"✅ Completed scheduled indexing for {len(collections)} collections")
+
+            # 4. Run cross-collection analytics ONCE at the end
+            try:
+                logger.info("📊 Running cross-collection analytics (wallet prominence, trending/top traits)...")
+
+                # Wallet prominence
+                await self.indexer_service.metrics_service.calculate_wallet_prominence()
+                logger.info("✅ Wallet prominence calculated")
+
+                # Trending traits (uses sync method, need to wrap)
+                from asgiref.sync import sync_to_async
+                await sync_to_async(self.indexer_service.metrics_service.calculate_and_store_trending_traits)()
+                logger.info("✅ Trending traits calculated")
+
+                # Top traits (uses sync method, need to wrap)
+                await sync_to_async(self.indexer_service.metrics_service.calculate_and_store_top_traits)()
+                logger.info("✅ Top traits calculated")
+
+            except Exception as e:
+                logger.error(f"❌ Cross-collection analytics failed: {e}", exc_info=True)
             
         except Exception as e:
             logger.error(f"❌ Collection indexing failed: {e}", exc_info=True)
