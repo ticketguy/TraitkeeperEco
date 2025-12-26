@@ -85,13 +85,41 @@ else
     echo -e "${GREEN}✅ Redis is running: $REDIS_RUNNING${NC}"
 fi
 
-# Check if network exists
-NETWORK_EXISTS=$(docker network ls --filter "name=traitkeeper-network" --format "{{.Name}}" || echo "")
+# Check if network exists (CRITICAL - must exist before compose up)
+NETWORK_EXISTS=$(docker network ls --filter "name=traitkeeper-network" --format "{{.Name}}" 2>/dev/null | grep -x "traitkeeper-network" || echo "")
 if [ -z "$NETWORK_EXISTS" ]; then
-    echo -e "${YELLOW}⚠️  Network traitkeeper-network does not exist. Creating it...${NC}"
-    docker network create traitkeeper-network
+    echo -e "${YELLOW}⚠️  Network traitkeeper-network does not exist. Creating it now...${NC}"
+
+    # Try to create the network
+    if docker network create traitkeeper-network 2>/dev/null; then
+        echo -e "${GREEN}✅ Network created successfully: traitkeeper-network${NC}"
+    else
+        # Network might already exist, verify
+        NETWORK_CHECK=$(docker network ls --filter "name=traitkeeper-network" --format "{{.Name}}" 2>/dev/null | grep -x "traitkeeper-network" || echo "")
+        if [ -n "$NETWORK_CHECK" ]; then
+            echo -e "${GREEN}✅ Network already exists: traitkeeper-network${NC}"
+        else
+            echo -e "${RED}❌ ERROR: Failed to create network. Trying alternative method...${NC}"
+            # Try with driver specification
+            docker network create --driver bridge traitkeeper-network || {
+                echo -e "${RED}❌ CRITICAL: Cannot create network. Please run manually:${NC}"
+                echo -e "${RED}   docker network create traitkeeper-network${NC}"
+                exit 1
+            }
+            echo -e "${GREEN}✅ Network created with bridge driver${NC}"
+        fi
+    fi
 else
     echo -e "${GREEN}✅ Network exists: $NETWORK_EXISTS${NC}"
+fi
+
+# Verify network one more time before proceeding
+FINAL_CHECK=$(docker network ls --filter "name=traitkeeper-network" --format "{{.Name}}" 2>/dev/null | grep -x "traitkeeper-network" || echo "")
+if [ -z "$FINAL_CHECK" ]; then
+    echo -e "${RED}❌ CRITICAL ERROR: Network verification failed!${NC}"
+    echo -e "${RED}Please create the network manually:${NC}"
+    echo -e "${YELLOW}   docker network create traitkeeper-network${NC}"
+    exit 1
 fi
 
 echo ""

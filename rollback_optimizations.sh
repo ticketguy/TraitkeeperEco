@@ -63,11 +63,34 @@ echo -e "${BLUE}[2/4]${NC} Stopping and removing optimized indexers..."
 
 docker-compose -f docker-compose.optimized.yml down
 
-echo -e "${GREEN}✅ Optimized indexers stopped and removed${NC}"
+echo -e "${GREEN}✅ Optimized containers stopped and removed${NC}"
+echo ""
+
+# Step 3b: Remove Docker images (optional but thorough cleanup)
+echo -e "${BLUE}[2b/4]${NC} Cleaning up Docker images..."
+
+SCHEDULED_IMAGE=$(docker images --filter "reference=*indexer-scheduled-optimized*" --format "{{.Repository}}:{{.Tag}}" || echo "")
+LIVE_IMAGE=$(docker images --filter "reference=*indexer-live-optimized*" --format "{{.Repository}}:{{.Tag}}" || echo "")
+
+if [ -n "$SCHEDULED_IMAGE" ]; then
+    echo -e "${YELLOW}Removing scheduled indexer image: $SCHEDULED_IMAGE${NC}"
+    docker rmi "$SCHEDULED_IMAGE" 2>/dev/null || echo -e "${YELLOW}(Image in use or already removed)${NC}"
+fi
+
+if [ -n "$LIVE_IMAGE" ]; then
+    echo -e "${YELLOW}Removing live indexer image: $LIVE_IMAGE${NC}"
+    docker rmi "$LIVE_IMAGE" 2>/dev/null || echo -e "${YELLOW}(Image in use or already removed)${NC}"
+fi
+
+# Also try to clean up by container name pattern
+echo -e "${YELLOW}Removing any dangling optimized images...${NC}"
+docker images | grep "traitkeepereco.*optimized" | awk '{print $3}' | xargs -r docker rmi 2>/dev/null || true
+
+echo -e "${GREEN}✅ Docker images cleaned up${NC}"
 echo ""
 
 # Step 4: Verify rollback
-echo -e "${BLUE}[3/4]${NC} Verifying rollback..."
+echo -e "${BLUE}[4/5]${NC} Verifying rollback..."
 
 OPTIMIZED_SCHEDULED_CHECK=$(docker ps -a --filter "name=indexer-scheduled-optimized" --format "{{.Names}}" || echo "")
 OPTIMIZED_LIVE_CHECK=$(docker ps -a --filter "name=indexer-live-optimized" --format "{{.Names}}" || echo "")
@@ -80,7 +103,7 @@ fi
 echo ""
 
 # Step 5: Check original indexers
-echo -e "${BLUE}[4/4]${NC} Checking original indexer status..."
+echo -e "${BLUE}[5/5]${NC} Checking original indexer status..."
 
 SCHEDULED_RUNNING=$(docker ps --filter "name=indexer-scheduled" --format "{{.Names}}" | grep -v "optimized" || echo "")
 LIVE_RUNNING=$(docker ps --filter "name=indexer-live" --format "{{.Names}}" | grep -v "optimized" || echo "")
