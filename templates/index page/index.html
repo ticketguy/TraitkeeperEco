@@ -1327,6 +1327,7 @@
                 const holders = card.getAttribute('data-collection-holders') || '0';
                 const supplyListed = card.getAttribute('data-collection-supply-listed') || '0/0';
                 const volume = parseFloat(card.getAttribute('data-collection-volume') || '0');
+                const floorPrice = parseFloat(card.getAttribute('data-collection-floor') || '0');
                 const marketCap = parseFloat(card.getAttribute('data-collection-market-cap') || '0');
                 const priceChange = parseFloat(card.getAttribute('data-collection-price-change') || '0');
                 const performance = parseFloat(card.getAttribute('data-collection-performance') || '50');
@@ -1337,9 +1338,18 @@
                 collectionModalLink.href = `/collection/${address}/`;
                 collectionModalHolders.textContent = holders;
                 collectionModalSupplyListed.textContent = supplyListed;
-                collectionModalVolume.textContent = volume.toFixed(2);
-                collectionModalMarketCap.textContent = marketCap.toFixed(2);
-                collectionModalFloor.textContent = `${(marketCap / parseInt(supplyListed.split('/')[0] || 1)).toFixed(2)}`;
+
+                // Volume with color based on growth (simple heuristic: assume positive if > 0)
+                collectionModalVolume.textContent = `${volume.toFixed(2)} SOL`;
+
+                // Floor price with color based on price change
+                collectionModalFloor.textContent = `${floorPrice.toFixed(2)} SOL`;
+                collectionModalFloor.className = `block text-lg font-bold ${
+                    priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-text-light dark:text-text-dark'
+                }`;
+
+                // Market cap display
+                collectionModalMarketCap.textContent = `${marketCap.toFixed(2)} SOL`;
 
                 // Price change with color
                 collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;
@@ -1933,7 +1943,8 @@
                              data-collection-image="${encodeURI(collection.image_url || '/static/img/collection-default.png')}"
                              data-collection-holders="${collection.number_of_holders || 0}"
                              data-collection-supply-listed="${collection.total_supply || 0}/${collection.listed_count || 0}"
-                             data-collection-volume="${(collection.total_volume || 0).toFixed(2)}"
+                             data-collection-volume="${(collection.volume_24h || 0).toFixed(2)}"
+                             data-collection-floor="${(collection.floor_price || 0).toFixed(2)}"
                              data-collection-market-cap="${(collection.market_cap || 0).toFixed(2)}"
                              data-collection-price-change="${(collection.price_change_24h || 0).toFixed(1)}"
                              data-collection-performance="${(collection.performance_score || 0).toFixed(1)}"
@@ -1978,6 +1989,8 @@
                 total_supply: {{ collection.total_supply|default:0 }},
                 listed_count: {{ collection.listed_count|default:0 }},
                 total_volume: {{ collection.total_volume|default:0.0 }},
+                volume_24h: {{ collection.volume_24h|default:0.0 }},
+                floor_price: {{ collection.floor_price|default:0.0 }},
                 market_cap: {{ collection.market_cap|default:0.0 }},
                 price_change_24h: {{ collection.price_change_24h|default:0.0 }},
                 performance_score: {{ collection.performance_score|default:50.0 }},
