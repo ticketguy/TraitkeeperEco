@@ -61,8 +61,43 @@ docker-compose ps > "$BACKUP_DIR/compose_states.txt" 2>/dev/null || true
 echo -e "${GREEN}✅ Backup created at: $BACKUP_DIR${NC}"
 echo ""
 
-# Step 3: Check if existing indexers are running
-echo -e "${BLUE}[3/8]${NC} Checking existing indexer status..."
+# Step 3: Check if postgres and redis are running (REQUIRED)
+echo -e "${BLUE}[3/8]${NC} Checking required services (postgres, redis)..."
+
+POSTGRES_RUNNING=$(docker ps --filter "name=postgres" --format "{{.Names}}" || echo "")
+REDIS_RUNNING=$(docker ps --filter "name=redis" --format "{{.Names}}" || echo "")
+
+if [ -z "$POSTGRES_RUNNING" ]; then
+    echo -e "${YELLOW}⚠️  Postgres is NOT running. Starting it now...${NC}"
+    docker-compose up -d postgres
+    echo -e "${YELLOW}Waiting 10 seconds for postgres to initialize...${NC}"
+    sleep 10
+else
+    echo -e "${GREEN}✅ Postgres is running: $POSTGRES_RUNNING${NC}"
+fi
+
+if [ -z "$REDIS_RUNNING" ]; then
+    echo -e "${YELLOW}⚠️  Redis is NOT running. Starting it now...${NC}"
+    docker-compose up -d redis
+    echo -e "${YELLOW}Waiting 5 seconds for redis to initialize...${NC}"
+    sleep 5
+else
+    echo -e "${GREEN}✅ Redis is running: $REDIS_RUNNING${NC}"
+fi
+
+# Check if network exists
+NETWORK_EXISTS=$(docker network ls --filter "name=traitkeeper-network" --format "{{.Name}}" || echo "")
+if [ -z "$NETWORK_EXISTS" ]; then
+    echo -e "${YELLOW}⚠️  Network traitkeeper-network does not exist. Creating it...${NC}"
+    docker network create traitkeeper-network
+else
+    echo -e "${GREEN}✅ Network exists: $NETWORK_EXISTS${NC}"
+fi
+
+echo ""
+
+# Check if existing indexers are running (informational only)
+echo -e "${BLUE}[3b/8]${NC} Checking existing indexer status (informational)..."
 
 SCHEDULED_RUNNING=$(docker ps --filter "name=indexer-scheduled" --format "{{.Names}}" | grep -v "optimized" || echo "")
 LIVE_RUNNING=$(docker ps --filter "name=indexer-live" --format "{{.Names}}" | grep -v "optimized" || echo "")
@@ -70,13 +105,13 @@ LIVE_RUNNING=$(docker ps --filter "name=indexer-live" --format "{{.Names}}" | gr
 if [ -n "$SCHEDULED_RUNNING" ]; then
     echo -e "${GREEN}✅ Existing scheduled indexer is running: $SCHEDULED_RUNNING${NC}"
 else
-    echo -e "${YELLOW}⚠️  Existing scheduled indexer is NOT running${NC}"
+    echo -e "${YELLOW}ℹ️  Existing scheduled indexer is NOT running (this is OK)${NC}"
 fi
 
 if [ -n "$LIVE_RUNNING" ]; then
     echo -e "${GREEN}✅ Existing live indexer is running: $LIVE_RUNNING${NC}"
 else
-    echo -e "${YELLOW}⚠️  Existing live indexer is NOT running${NC}"
+    echo -e "${YELLOW}ℹ️  Existing live indexer is NOT running (this is OK)${NC}"
 fi
 echo ""
 
