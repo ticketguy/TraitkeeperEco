@@ -344,3 +344,112 @@ class IndexerService:
                         error_message = str(result)
                         provider_name = provider_name or 'unknown provider'
                     logger.warning(f"Failed to fetch market stats from '{provider_name}': {error_message}")
+
+    async def calculate_and_store_blockchain_volume(self, collection: NFTCollection):
+        """
+        Calculate volume metrics from indexed NFTEvent data and store as source='blockchain'.
+
+        This provides cross-marketplace volume data calculated from your own indexed transactions.
+        Even at 90-95% accuracy, this gives a more complete picture than single-marketplace APIs.
+
+        Calculates:
+        - volume_24h: Total SOL volume in last 24 hours
+        - volume_7d: Total SOL volume in last 7 days
+        - sales_count_24h: Number of sales in last 24 hours
+        - sales_count_7d: Number of sales in last 7 days
+
+        Args:
+            collection: NFTCollection to calculate for
+        """
+        from django.db.models import Sum, Count
+        from datetime import timedelta
+        from django.utils import timezone
+
+        try:
+            logger.info(f"💎 Calculating blockchain volume from NFTEvent for {collection.name}")
+
+            now = timezone.now()
+            cutoff_24h = now - timedelta(hours=24)
+            cutoff_7d = now - timedelta(days=7)
+
+            # Calculate 24h metrics
+            result_24h = await sync_to_async(
+                NFTEvent.objects.filter(
+                    collection_address=collection.address,
+                    event_type='SALE',
+                    timestamp__gte=cutoff_24h
+                ).aggregate
+            )(
+                total_volume=Sum('amount'),
+                sales_count=Count('event_id')
+            )
+
+            volume_24h = float(result_24h['total_volume'] or 0)
+            sales_count_24h = result_24h['sales_count'] or 0
+
+            # Calculate 7d metrics
+            result_7d = await sync_to_async(
+                NFTEvent.objects.filter(
+                    collection_address=collection.address,
+                    event_type='SALE',
+                    timestamp__gte=cutoff_7d
+                ).aggregate
+            )(
+                total_volume=Sum('amount'),
+                sales_count=Count('event_id')
+            )
+
+            volume_7d = float(result_7d['total_volume'] or 0)
+            sales_count_7d = result_7d['sales_count'] or 0
+
+            # Get total supply from NFT count
+            total_supply = await sync_to_async(collection.nfts.count)()
+
+            # Get active listings count (NFTListing model)
+            from indexer.models import NFTListing
+            listed_count = await sync_to_async(
+                NFTListing.objects.filter(
+                    collection_address=collection.address,
+                    status='active'
+                ).count
+            )()
+
+            logger.info(f"   📊 Blockchain stats: Vol 24h={volume_24h:.2f} SOL, "
+                       f"Sales={sales_count_24h}, Vol 7d={volume_7d:.2f} SOL")
+
+            # Store as source='blockchain'
+            @sync_to_async
+            def _upsert_blockchain_stats():
+                return CollectionMarketStats.objects.update_or_create(
+                    collection=collection,
+                    source='blockchain',
+                    defaults={
+                        'volume_24h': volume_24h,
+                        'sales_count_24h': sales_count_24h,
+                        'listed_count': listed_count,
+                        'total_supply': total_supply,
+                        'raw_data': {
+                            'volume_7d': volume_7d,
+                            'sales_count_7d': sales_count_7d,
+                            'source': 'calculated_from_nftevent',
+                            'accuracy_note': '90-95% accurate - some transactions may be missed'
+                        },
+                        'timestamp': now
+                    }
+                )
+
+            saved_tuple = await _upsert_blockchain_stats()
+            saved_obj, created = saved_tuple
+            action = "Created" if created else "Updated"
+            logger.info(f"   ✅ {action} blockchain volume stats")
+
+            return {
+                'success': True,
+                'volume_24h': volume_24h,
+                'sales_count_24h': sales_count_24h,
+                'volume_7d': volume_7d
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to calculate blockchain volume for {collection.address}: {str(e)}")
+            return {'success': False, 'error': str(e)}

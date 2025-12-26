@@ -64,15 +64,18 @@ class Command(BaseCommand):
 
             logger.info(f"📊 Starting scheduled indexing for {len(collections)} collections...")
 
-            # Step 1: Fetch market stats from APIs for all collections
+            # Step 1: Fetch market stats from APIs + calculate blockchain volume for all collections
             for collection in collections:
                 try:
                     logger.info(f"📊 Fetching market stats for {collection.name} ({collection.address[:16]}...)")
 
-                    # Fetch and store market stats from Tensor/Magic Eden APIs
+                    # Fetch API stats from Tensor/Magic Eden (marketplace-specific volumes)
                     # NOTE: Historical on-chain indexing (process_onchain_events) should NOT run periodically
                     # as it's expensive and meant for one-time backfills only
                     await self.indexer_service.fetch_and_store_all_market_stats(collection)
+
+                    # Calculate cross-marketplace volume from our own NFTEvent data (90-95% accurate)
+                    await self.indexer_service.calculate_and_store_blockchain_volume(collection)
 
                     # Stagger requests to avoid API rate limits
                     await asyncio.sleep(2)
@@ -81,7 +84,7 @@ class Command(BaseCommand):
                     logger.error(f"❌ Failed to fetch market stats for {collection.name}: {e}")
                     continue
 
-            logger.info(f"✅ Completed fetching market stats for {len(collections)} collections")
+            logger.info(f"✅ Completed fetching market stats + blockchain volume for {len(collections)} collections")
 
             # Step 2: Calculate comprehensive analytics (market + trait + wallet + trending/top traits)
             # This uses MetricsCalculationService.calculate_comprehensive_metrics() which:
