@@ -61,7 +61,7 @@ echo ""
 # Step 3: Stop and remove optimized containers
 echo -e "${BLUE}[2/4]${NC} Stopping and removing optimized indexers..."
 
-docker-compose -f docker-compose.optimized.yml down
+docker-compose --project-name traitkeepereco -f docker-compose.optimized.yml down
 
 echo -e "${GREEN}✅ Optimized containers stopped and removed${NC}"
 echo ""

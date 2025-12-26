@@ -147,7 +147,7 @@ echo ""
 echo -e "${BLUE}[4/8]${NC} Building optimized Docker images..."
 echo -e "${YELLOW}This may take a few minutes...${NC}"
 
-docker-compose -f docker-compose.optimized.yml build
+docker-compose --project-name traitkeepereco -f docker-compose.optimized.yml build
 
 echo -e "${GREEN}✅ Docker images built successfully${NC}"
 echo ""
@@ -160,7 +160,7 @@ OPTIMIZED_LIVE=$(docker ps -a --filter "name=indexer-live-optimized" --format "{
 
 if [ -n "$OPTIMIZED_SCHEDULED" ] || [ -n "$OPTIMIZED_LIVE" ]; then
     echo -e "${YELLOW}⚠️  Found existing optimized containers. Removing them first...${NC}"
-    docker-compose -f docker-compose.optimized.yml down
+    docker-compose --project-name traitkeepereco -f docker-compose.optimized.yml down
     echo -e "${GREEN}✅ Old optimized containers removed${NC}"
 else
     echo -e "${GREEN}✅ No existing optimized containers found${NC}"
@@ -171,7 +171,7 @@ echo ""
 echo -e "${BLUE}[6/8]${NC} Starting optimized indexers..."
 echo -e "${YELLOW}Deploying ALONGSIDE existing indexers (no disruption)${NC}"
 
-docker-compose -f docker-compose.optimized.yml up -d
+docker-compose --project-name traitkeepereco -f docker-compose.optimized.yml up -d
 
 echo -e "${GREEN}✅ Optimized indexers started successfully${NC}"
 echo ""
