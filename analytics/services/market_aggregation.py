@@ -199,6 +199,7 @@ class MarketAggregationService:
             # Step 4: Create aggregated metrics with source attribution
             logger.info(f"🔀 [STEP 4/7] Aggregating metrics from multiple sources for {collection.name}")
             aggregated_metrics = await self._create_intelligent_aggregated_metrics(
+                collection,
                 processed_sources
             )
             if aggregated_metrics.get('success'):
@@ -536,21 +537,23 @@ class MarketAggregationService:
     
     async def _create_intelligent_aggregated_metrics(
         self,
+        collection: NFTCollection,
         processed_sources: Dict
     ) -> Dict:
         """
         Create aggregated metrics using intelligent source-specific rules.
-        
+
         Different fields use different aggregation strategies:
         - Floor price: Minimum across marketplaces (true market floor)
         - Volume: Sum from unique sources (avoid double-counting)
         - Listed count: Maximum (most comprehensive view)
         - Supply: Prefer blockchain source (most authoritative)
         - Shared fields: Best quality source or average if tied
-        
+
         Args:
+            collection: Collection to aggregate metrics for
             processed_sources: Dict of validated source data
-            
+
         Returns:
             Dict with aggregated data and source attribution metadata
         """
@@ -558,21 +561,40 @@ class MarketAggregationService:
             name: data for name, data in processed_sources.items()
             if data.get('success', False)
         }
-        
+
         if not successful_sources:
             logger.warning("No successful sources for aggregation")
             return empty_aggregated_result()
-        
+
         # Apply intelligent aggregation rules
         aggregated_data, source_attribution = self._aggregate_fields_intelligently(
             successful_sources
         )
-        
+
+        # Calculate database-derived fields (total_supply and number_of_holders)
+        # These are not provided by external APIs, so we calculate from our database
+        if aggregated_data.get('total_supply', 0) == 0:
+            total_supply = await sync_to_async(collection.nfts.count)()
+            aggregated_data['total_supply'] = total_supply
+            source_attribution['total_supply']['value'] = total_supply
+            logger.info(f"   → Calculated total_supply from database: {total_supply}")
+
+        # Calculate number of unique holders
+        number_of_holders = await sync_to_async(
+            collection.nfts.exclude(owner__isnull=True)
+            .values('owner')
+            .distinct()
+            .count
+        )()
+        aggregated_data['number_of_holders'] = number_of_holders
+        source_attribution['number_of_holders']['value'] = number_of_holders
+        logger.info(f"   → Calculated number_of_holders from database: {number_of_holders}")
+
         logger.info(
             f"Aggregated metrics from {len(successful_sources)} sources: "
             f"{list(successful_sources.keys())}"
         )
-        
+
         return {
             'source': 'aggregated',
             'success': True,
@@ -670,10 +692,10 @@ class MarketAggregationService:
                 'confidence': successful_sources[listed_source]['quality_score']
             }
         
-        # Total supply: Prefer blockchain (most authoritative)
+        # Total supply: Prefer blockchain (most authoritative), fallback to database count
         total_supply = 0
         supply_source = 'none'
-        
+
         priority_sources = ['blockchain', 'tensor', 'magic_eden']
         for name in priority_sources:
             if name in successful_sources:
@@ -682,16 +704,34 @@ class MarketAggregationService:
                     total_supply = supply
                     supply_source = name
                     break
-        
-        aggregated_data['total_supply'] = total_supply
+
+        # If no source provided total_supply, calculate from database
+        if total_supply == 0:
+            # This will be calculated later in the async context
+            # For now, mark it as needing calculation
+            aggregated_data['total_supply'] = 0  # Will be filled later
+            supply_source = 'database_calculated'
+        else:
+            aggregated_data['total_supply'] = total_supply
+
         source_attribution['total_supply'] = {
             'value': total_supply,
             'source': supply_source,
-            'method': 'authoritative_source_priority',
+            'method': 'authoritative_source_priority' if supply_source != 'database_calculated' else 'database_count',
             'confidence': (
-                successful_sources[supply_source]['quality_score'] 
-                if supply_source != 'none' else 0.0
+                successful_sources[supply_source]['quality_score']
+                if supply_source != 'none' and supply_source != 'database_calculated' else 0.8
             )
+        }
+
+        # Number of holders: Calculate from database (not provided by APIs)
+        # This will be calculated later in the async context
+        aggregated_data['number_of_holders'] = 0  # Will be filled later
+        source_attribution['number_of_holders'] = {
+            'value': 0,
+            'source': 'database_calculated',
+            'method': 'unique_owner_count',
+            'confidence': 0.9
         }
         
         # Shared fields: Select best quality source or average if both available
