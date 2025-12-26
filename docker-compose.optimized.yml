@@ -15,7 +15,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: traitkeeper-indexer-scheduled-optimized
-    command: python manage.py run_scheduled_indexer_optimized
+    command: >
+      sh -c "
+      echo 'Waiting for database...';
+      sleep 10;
+      python manage.py run_scheduled_indexer_optimized
+      "
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
@@ -23,6 +28,9 @@ services:
       - .env
     networks:
       - traitkeeper-network
+    external_links:
+      - traitkeeper-postgres:postgres
+      - traitkeeper-redis:redis
     restart: unless-stopped
     deploy:
       resources:
@@ -44,7 +52,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: traitkeeper-indexer-live-optimized
-    command: python manage.py run_live_indexer_optimized
+    command: >
+      sh -c "
+      echo 'Waiting for database...';
+      sleep 10;
+      python manage.py run_live_indexer_optimized
+      "
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
@@ -52,6 +65,9 @@ services:
       - .env
     networks:
       - traitkeeper-network
+    external_links:
+      - traitkeeper-postgres:postgres
+      - traitkeeper-redis:redis
     restart: unless-stopped
     deploy:
       resources:
