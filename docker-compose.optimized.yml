@@ -83,7 +83,7 @@ services:
         max-size: "50m"
         max-file: "5"
 
-# Use existing network from main docker-compose
+# Share the same network as main docker-compose (when using same project name)
 networks:
   traitkeeper-network:
-    external: true
+    driver: bridge
