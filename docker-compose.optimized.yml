@@ -24,13 +24,12 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
+      - DATABASE_HOST=traitkeeper-postgres
+      - REDIS_HOST=traitkeeper-redis
     env_file:
       - .env
     networks:
       - traitkeeper-network
-    external_links:
-      - traitkeeper-postgres:postgres
-      - traitkeeper-redis:redis
     restart: unless-stopped
     deploy:
       resources:
@@ -61,13 +60,12 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
+      - DATABASE_HOST=traitkeeper-postgres
+      - REDIS_HOST=traitkeeper-redis
     env_file:
       - .env
     networks:
       - traitkeeper-network
-    external_links:
-      - traitkeeper-postgres:postgres
-      - traitkeeper-redis:redis
     restart: unless-stopped
     deploy:
       resources:
