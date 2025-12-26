@@ -1,0 +1,78 @@
+version: '3.8'
+
+# OPTIMIZED INDEXERS - Run alongside existing indexers for safe testing
+# This compose file adds NEW optimized containers without touching existing ones
+
+services:
+  # ==================== OPTIMIZED SCHEDULED INDEXER ====================
+  indexer-scheduled-optimized:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-scheduled-optimized
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py run_scheduled_indexer_optimized"
+    environment:
+      - DJANGO_SETTINGS_MODULE=traitkeeper.settings
+      - RUN_BACKGROUND_TASKS=true
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - traitkeeper-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ==================== OPTIMIZED LIVE INDEXER ====================
+  indexer-live-optimized:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traitkeeper-indexer-live-optimized
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py run_live_indexer_optimized"
+    environment:
+      - DJANGO_SETTINGS_MODULE=traitkeeper.settings
+      - RUN_BACKGROUND_TASKS=true
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - traitkeeper-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+# Use existing network from main docker-compose
+networks:
+  traitkeeper-network:
+    external: true
