@@ -1,6 +1,9 @@
 # indexer/services/main.py
 import asyncio
 import logging
+from datetime import timedelta
+from django.db.models import Sum, Count
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 from nft_data.models import NFTCollection
 from analytics.services.main import MetricsCalculationService
@@ -10,7 +13,7 @@ from .parser import TransactionParserService
 from .metadata import MetadataSyncService
 
 from core.api_provider.api_providers import APIProviderManager
-from ..models import FailedTransaction, CollectionMarketStats
+from ..models import FailedTransaction, CollectionMarketStats, NFTEvent
 from core.cache_manager import cache_manager
 from ..nft_constants import MARKETPLACE_PROGRAMS
 
