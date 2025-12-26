@@ -544,27 +544,48 @@ class TraitAnalyticsService:
                     # Build trait performance data
                     trait_premium_map = {}
                     trait_avg_sale_price_map = {}
-                    
+                    trait_volume_24h_map = {}
+                    trait_volume_7d_map = {}
+                    trait_sales_count_24h_map = {}
+                    trait_sales_count_7d_map = {}
+
+                    # Cutoffs for volume calculations
+                    cutoff_24h = now - timedelta(hours=24)
+                    cutoff_7d = now - timedelta(days=7)
+
                     for transaction in collection_txns:
                         if not transaction.nft:
                             continue
-                        
+
                         sale_price = float(transaction.amount)
                         price_ratio = sale_price / float(floor_price) if float(floor_price) > 0 else 1.0
-                        
+
                         for trait_value in transaction.nft.trait_values.all():
                             trait_id = trait_value.id
-                            
+
                             if trait_id not in trait_premium_map:
                                 trait_premium_map[trait_id] = []
                                 trait_avg_sale_price_map[trait_id] = []
-                            
+                                trait_volume_24h_map[trait_id] = 0
+                                trait_volume_7d_map[trait_id] = 0
+                                trait_sales_count_24h_map[trait_id] = 0
+                                trait_sales_count_7d_map[trait_id] = 0
+
                             trait_premium_map[trait_id].append({
                                 'price_ratio': price_ratio,
                                 'timestamp': transaction.timestamp,
                                 'marketplace': transaction.marketplace
                             })
                             trait_avg_sale_price_map[trait_id].append(sale_price)
+
+                            # Calculate volume metrics
+                            if transaction.timestamp >= cutoff_24h:
+                                trait_volume_24h_map[trait_id] += sale_price
+                                trait_sales_count_24h_map[trait_id] += 1
+
+                            if transaction.timestamp >= cutoff_7d:
+                                trait_volume_7d_map[trait_id] += sale_price
+                                trait_sales_count_7d_map[trait_id] += 1
                     
                     # Get all trait values for this collection
                     trait_values = TraitValue.objects.filter(
@@ -628,6 +649,12 @@ class TraitAnalyticsService:
                         # Raw score of ~6.67 = 100 (very high performance trait)
                         normalized_score = min(100, max(0, performance_score * 15))
                         
+                        # Get volume metrics for this trait
+                        volume_24h = Decimal(str(trait_volume_24h_map.get(trait_id, 0)))
+                        volume_7d = Decimal(str(trait_volume_7d_map.get(trait_id, 0)))
+                        sales_count_24h = trait_sales_count_24h_map.get(trait_id, 0)
+                        sales_count_7d = trait_sales_count_7d_map.get(trait_id, 0)
+
                         # Create performance record
                         trait_performance_bulk.append(
                             TraitPerformanceScore(
@@ -640,7 +667,10 @@ class TraitAnalyticsService:
                                 velocity_score=velocity,
                                 momentum_score=momentum,
                                 performance_score=normalized_score,
-                                last_sale_date=now,
+                                volume_24h=volume_24h,
+                                volume_7d=volume_7d,
+                                sales_count_24h=sales_count_24h,
+                                sales_count_7d=sales_count_7d,
                                 updated_at=now
                             )
                         )

@@ -130,6 +130,12 @@ class TraitPerformanceScore(models.Model):
     momentum_score = models.FloatField(default=0.0, help_text="The recent price trend for this trait.")
     performance_score = models.FloatField(default=0.0, db_index=True, help_text="The final combined performance score for this trait.")
 
+    # Volume metrics - calculated from NFTEvent data
+    volume_24h = models.DecimalField(max_digits=20, decimal_places=9, default=0, help_text="Total SOL volume for NFTs with this trait in last 24 hours")
+    volume_7d = models.DecimalField(max_digits=20, decimal_places=9, default=0, help_text="Total SOL volume for NFTs with this trait in last 7 days")
+    sales_count_24h = models.IntegerField(default=0, help_text="Number of sales for NFTs with this trait in last 24 hours")
+    sales_count_7d = models.IntegerField(default=0, help_text="Number of sales for NFTs with this trait in last 7 days")
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
