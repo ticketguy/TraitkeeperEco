@@ -24,8 +24,9 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
-      - DATABASE_HOST=traitkeeper-postgres
-      - REDIS_HOST=traitkeeper-redis
+      - POSTGRES_HOST=traitkeeper-postgres
+      - REDIS_URL=redis://traitkeeper-redis:6379/0
+      - REDIS_CHANNEL_URL=redis://traitkeeper-redis:6379/1
     env_file:
       - .env
     networks:
@@ -60,8 +61,9 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=traitkeeper.settings
       - RUN_BACKGROUND_TASKS=true
-      - DATABASE_HOST=traitkeeper-postgres
-      - REDIS_HOST=traitkeeper-redis
+      - POSTGRES_HOST=traitkeeper-postgres
+      - REDIS_URL=redis://traitkeeper-redis:6379/0
+      - REDIS_CHANNEL_URL=redis://traitkeeper-redis:6379/1
     env_file:
       - .env
     networks:
