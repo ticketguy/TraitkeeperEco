@@ -43,6 +43,11 @@ make logs-vitality
 make dev-minimal
 make start-scheduled
 make logs-scheduled
+
+# Working on incremental catch-up indexing
+make dev-minimal
+make start-incremental
+make logs-incremental
 ```
 
 ### Debugging Issues
@@ -58,7 +63,9 @@ make logs
 make logs-web
 make logs-live
 make logs-scheduled
+make logs-incremental
 make logs-vitality
+make logs-config
 
 # Access containers
 make bash              # Open shell in main container
@@ -88,7 +95,9 @@ make flush
 # Restart specific service (when code changes don't auto-reload)
 make restart-live
 make restart-scheduled
+make restart-incremental
 make restart-vitality
+make restart-config
 make restart-web
 
 # Restart everything
@@ -126,6 +135,14 @@ make restart-scheduled
 make logs-scheduled
 ```
 
+### Incremental Indexer
+
+```bash
+make start-incremental
+make restart-incremental
+make logs-incremental
+```
+
 ### Vitality Analytics
 
 ```bash
@@ -142,6 +159,14 @@ make calc-vitality-collection  # For specific collection
 make start-health
 make restart-health
 make logs-health
+```
+
+### Config Listener
+
+```bash
+make start-config
+make restart-config
+make logs-config
 ```
 
 ## 🔧 Advanced Usage
@@ -214,7 +239,9 @@ make down
 ```bash
 # After code changes that don't auto-reload
 make restart-live
+make restart-incremental
 make restart-vitality
+make restart-config
 ```
 
 ### 3. Database Troubleshooting
@@ -326,7 +353,8 @@ make logs
 # Open multiple terminals, one per service:
 make logs-web          # Terminal 1
 make logs-live         # Terminal 2
-make logs-vitality     # Terminal 3
+make logs-incremental  # Terminal 3
+make logs-vitality     # Terminal 4
 ```
 
 ## 🎓 Cheat Sheet
@@ -338,7 +366,9 @@ make logs-vitality     # Terminal 3
 | View logs | `make logs` |
 | Run migrations | `make migrate` |
 | Django shell | `make shell` |
-| Restart service | `make restart-live` |
+| Restart indexer | `make restart-live` |
+| Restart incremental | `make restart-incremental` |
+| View incremental logs | `make logs-incremental` |
 | Fresh start | `make clean && make dev` |
 | Test code | `make test` |
 | Check status | `make status` |

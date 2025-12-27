@@ -20,7 +20,12 @@ NC='\033[0m' # No Color
 # Domain configuration
 DOMAIN="traitkeeper.xyz"
 EMAIL="admin@traitkeeper.xyz"
-PROJECT_DIR="/home/user/TraitkeeperEco"
+
+# Project directory (can be overridden with environment variable or defaults to current directory parent)
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "$0")" && pwd)}"
+
+# Detect the user who invoked sudo (or current user if not using sudo)
+DEPLOY_USER="${SUDO_USER:-$(whoami)}"
 
 # Function to print colored output
 print_success() {
@@ -162,7 +167,7 @@ print_success "Firewall configured"
 print_info "Setting file permissions..."
 
 # Ensure nginx can read static files
-chown -R user:user $PROJECT_DIR
+chown -R $DEPLOY_USER:$DEPLOY_USER $PROJECT_DIR
 chmod -R 755 $PROJECT_DIR/staticfiles
 chmod -R 755 $PROJECT_DIR/media
 
@@ -179,7 +184,15 @@ echo ""
 
 print_info "Next steps:"
 echo "1. Update your .env file with production values"
-echo "2. Start Docker containers: cd $PROJECT_DIR && docker compose up -d"
+
+# Check if Docker is running
+if systemctl is-active --quiet docker; then
+    echo "2. Start Docker containers: cd $PROJECT_DIR && docker compose up -d"
+else
+    echo "2. Start Docker service first: sudo systemctl start docker"
+    echo "3. Then start containers: cd $PROJECT_DIR && docker compose up -d"
+fi
+
 echo "3. Test your site: https://$DOMAIN"
 echo "4. Check SSL rating: https://www.ssllabs.com/ssltest/analyze.html?d=$DOMAIN"
 echo ""

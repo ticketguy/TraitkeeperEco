@@ -25,17 +25,22 @@ help:
 	@echo "📊 Individual Services:"
 	@echo "  make start-live       - Start live indexer"
 	@echo "  make start-scheduled  - Start scheduled indexer"
+	@echo "  make start-incremental - Start incremental indexer"
 	@echo "  make start-vitality   - Start vitality analytics"
 	@echo "  make start-health     - Start health monitoring"
+	@echo "  make start-config     - Start config listener"
 	@echo "  make restart-live     - Restart live indexer"
 	@echo "  make restart-scheduled - Restart scheduled indexer"
+	@echo "  make restart-incremental - Restart incremental indexer"
 	@echo "  make restart-vitality - Restart vitality analytics"
+	@echo "  make restart-config   - Restart config listener"
 	@echo ""
 	@echo "📋 Logs & Monitoring:"
 	@echo "  make logs             - View logs for all development services"
 	@echo "  make logs-web         - View web server logs"
 	@echo "  make logs-live        - View live indexer logs"
 	@echo "  make logs-scheduled   - View scheduled indexer logs"
+	@echo "  make logs-incremental - View incremental indexer logs"
 	@echo "  make logs-vitality    - View vitality analytics logs"
 	@echo "  make logs-health      - View health monitor logs"
 	@echo "  make logs-config      - View config listener logs"
@@ -135,6 +140,12 @@ start-vitality:
 start-health:
 	docker compose -f docker-compose.dev.yml up -d health
 
+start-incremental:
+	docker compose -f docker-compose.dev.yml up -d indexer-incremental
+
+start-config:
+	docker compose -f docker-compose.dev.yml up -d config-listener
+
 # Restart individual services
 restart-live:
 	docker compose -f docker-compose.dev.yml restart indexer-live
@@ -149,6 +160,12 @@ restart-health:
 
 restart-web:
 	docker compose -f docker-compose.dev.yml restart main
+
+restart-incremental:
+	docker compose -f docker-compose.dev.yml restart indexer-incremental
+
+restart-config:
+	docker compose -f docker-compose.dev.yml restart config-listener
 
 # ===================================================================
 # LOGS & MONITORING
@@ -176,6 +193,9 @@ logs-health:
 logs-config:
 	docker compose -f docker-compose.dev.yml logs -f config-listener
 
+logs-incremental:
+	docker compose -f docker-compose.dev.yml logs -f indexer-incremental
+
 # Show container status
 status:
 	docker compose -f docker-compose.dev.yml ps
@@ -199,7 +219,7 @@ dbshell:
 	docker compose -f docker-compose.dev.yml exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 # Redis CLI
 redis-cli:
-	docker compose -f docker compose.dev.yml exec redis redis-cli
+	docker compose -f docker-compose.dev.yml exec redis redis-cli
 
 # ===================================================================
 # TESTING & DEBUGGING
