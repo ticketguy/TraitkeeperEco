@@ -2185,9 +2185,7 @@ class TransactionParserService:
         except Exception as e:
             logger.debug(f"Cache read error for mint {mint_address}: {e}")
 
-        # OPTIMIZATION 2: Check database (PRIMARY AND ONLY METHOD)
-        # User requirement: Only track NFTs we've already retrieved with collections
-        # If NFT is not in DB, it's not part of any tracked collection → skip entirely
+        # OPTIMIZATION 2: Check database first (for known NFTs)
         try:
             nft = await sync_to_async(
                 NFT.objects.select_related('collection').filter(mint_address=mint_address).first
@@ -2201,19 +2199,56 @@ class TransactionParserService:
                     pass
                 logger.debug(f"[DB HIT] Collection {collection_address[:8]}... for mint {mint_address[:8]}...")
                 return collection_address
-            else:
-                # NFT not in our database → Not a tracked NFT → Skip entirely
-                # No need for expensive API calls to Helius/Metaplex
-                # We only track NFTs we've explicitly retrieved for our collections
-                try:
-                    await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=86400)  # 24h (long cache)
-                except Exception:
-                    pass
-                logger.debug(f"[DB MISS] Mint {mint_address[:8]}... not in tracked NFTs - skipping transaction")
-                return None
         except Exception as e:
             logger.error(f"Database error while getting collection for mint {mint_address}: {e}")
-            return None
+
+        # OPTIMIZATION 3: Unknown NFT - Resolve via Helius API
+        # CRITICAL: This handles NEW NFTs minted in tracked collections
+        # Without this, we'd miss new mints in Rogues, Player 1, Bulma NFT!
+        logger.info(f"[UNKNOWN NFT] Resolving collection via Helius for mint {mint_address[:8]}...")
+
+        try:
+            # Get Helius provider specifically (not QuickNode)
+            helius = await self.provider_manager.get_provider_by_name('helius')
+            if helius and hasattr(helius, 'get_collection_for_mint'):
+                # Use provider's method with built-in rate limiting
+                collection_address = await helius.get_collection_for_mint(mint_address)
+                if collection_address:
+                    logger.info(f"✅ Resolved via Helius: {collection_address[:8]}... for mint {mint_address[:8]}...")
+
+                    # Check if this collection is one we're tracking
+                    is_tracked = await sync_to_async(
+                        NFTCollection.objects.filter(address=collection_address, is_listed=True).exists
+                    )()
+
+                    if is_tracked:
+                        # This is a NEW NFT in a tracked collection!
+                        # Cache it so we don't need to call API again
+                        try:
+                            await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
+                        except Exception:
+                            pass
+                        logger.info(f"🆕 NEW NFT in tracked collection {collection_address[:8]}...")
+                        return collection_address
+                    else:
+                        # Resolved successfully but not a tracked collection - cache as NOT_FOUND
+                        try:
+                            await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=86400)  # 24h
+                        except Exception:
+                            pass
+                        logger.debug(f"[UNTRACKED] Collection {collection_address[:8]}... not in tracked list")
+                        return None
+        except Exception as e:
+            logger.debug(f"Helius API failed for mint {mint_address}: {e}")
+
+        # If Helius fails, cache as NOT_FOUND with shorter TTL (might be temporary failure)
+        try:
+            await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)  # 1h (shorter for failures)
+        except Exception:
+            pass
+
+        logger.warning(f"Could not resolve collection for mint {mint_address[:8]}...")
+        return None
 
     async def _save_to_failed_transactions(self, signature: str, event_data: dict, error_message: str) -> None:
         """

@@ -231,13 +231,18 @@ class OptimizedIndexerService:
 
     async def _batch_resolve_collections(self, events: List[dict]):
         """
-        OPTIMIZATION: Batch resolve collections for all mints in the batch.
+        OPTIMIZATION: Batch resolve KNOWN collections from database.
 
-        Pre-resolves collections from database before parsing individual events,
-        allowing them to hit the cache instead of making individual DB queries.
+        Pre-resolves collections for NFTs already in our database,
+        allowing individual parsing to hit the cache instead of making DB queries.
 
-        Reduces DB queries from N (one per event) to 1 (batch query).
-        NO EXTERNAL API CALLS - Database only (user requirement).
+        Reduces DB queries from N (one per event) to 1 (batch query) for known NFTs.
+        Unknown NFTs are handled by individual parsing with Helius API fallback.
+
+        This hybrid approach:
+        - Optimizes known NFTs (batch DB query + cache)
+        - Handles new NFTs in tracked collections (individual API resolution)
+        - Maintains auto-updating capability
         """
         try:
             from django.core.cache import cache
@@ -298,23 +303,21 @@ class OptimizedIndexerService:
                 if nft.collection
             }
 
-            # Cache all results
+            # Cache ONLY successful DB resolutions
+            # Do NOT cache unknown mints - let individual parsing handle them
             tracked_count = 0
-            for mint in uncached_mints:
+            for mint, collection_address in mint_to_collection.items():
                 cache_key = f"collection:mint:{mint}"
+                await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
+                tracked_count += 1
+                logger.debug(f"✅ Cached collection {collection_address[:8]}... for mint {mint[:8]}...")
 
-                if mint in mint_to_collection:
-                    # Found in database - cache it
-                    collection_address = mint_to_collection[mint]
-                    await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
-                    tracked_count += 1
-                    logger.debug(f"✅ Cached collection {collection_address[:8]}... for mint {mint[:8]}...")
-                else:
-                    # Not in database - cache as NOT_FOUND
-                    await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=86400)  # 24h
-                    logger.debug(f"❌ Mint {mint[:8]}... not in tracked NFTs")
+            unknown_count = len(uncached_mints) - tracked_count
 
-            logger.info(f"✅ Batch resolution complete: {tracked_count}/{len(uncached_mints)} are tracked NFTs")
+            logger.info(
+                f"✅ Batch resolution complete: {tracked_count} cached from DB, "
+                f"{unknown_count} will be resolved individually via API"
+            )
 
         except Exception as e:
             logger.error(f"Error in batch collection resolution: {e}", exc_info=True)
