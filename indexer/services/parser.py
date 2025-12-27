@@ -2151,17 +2151,20 @@ class TransactionParserService:
         """
         Find the collection address for a given mint.
 
-        Optimized resolution with caching and smart provider selection:
+        OPTIMIZED STRATEGY (User requirement: Only track NFTs we've already retrieved):
         1. Redis cache (fastest - 90%+ hit rate after warmup)
-        2. Database lookup (fast - for tracked NFTs)
-        3. Helius DAS API (reliable - works for all NFT types)
-        4. Metaplex metadata (fallback - only for standard NFTs)
+        2. Database lookup (PRIMARY METHOD - for tracked NFTs)
+        3. If NOT in DB → Skip entirely (not a tracked NFT)
+
+        We do NOT make external API calls during transaction parsing.
+        NFTs are retrieved separately when collections are added/updated.
+        This ensures we only process transactions for NFTs we actually care about.
 
         Args:
             mint_address: The NFT mint address
 
         Returns:
-            Collection address or None
+            Collection address if NFT is tracked, None otherwise
         """
         if not mint_address:
             return None
@@ -2182,7 +2185,9 @@ class TransactionParserService:
         except Exception as e:
             logger.debug(f"Cache read error for mint {mint_address}: {e}")
 
-        # OPTIMIZATION 2: Check database (for tracked NFTs)
+        # OPTIMIZATION 2: Check database (PRIMARY AND ONLY METHOD)
+        # User requirement: Only track NFTs we've already retrieved with collections
+        # If NFT is not in DB, it's not part of any tracked collection → skip entirely
         try:
             nft = await sync_to_async(
                 NFT.objects.select_related('collection').filter(mint_address=mint_address).first
@@ -2196,75 +2201,19 @@ class TransactionParserService:
                     pass
                 logger.debug(f"[DB HIT] Collection {collection_address[:8]}... for mint {mint_address[:8]}...")
                 return collection_address
-        except Exception as e:
-            logger.error(f"Database error while getting collection for mint {mint_address}: {e}")
-
-        # OPTIMIZATION 3: Try Helius DAS API directly (Solution 1 - skip QuickNode)
-        # Helius DAS works for both regular NFTs and compressed NFTs
-        # Use provider's get_collection_for_mint which has built-in rate limiting (Solution 7)
-        logger.info(f"Attempting to resolve collection from Helius DAS for mint {mint_address[:8]}...")
-        try:
-            # Get Helius provider specifically (not QuickNode)
-            helius = await self.provider_manager.get_provider_by_name('helius')
-            if helius and hasattr(helius, 'get_collection_for_mint'):
-                # Use provider's method with built-in rate limiting
-                collection_address = await helius.get_collection_for_mint(mint_address)
-                if collection_address:
-                    # Cache successful resolution
-                    try:
-                        await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
-                    except Exception:
-                        pass
-                    logger.info(f"✅ Resolved via Helius DAS: {collection_address[:8]}... for mint {mint_address[:8]}...")
-                    return collection_address
             else:
-                logger.debug("Helius provider not available, trying fallback method")
-                # Fallback to direct DAS API call if provider not available
-                collection_address = await self._fetch_collection_from_das_api(mint_address)
-                if collection_address:
-                    try:
-                        await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)
-                    except Exception:
-                        pass
-                    logger.info(f"✅ Resolved via Helius DAS fallback: {collection_address[:8]}...")
-                    return collection_address
-        except Exception as e:
-            logger.debug(f"Helius DAS failed for mint {mint_address}: {e}")
-
-        # OPTIMIZATION 4: Detect compressed NFTs before trying Metaplex (Solution 5)
-        is_cnft = await self._is_compressed_nft(mint_address)
-        if is_cnft:
-            logger.info(f"🗜️ Detected compressed NFT {mint_address[:8]}... - skipping Metaplex metadata")
-            # Cache the failure to avoid retrying
-            try:
-                await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)  # 1h
-            except Exception:
-                pass
-            return None
-
-        # Final fallback: Parse Metaplex metadata directly (only for standard NFTs)
-        logger.info(f"Attempting to resolve collection from Metaplex metadata for mint {mint_address[:8]}...")
-        try:
-            collection_address = await self._fetch_collection_from_metadata(mint_address)
-            if collection_address:
-                # Cache successful resolution
+                # NFT not in our database → Not a tracked NFT → Skip entirely
+                # No need for expensive API calls to Helius/Metaplex
+                # We only track NFTs we've explicitly retrieved for our collections
                 try:
-                    await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
+                    await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=86400)  # 24h (long cache)
                 except Exception:
                     pass
-                logger.info(f"✅ Resolved via Metaplex: {collection_address[:8]}... for mint {mint_address[:8]}...")
-                return collection_address
+                logger.debug(f"[DB MISS] Mint {mint_address[:8]}... not in tracked NFTs - skipping transaction")
+                return None
         except Exception as e:
-            logger.error(f"Metadata parsing error while getting collection for mint {mint_address}: {e}")
-
-        # Cache the failure to avoid retrying the same mint repeatedly
-        try:
-            await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)  # 1h
-        except Exception:
-            pass
-
-        logger.warning(f"Could not resolve collection for mint {mint_address[:8]}...")
-        return None
+            logger.error(f"Database error while getting collection for mint {mint_address}: {e}")
+            return None
 
     async def _save_to_failed_transactions(self, signature: str, event_data: dict, error_message: str) -> None:
         """

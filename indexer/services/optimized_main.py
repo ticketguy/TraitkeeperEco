@@ -233,13 +233,15 @@ class OptimizedIndexerService:
         """
         OPTIMIZATION: Batch resolve collections for all mints in the batch.
 
-        This pre-resolves collections before parsing individual events,
-        allowing them to hit the cache instead of making individual API calls.
+        Pre-resolves collections from database before parsing individual events,
+        allowing them to hit the cache instead of making individual DB queries.
 
-        Reduces API calls from N (one per event) to 1 (batch call).
+        Reduces DB queries from N (one per event) to 1 (batch query).
+        NO EXTERNAL API CALLS - Database only (user requirement).
         """
         try:
             from django.core.cache import cache
+            from nft_data.models import NFT
 
             # Extract all unique mint addresses from events
             mint_addresses = set()
@@ -267,7 +269,7 @@ class OptimizedIndexerService:
                 logger.debug("No mints found in batch for pre-resolution")
                 return
 
-            logger.info(f"🔍 Pre-resolving collections for {len(mint_addresses)} unique mints")
+            logger.info(f"🔍 Pre-resolving collections for {len(mint_addresses)} unique mints from database")
 
             # Filter out mints already in cache
             uncached_mints = []
@@ -280,53 +282,39 @@ class OptimizedIndexerService:
                 logger.info(f"✅ All {len(mint_addresses)} mints already cached")
                 return
 
-            logger.info(f"📡 Fetching {len(uncached_mints)} uncached mints from Helius")
+            logger.info(f"📊 Querying database for {len(uncached_mints)} uncached mints")
 
-            # Get Helius provider for batch resolution
-            helius = await self.provider_manager.get_provider_by_name('helius')
-            if not helius:
-                logger.warning("Helius provider not available for batch resolution")
-                return
+            # Batch query database for all uncached mints (SINGLE QUERY)
+            nfts_with_collections = await sync_to_async(list)(
+                NFT.objects.select_related('collection').filter(
+                    mint_address__in=uncached_mints
+                )
+            )
 
-            # Batch resolve using Helius getAsset
-            # Process in chunks of 20 to respect rate limits
-            chunk_size = 20
-            for i in range(0, len(uncached_mints), chunk_size):
-                chunk = uncached_mints[i:i + chunk_size]
+            # Create a mapping of mint → collection
+            mint_to_collection = {
+                nft.mint_address: nft.collection.address
+                for nft in nfts_with_collections
+                if nft.collection
+            }
 
-                # Resolve each mint in parallel (within chunk)
-                resolve_tasks = []
-                for mint in chunk:
-                    task = helius.get_collection_for_mint(mint)
-                    resolve_tasks.append(task)
+            # Cache all results
+            tracked_count = 0
+            for mint in uncached_mints:
+                cache_key = f"collection:mint:{mint}"
 
-                results = await asyncio.gather(*resolve_tasks, return_exceptions=True)
+                if mint in mint_to_collection:
+                    # Found in database - cache it
+                    collection_address = mint_to_collection[mint]
+                    await sync_to_async(cache.set)(cache_key, collection_address, timeout=86400)  # 24h
+                    tracked_count += 1
+                    logger.debug(f"✅ Cached collection {collection_address[:8]}... for mint {mint[:8]}...")
+                else:
+                    # Not in database - cache as NOT_FOUND
+                    await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=86400)  # 24h
+                    logger.debug(f"❌ Mint {mint[:8]}... not in tracked NFTs")
 
-                # Cache all results
-                cached_count = 0
-                for mint, result in zip(chunk, results):
-                    cache_key = f"collection:mint:{mint}"
-
-                    if isinstance(result, Exception):
-                        logger.debug(f"Failed to resolve {mint[:8]}...: {result}")
-                        # Cache failure to avoid retrying
-                        await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)
-                    elif result:
-                        # Cache successful resolution
-                        await sync_to_async(cache.set)(cache_key, result, timeout=86400)
-                        cached_count += 1
-                        logger.debug(f"✅ Cached collection {result[:8]}... for mint {mint[:8]}...")
-                    else:
-                        # No result - cache as not found
-                        await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)
-
-                logger.info(f"✅ Cached {cached_count}/{len(chunk)} collections in chunk")
-
-                # Brief delay between chunks to respect rate limits
-                if i + chunk_size < len(uncached_mints):
-                    await asyncio.sleep(0.5)
-
-            logger.info(f"✅ Batch collection resolution complete")
+            logger.info(f"✅ Batch resolution complete: {tracked_count}/{len(uncached_mints)} are tracked NFTs")
 
         except Exception as e:
             logger.error(f"Error in batch collection resolution: {e}", exc_info=True)
