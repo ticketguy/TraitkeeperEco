@@ -54,7 +54,12 @@
       "Bash(git check-ignore:*)",
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose exec main python manage.py shell:*)",
-      "Bash(docker stop:*)"
+      "Bash(docker stop:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Reduce vitality calculation intervals for faster updates\n\n- VIP collections: 15min → 5min\n- ACTIVE collections: 60min → 30min  \n- INACTIVE collections: 240min → 120min\n\nThis provides more up-to-date vitality scores while still respecting\ncollection priority tiers.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Integrate comprehensive analytics into scheduled indexer\n\nChanged scheduled indexer to use MetricsCalculationService.calculate_comprehensive_metrics\\(\\)\nwhich handles all analytics in one orchestrated call:\n- Market metrics \\(AggregatedCollectionStats\\)\n- Trait analytics \\(TraitPerformanceScore\\) with activity-based skipping\n- Wallet prominence \\(WalletProminence, WalletBehaviorProfile\\)  \n- Trending traits \\(TrendingTrait\\)\n- Top traits \\(TopTrait\\)\n\nThis ensures all analytics tables are populated automatically every 5 minutes\nbased on NFTEvent data from the live indexer.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git fetch:*)",
+      "Bash(git rm:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

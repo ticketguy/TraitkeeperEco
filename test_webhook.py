@@ -10,7 +10,7 @@ import requests
 import json
 
 # Test webhook URL (adjust for your environment)
-WEBHOOK_URL = "http://localhost:8000/indexer/webhook/"
+WEBHOOK_URL = "http://traitkeeper.xyz/indexer/webhook/"
 
 # Sample Helius webhook payload
 helius_payload = [{
