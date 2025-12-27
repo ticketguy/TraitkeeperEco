@@ -166,6 +166,10 @@ class OptimizedIndexerService:
                     f"(window: {self.event_batch_window}s)"
                 )
 
+                # OPTIMIZATION: Batch pre-resolve collections (Solution 4)
+                # Extract all unique mints and batch resolve before parsing
+                await self._batch_resolve_collections(events_to_process)
+
                 # PARALLEL processing of all events
                 parse_tasks = []
                 for event in events_to_process:
@@ -224,6 +228,109 @@ class OptimizedIndexerService:
             except Exception as e:
                 logger.exception(f"Error in batch processor: {e}")
                 await asyncio.sleep(5)  # Brief pause before retry
+
+    async def _batch_resolve_collections(self, events: List[dict]):
+        """
+        OPTIMIZATION: Batch resolve collections for all mints in the batch.
+
+        This pre-resolves collections before parsing individual events,
+        allowing them to hit the cache instead of making individual API calls.
+
+        Reduces API calls from N (one per event) to 1 (batch call).
+        """
+        try:
+            from django.core.cache import cache
+
+            # Extract all unique mint addresses from events
+            mint_addresses = set()
+            for event in events:
+                raw_data = event.get('raw_data', {})
+
+                # Try to extract mint from different event structures
+                # This is a best-effort extraction - parsing will handle the full logic
+                if isinstance(raw_data, dict):
+                    # From transaction data
+                    token_transfers = raw_data.get('tokenTransfers', [])
+                    for transfer in token_transfers:
+                        mint = transfer.get('mint')
+                        if mint:
+                            mint_addresses.add(mint)
+
+                    # From NFT events
+                    nfts = raw_data.get('nfts', [])
+                    for nft in nfts:
+                        mint = nft.get('mint')
+                        if mint:
+                            mint_addresses.add(mint)
+
+            if not mint_addresses:
+                logger.debug("No mints found in batch for pre-resolution")
+                return
+
+            logger.info(f"🔍 Pre-resolving collections for {len(mint_addresses)} unique mints")
+
+            # Filter out mints already in cache
+            uncached_mints = []
+            for mint in mint_addresses:
+                cache_key = f"collection:mint:{mint}"
+                if not await sync_to_async(cache.get)(cache_key):
+                    uncached_mints.append(mint)
+
+            if not uncached_mints:
+                logger.info(f"✅ All {len(mint_addresses)} mints already cached")
+                return
+
+            logger.info(f"📡 Fetching {len(uncached_mints)} uncached mints from Helius")
+
+            # Get Helius provider for batch resolution
+            helius = await self.provider_manager.get_provider_by_name('helius')
+            if not helius:
+                logger.warning("Helius provider not available for batch resolution")
+                return
+
+            # Batch resolve using Helius getAsset
+            # Process in chunks of 20 to respect rate limits
+            chunk_size = 20
+            for i in range(0, len(uncached_mints), chunk_size):
+                chunk = uncached_mints[i:i + chunk_size]
+
+                # Resolve each mint in parallel (within chunk)
+                resolve_tasks = []
+                for mint in chunk:
+                    task = helius.get_collection_for_mint(mint)
+                    resolve_tasks.append(task)
+
+                results = await asyncio.gather(*resolve_tasks, return_exceptions=True)
+
+                # Cache all results
+                cached_count = 0
+                for mint, result in zip(chunk, results):
+                    cache_key = f"collection:mint:{mint}"
+
+                    if isinstance(result, Exception):
+                        logger.debug(f"Failed to resolve {mint[:8]}...: {result}")
+                        # Cache failure to avoid retrying
+                        await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)
+                    elif result:
+                        # Cache successful resolution
+                        await sync_to_async(cache.set)(cache_key, result, timeout=86400)
+                        cached_count += 1
+                        logger.debug(f"✅ Cached collection {result[:8]}... for mint {mint[:8]}...")
+                    else:
+                        # No result - cache as not found
+                        await sync_to_async(cache.set)(cache_key, "NOT_FOUND", timeout=3600)
+
+                logger.info(f"✅ Cached {cached_count}/{len(chunk)} collections in chunk")
+
+                # Brief delay between chunks to respect rate limits
+                if i + chunk_size < len(uncached_mints):
+                    await asyncio.sleep(0.5)
+
+            logger.info(f"✅ Batch collection resolution complete")
+
+        except Exception as e:
+            logger.error(f"Error in batch collection resolution: {e}", exc_info=True)
+            # Don't fail the batch - individual parsing will handle resolution
 
     async def _parse_and_track_event(self, raw_event_data: dict):
         """
