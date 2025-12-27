@@ -101,7 +101,12 @@ services:
     env_file:
       - .env
     environment:
-      LOG_FILE_PATH: "/app/logs/indexer_live.log"
+      - DJANGO_SETTINGS_MODULE=traitkeeper.settings
+      - RUN_BACKGROUND_TASKS=true
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_CHANNEL_URL=redis://redis:6379/1
+      - LOG_FILE_PATH=/app/logs/indexer_live.log
     volumes:
       - ./logs:/app/logs
       - ./logs:/var/log/traitkeeper
@@ -114,7 +119,8 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        echo '🔴 Live Indexer: Starting WebSocket listener...' &&
+        echo 'Waiting for database...';
+        sleep 10;
         python manage.py run_live_indexer
       "
     healthcheck:
@@ -124,6 +130,16 @@ services:
       retries: 3
       start_period: 40s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
     networks:
       - traitkeeper-network
 
@@ -136,7 +152,12 @@ services:
     env_file:
       - .env
     environment:
-      LOG_FILE_PATH: "/app/logs/indexer_scheduled.log"
+      - DJANGO_SETTINGS_MODULE=traitkeeper.settings
+      - RUN_BACKGROUND_TASKS=true
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_CHANNEL_URL=redis://redis:6379/1
+      - LOG_FILE_PATH=/app/logs/indexer_scheduled.log
     volumes:
       - ./logs:/app/logs
       - ./logs:/var/log/traitkeeper
@@ -149,7 +170,8 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        echo '⏰ Scheduled Indexer: Starting periodic polling...' &&
+        echo 'Waiting for database...';
+        sleep 10;
         python manage.py run_scheduled_indexer
       "
     healthcheck:
@@ -159,6 +181,16 @@ services:
       retries: 3
       start_period: 40s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
     networks:
       - traitkeeper-network
 
