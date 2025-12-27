@@ -123,14 +123,8 @@ class TransactionParserService:
 
             if not parsed_event:
                 logger.warning(f"[{signature}] All parsing tiers failed. No actionable event found.")
-
-                # Only save as failed transaction if we have collections to track
-                has_collections = await sync_to_async(NFTCollection.objects.exists)()
-                if has_collections:
-                    await self._save_to_failed_transactions(signature, event_data, "All parsing tiers failed")
-                else:
-                    logger.debug(f"[{signature}] Skipping FailedTransaction save - no collections in database")
-
+                # Don't save as failed - we only track failures for collections we care about
+                # If parsing failed, we can't determine the collection anyway
                 return None
             
             # --- Collection Resolution ---
@@ -151,15 +145,13 @@ class TransactionParserService:
 
             # --- Validate Parsed Event ---
             if not self._validate_parsed_event(parsed_event, signature):
-                logger.error(f"[{signature}] Event validation failed")
-
-                # Only save as failed transaction if we have collections to track
-                has_collections = await sync_to_async(NFTCollection.objects.exists)()
-                if has_collections:
-                    await self._save_to_failed_transactions(signature, event_data, "Event validation failed")
-                else:
-                    logger.debug(f"[{signature}] Skipping FailedTransaction save - no collections in database")
-
+                logger.error(f"[{signature}] Event validation failed for tracked collection {collection.name}")
+                # Save as failed since this is for a collection we're tracking
+                await self._save_to_failed_transactions(
+                    signature,
+                    event_data,
+                    f"Event validation failed for collection {collection.address}"
+                )
                 return None
 
             # --- Save to Database ---
