@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',        # Messaging framework
     'django.contrib.staticfiles',     # Static files management
     'django.contrib.sites',           # Required by django-allauth for multi-site support
+    'django.contrib.humanize',        # Humanize filters for templates
 
     # Project-Specific Apps
     'admin_panel.apps.AdminPanelConfig',  # Admin panel app
