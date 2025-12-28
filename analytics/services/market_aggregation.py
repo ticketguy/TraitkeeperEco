@@ -318,16 +318,17 @@ class MarketAggregationService:
             
             # Estimate fields that are commonly missing from simpler APIs
             highest_bid = current_floor * 0.9 if current_floor > 0 else 0.0
-            
-            total_supply = await sync_to_async(collection.nfts.count)()
+
+            # Get total supply excluding burnt NFTs
+            total_supply = await sync_to_async(collection.nfts.filter(is_burned=False).count)()
             percent_listed = (
-                (base_data.get('listed_count', 0) / total_supply * 100) 
+                (base_data.get('listed_count', 0) / total_supply * 100)
                 if total_supply > 0 else 0.0
             )
-            
+
             bid_count = int(base_data.get('listed_count', 0) * 0.2)  # Simple estimation
 
-            # Calculate market cap in USD
+            # Calculate market cap in USD (using non-burnt supply)
             market_cap_sol = current_floor * total_supply if total_supply > 0 else 0.0
             sol_price_data = self.network_service.get_solana_price()
             sol_price_usd = sol_price_data.get('price_usd', 0)
@@ -581,22 +582,24 @@ class MarketAggregationService:
 
         # Calculate database-derived fields (total_supply and number_of_holders)
         # These are not provided by external APIs, so we calculate from our database
+        # IMPORTANT: Exclude burnt NFTs from supply and holder counts
         if aggregated_data.get('total_supply', 0) == 0:
-            total_supply = await sync_to_async(collection.nfts.count)()
+            total_supply = await sync_to_async(collection.nfts.filter(is_burned=False).count)()
             aggregated_data['total_supply'] = total_supply
             source_attribution['total_supply']['value'] = total_supply
-            logger.info(f"   → Calculated total_supply from database: {total_supply}")
+            logger.info(f"   → Calculated total_supply from database (excluding burnt): {total_supply}")
 
-        # Calculate number of unique holders
+        # Calculate number of unique holders (excluding burnt NFTs)
         number_of_holders = await sync_to_async(
-            collection.nfts.exclude(owner__isnull=True)
+            collection.nfts.filter(is_burned=False)
+            .exclude(owner__isnull=True)
             .values('owner')
             .distinct()
             .count
         )()
         aggregated_data['number_of_holders'] = number_of_holders
         source_attribution['number_of_holders']['value'] = number_of_holders
-        logger.info(f"   → Calculated number_of_holders from database: {number_of_holders}")
+        logger.info(f"   → Calculated number_of_holders from database (excluding burnt): {number_of_holders}")
 
         logger.info(
             f"Aggregated metrics from {len(successful_sources)} sources: "

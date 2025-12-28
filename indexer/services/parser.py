@@ -166,7 +166,11 @@ class TransactionParserService:
             # --- Update NFT Owner for Sales/Transfers ---
             if nft_event.event_type in ['SALE', 'TRANSFER']:
                 await self._update_nft_owner(nft_event)
-            
+
+            # --- Mark NFT as Burned for BURN events ---
+            if nft_event.event_type == 'BURN':
+                await self._mark_nft_as_burned(nft_event)
+
             status = "CREATED" if created else "UPDATED"
             logger.info(f"--- [PARSER] SUCCESS ({status}) for signature {signature} as {nft_event.event_type} ---")
             return nft_event
@@ -2077,13 +2081,13 @@ class TransactionParserService:
     async def _update_nft_owner(self, nft_event: NFTEvent) -> None:
         """
         Update the owner field of the NFT after a sale or transfer.
-        
+
         Args:
             nft_event: The NFTEvent that was just created/updated
         """
         mint = nft_event.nft_mint
         buyer = nft_event.buyer
-        
+
         if not mint or not buyer:
             return
 
@@ -2096,6 +2100,35 @@ class TransactionParserService:
                 logger.info(f"Updated NFT {mint[:8]}... owner: {old_owner[:8]}... → {buyer[:8]}...")
         except Exception as e:
             logger.error(f"Failed to update NFT owner for {mint}: {e}")
+
+    async def _mark_nft_as_burned(self, nft_event: NFTEvent) -> None:
+        """
+        Mark the NFT as burned when a BURN event is detected.
+        This updates the supply and holder calculations automatically.
+
+        Args:
+            nft_event: The BURN NFTEvent that was just created/updated
+        """
+        mint = nft_event.nft_mint
+
+        if not mint:
+            logger.warning("BURN event missing mint address, cannot mark NFT as burned")
+            return
+
+        try:
+            nft = await sync_to_async(NFT.objects.filter(mint_address=mint).first)()
+            if nft:
+                if not nft.is_burned:
+                    nft.is_burned = True
+                    nft.owner = None  # Clear owner since NFT is burned
+                    await sync_to_async(nft.save)(update_fields=['is_burned', 'owner', 'updated_at'])
+                    logger.info(f"🔥 Marked NFT {mint[:8]}... as BURNED - will be excluded from supply/holders")
+                else:
+                    logger.debug(f"NFT {mint[:8]}... already marked as burned")
+            else:
+                logger.warning(f"NFT {mint} not found in database, cannot mark as burned")
+        except Exception as e:
+            logger.error(f"Failed to mark NFT {mint} as burned: {e}")
 
     async def _has_tracked_collection(self, normalized_tx: dict) -> bool:
         """
