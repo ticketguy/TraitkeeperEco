@@ -726,26 +726,27 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                             {% endif %}
                         </button>
                         <div id="notification-dropdown"
-                            class="hidden absolute right-0 mt-2 w-80 bg-background-light dark:bg-accent-dark shadow-xl rounded-lg p-2 z-50 animate-scale-in border border-border-light dark:border-border-dark">
+                            class="hidden absolute right-0 mt-2 bg-background-light dark:bg-accent-dark shadow-xl rounded-lg p-3 z-50 animate-scale-in border border-border-light dark:border-border-dark"
+                            style="width: 320px; max-width: calc(100vw - 2rem); max-height: 70vh; display: flex; flex-direction: column; overflow: hidden;">
                             <div
-                                class="flex justify-between items-center border-b border-accent-light dark:border-accent-dark pb-2 mb-2">
-                                <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">Notifications</h3>
+                                class="flex justify-between items-center border-b border-accent-light dark:border-accent-dark pb-2 mb-2 flex-shrink-0">
+                                <h3 class="text-base font-semibold text-text-light dark:text-text-dark">Notifications</h3>
                                 <button id="mark-all-read" type="button"
-                                    class="text-primary text-sm hover:underline faint-glow-hover">Mark All Read</button>
+                                    class="text-primary text-xs hover:underline faint-glow-hover whitespace-nowrap">Mark All Read</button>
                             </div>
-                            <div id="notification-list" class="max-h-64 overflow-y-auto">
+                            <div id="notification-list" class="overflow-y-auto flex-1" style="min-height: 0;">
                                 {% for notification in notifications %}
-                                <div class="notification-item group p-2 border-b border-accent-light dark:border-accent-dark {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
+                                <div class="notification-item group p-2.5 border-b border-accent-light dark:border-accent-dark last:border-b-0 {% if not notification.is_read %}bg-accent-light dark:bg-gray-700{% endif %} hover:bg-gray-100 dark:hover:bg-gray-600 transition animate-fade-in"
                                     data-notification-id="{{ notification.id }}"
                                     data-is-read="{{ notification.is_read|yesno:'true,false' }}">
                                     <div class="flex items-start justify-between gap-2">
-                                        <div class="flex-1">
-                                            <p class="text-sm text-text-light dark:text-text-dark">{{ notification.message }}</p>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-text-light dark:text-text-dark break-words">{{ notification.message|truncatewords:25 }}</p>
                                             <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark time-since mt-1">
                                                 {{ notification.created_at|timesince }} ago</p>
                                         </div>
                                         {% if not notification.is_read %}
-                                        <button type="button" class="mark-read-btn opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary-dark text-xs"
+                                        <button type="button" class="mark-read-btn opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary-dark text-xs flex-shrink-0"
                                                 data-notification-id="{{ notification.id }}">
                                             ✓
                                         </button>
@@ -753,13 +754,13 @@ html.dark #main-header .desktop-header .desktop-search input::placeholder { colo
                                     </div>
                                 </div>
                                 {% empty %}
-                                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark animate-fade-in text-center py-4">
+                                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark animate-fade-in text-center py-6">
                                     No notifications</p>
                                 {% endfor %}
                             </div>
-                            <div class="mt-2 pt-2 border-t border-accent-light dark:border-accent-dark">
+                            <div class="mt-2 pt-2 border-t border-accent-light dark:border-accent-dark flex-shrink-0">
                                 <a href="{% url 'notifications:list' %}"
-                                    class="block w-full text-center text-primary hover:underline text-sm faint-glow-hover font-medium">
+                                    class="block w-full text-center text-primary hover:underline text-xs faint-glow-hover font-medium">
                                     View All Notifications</a>
                             </div>
                         </div>
