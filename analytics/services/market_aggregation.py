@@ -87,7 +87,21 @@ class MarketAggregationService:
         """Initialize the service."""
         self.network_service = SolanaNetworkService()
         logger.info("Initialized MarketAggregationService")
-    
+
+    async def _get_blacklisted_wallets_and_collections(self):
+        """Get lists of active blacklisted wallets and collections"""
+        from analytics.models import BlacklistedWallet, BlacklistedCollection
+
+        blacklisted_wallets = await sync_to_async(list)(
+            BlacklistedWallet.objects.filter(status='active').values_list('wallet_address', flat=True)
+        )
+
+        blacklisted_collections = await sync_to_async(list)(
+            BlacklistedCollection.objects.filter(status='active').values_list('collection_id', flat=True)
+        )
+
+        return set(blacklisted_wallets), set(blacklisted_collections)
+
     # ==================== MAIN AGGREGATION METHOD ====================
     
     async def update_collection_metrics(self, collection: NFTCollection) -> Optional[Dict]:
@@ -589,17 +603,21 @@ class MarketAggregationService:
             source_attribution['total_supply']['value'] = total_supply
             logger.info(f"   → Calculated total_supply from database (excluding burnt): {total_supply}")
 
-        # Calculate number of unique holders (excluding burnt NFTs)
+        # Get blacklisted wallets and collections
+        blacklisted_wallets, blacklisted_collections = await self._get_blacklisted_wallets_and_collections()
+
+        # Calculate number of unique holders (excluding burnt NFTs AND blacklisted wallets)
         number_of_holders = await sync_to_async(
             collection.nfts.filter(is_burned=False)
             .exclude(owner__isnull=True)
+            .exclude(owner__in=blacklisted_wallets)  # Exclude blacklisted wallets
             .values('owner')
             .distinct()
             .count
         )()
         aggregated_data['number_of_holders'] = number_of_holders
         source_attribution['number_of_holders']['value'] = number_of_holders
-        logger.info(f"   → Calculated number_of_holders from database (excluding burnt): {number_of_holders}")
+        logger.info(f"   → Calculated number_of_holders from database (excluding burnt & blacklisted): {number_of_holders}")
 
         logger.info(
             f"Aggregated metrics from {len(successful_sources)} sources: "

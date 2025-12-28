@@ -452,3 +452,75 @@ class WalletSuspiciousActivityAdmin(admin.ModelAdmin):
                     blacklist.affected_collections.add(activity.collection)
 
         self.message_user(request, f"{created_count} new blacklist entry(ies) created (status: monitoring).")
+
+
+@admin.register(BlacklistedCollection, site=admin_site)
+class BlacklistedCollectionAdmin(admin.ModelAdmin):
+    """Admin interface for blacklisting entire collections"""
+    list_display = (
+        'collection_name_link',
+        'status_badge',
+        'reason',
+        'risk_score_display',
+        'hide_from_listings',
+        'blacklisted_at'
+    )
+    list_filter = ('status', 'reason', 'hide_from_listings', 'show_warning')
+    search_fields = ('collection__name', 'collection__address', 'reviewer_notes')
+    readonly_fields = ('first_detected', 'blacklisted_at', 'cleared_at')
+
+    fieldsets = (
+        ('Collection', {
+            'fields': ('collection', 'status', 'reason')
+        }),
+        ('Risk Assessment', {
+            'fields': ('detection_method', 'risk_score', 'evidence_data')
+        }),
+        ('Display Options', {
+            'fields': ('hide_from_listings', 'show_warning')
+        }),
+        ('Review', {
+            'fields': ('reviewer_notes', 'reviewed_by')
+        }),
+        ('Timestamps', {
+            'fields': ('first_detected', 'blacklisted_at', 'cleared_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    actions = ['activate_blacklist', 'move_to_monitoring', 'clear_blacklist']
+
+    def collection_name_link(self, obj):
+        return admin_link(obj, 'collection')
+    collection_name_link.short_description = 'Collection'
+
+    def status_badge(self, obj):
+        colors = {'active': 'red', 'monitoring': 'orange', 'cleared': 'green'}
+        color = colors.get(obj.status, 'gray')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-weight: bold;">{}</span>',
+            color, obj.get_status_display()
+        )
+    status_badge.short_description = 'Status'
+
+    def risk_score_display(self, obj):
+        score = obj.risk_score
+        color = 'red' if score >= 75 else 'orange' if score >= 50 else '#ffc107' if score >= 25 else 'green'
+        return format_html('<span style="color: {}; font-weight: bold;">{:.1f}/100</span>', color, score)
+    risk_score_display.short_description = 'Risk Score'
+
+    @admin.action(description="🔴 Activate blacklist")
+    def activate_blacklist(self, request, queryset):
+        updated = queryset.update(status='active')
+        self.message_user(request, f"{updated} collection(s) blacklisted.")
+
+    @admin.action(description="🟠 Move to monitoring")
+    def move_to_monitoring(self, request, queryset):
+        updated = queryset.update(status='monitoring')
+        self.message_user(request, f"{updated} collection(s) moved to monitoring.")
+
+    @admin.action(description="🟢 Clear blacklist")
+    def clear_blacklist(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(status='cleared', cleared_at=timezone.now())
+        self.message_user(request, f"{updated} collection(s) cleared.")
