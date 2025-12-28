@@ -1039,47 +1039,6 @@ class AnomalyDetection(models.Model):
         target = self.collection.name if self.collection else self.wallet_address or "Market"
         return f"{self.anomaly_type} anomaly ({self.severity}) - {target}"
 
-# ==================== ENHANCED EXISTING MODELS ====================
-
-# Add these fields to your existing CrossMarketplaceComparison model
-# (These are the enhancements needed for your current model)
-
-
-ENHANCEMENT INSTRUCTIONS for existing CrossMarketplaceComparison model:
-
-Add these fields to your existing CrossMarketplaceComparison model:
-
-    # Activity distribution percentages
-    activity_distribution_tensor = models.FloatField(
-        default=0.0,
-        help_text="Percentage of activity on Tensor (0-100)"
-    )
-    activity_distribution_magic_eden = models.FloatField(
-        default=0.0,
-        help_text="Percentage of activity on Magic Eden (0-100)"
-    )
-    
-    # Momentum differences between platforms
-    momentum_differential = models.FloatField(
-        default=0.0,
-        help_text="Momentum difference between platforms (-1 to 1)"
-    )
-    leading_platform = models.CharField(
-        max_length=20,
-        choices=[
-            ('tensor', 'Tensor'),
-            ('magic_eden', 'Magic Eden'),
-            ('balanced', 'Balanced'),
-        ],
-        default='balanced'
-    )
-    
-    # Liquidity preference indicators
-    liquidity_preference_score = models.FloatField(
-        default=0.0,
-        help_text="Where liquidity is concentrated (0=ME, 1=Tensor)"
-    )
-
 
 # ==================== ADDITIONAL HELPER MODELS ====================
 
