@@ -11,6 +11,11 @@ from analytics.services.main import MetricsCalculationService
 from .services import NFTDataService
 from traitkeeper.admin_site import admin_site # custom admin site
 
+# Import for backfill actions
+from indexer.services.main import IndexerService
+from indexer.models import NFTEvent
+import asyncio
+
 @admin.register(NFTCollection, site=admin_site)
 class NFTCollectionAdmin(admin.ModelAdmin): # Keep inheriting from admin.ModelAdmin
     list_display = ('display_name', 'address_short', 'is_featured', 'is_listed', 'priority_tier', 'view_analytics_link')
@@ -24,8 +29,8 @@ class NFTCollectionAdmin(admin.ModelAdmin): # Keep inheriting from admin.ModelAd
         ('Core Data', {'fields': ('name', 'address', 'image_url', 'creator_address', 'social_media_links'), 'classes': ('collapse',)}), # Added creator_address
     )
 
-    actions = ['trigger_analytics_update', 'list_collections', 'delist_collections', 'mark_featured',      
-        'unmark_featured',]
+    actions = ['trigger_analytics_update', 'list_collections', 'delist_collections', 'mark_featured',
+        'unmark_featured', 'backfill_selected_collections', 'backfill_all_listed_collections']
 
     @admin.display(description="Address")
     def address_short(self, obj):
@@ -87,6 +92,180 @@ class NFTCollectionAdmin(admin.ModelAdmin): # Keep inheriting from admin.ModelAd
         for obj in queryset:
              self.log_change(request, obj, f"UNMARKED as featured via admin action.")
         self.message_user(request, f"Unmarked {updated_count} collection(s) as featured.", level='success')
+
+    @admin.action(description="🔄 Backfill selected collections (historical data)")
+    def backfill_selected_collections(self, request, queryset):
+        """
+        Backfill historical transaction data for selected collections.
+        This will:
+        1. Fix any misclassified BID events to SALE
+        2. Process historical blockchain transactions
+        3. Fetch current market stats
+        """
+        async def run_backfill():
+            indexer = IndexerService()
+            total = queryset.count()
+            success_count = 0
+            error_count = 0
+
+            # Step 1: Fix existing BID → SALE for Magic Eden
+            self.message_user(request, "Step 1/3: Fixing misclassified events...", level='info')
+            try:
+                updated = NFTEvent.objects.filter(
+                    event_type='BID',
+                    marketplace='magic_eden_v2'
+                ).update(event_type='SALE')
+                if updated > 0:
+                    self.message_user(request, f"✅ Fixed {updated} misclassified BID→SALE events", level='success')
+            except Exception as e:
+                self.message_user(request, f"⚠️ Error fixing events: {e}", level='warning')
+
+            # Step 2: Process each selected collection
+            self.message_user(request, f"Step 2/3: Processing {total} collection(s)...", level='info')
+
+            for i, collection in enumerate(queryset, 1):
+                try:
+                    self.message_user(
+                        request,
+                        f"[{i}/{total}] Processing {collection.name}...",
+                        level='info'
+                    )
+
+                    # Process historical transactions
+                    await indexer.process_onchain_events(collection.address)
+
+                    # Fetch market stats
+                    await indexer.fetch_and_store_all_market_stats(collection)
+
+                    # Calculate blockchain volume
+                    await indexer.calculate_and_store_blockchain_volume(collection)
+
+                    success_count += 1
+                    self.log_change(request, collection, f"Historical backfill completed via admin action.")
+
+                except Exception as e:
+                    error_count += 1
+                    self.message_user(
+                        request,
+                        f"❌ Error processing {collection.name}: {str(e)}",
+                        level='error'
+                    )
+                    continue
+
+            # Step 3: Summary
+            self.message_user(
+                request,
+                f"Step 3/3: Backfill complete! Success: {success_count}, Errors: {error_count}",
+                level='success' if error_count == 0 else 'warning'
+            )
+
+            # Show event summary
+            try:
+                from django.db.models import Count
+                events = NFTEvent.objects.values('event_type').annotate(count=Count('event_id'))
+                summary = ", ".join([f"{e['event_type']}: {e['count']}" for e in events])
+                self.message_user(request, f"📊 Event Summary: {summary}", level='info')
+            except Exception:
+                pass
+
+        # Run async backfill
+        try:
+            async_to_sync(run_backfill)()
+        except Exception as e:
+            self.message_user(request, f"❌ Backfill failed: {str(e)}", level='error')
+
+    @admin.action(description="🔄 Backfill ALL listed collections (comprehensive)")
+    def backfill_all_listed_collections(self, request, queryset):
+        """
+        Backfill ALL listed collections regardless of selection.
+        Use this for comprehensive database rebuild.
+
+        WARNING: This processes ALL is_listed=True collections and may take a long time.
+        """
+        async def run_full_backfill():
+            indexer = IndexerService()
+
+            # Get ALL listed collections (not just selected)
+            all_collections = NFTCollection.objects.filter(is_listed=True)
+            total = all_collections.count()
+            success_count = 0
+            error_count = 0
+
+            self.message_user(
+                request,
+                f"⚠️ Starting FULL backfill for {total} listed collections...",
+                level='warning'
+            )
+
+            # Step 1: Fix existing BID → SALE
+            self.message_user(request, "Step 1/3: Fixing misclassified events...", level='info')
+            try:
+                updated = NFTEvent.objects.filter(
+                    event_type='BID',
+                    marketplace='magic_eden_v2'
+                ).update(event_type='SALE')
+                if updated > 0:
+                    self.message_user(request, f"✅ Fixed {updated} misclassified BID→SALE events", level='success')
+            except Exception as e:
+                self.message_user(request, f"⚠️ Error fixing events: {e}", level='warning')
+
+            # Step 2: Process ALL collections
+            self.message_user(request, f"Step 2/3: Processing {total} collections...", level='info')
+
+            for i, collection in enumerate(all_collections, 1):
+                try:
+                    self.message_user(
+                        request,
+                        f"[{i}/{total}] Processing {collection.name}...",
+                        level='info'
+                    )
+
+                    # Process historical transactions
+                    await indexer.process_onchain_events(collection.address)
+
+                    # Fetch market stats
+                    await indexer.fetch_and_store_all_market_stats(collection)
+
+                    # Calculate blockchain volume
+                    await indexer.calculate_and_store_blockchain_volume(collection)
+
+                    success_count += 1
+
+                    # Small delay to avoid rate limits
+                    if i < total:
+                        await asyncio.sleep(2)
+
+                except Exception as e:
+                    error_count += 1
+                    self.message_user(
+                        request,
+                        f"❌ Error processing {collection.name}: {str(e)}",
+                        level='error'
+                    )
+                    continue
+
+            # Step 3: Summary
+            self.message_user(
+                request,
+                f"Step 3/3: FULL backfill complete! Success: {success_count}, Errors: {error_count}",
+                level='success' if error_count == 0 else 'warning'
+            )
+
+            # Show comprehensive event summary
+            try:
+                from django.db.models import Count
+                events = NFTEvent.objects.values('event_type').annotate(count=Count('event_id'))
+                summary = "\n".join([f"  • {e['event_type']}: {e['count']}" for e in events])
+                self.message_user(request, f"📊 Complete Event Summary:\n{summary}", level='info')
+            except Exception:
+                pass
+
+        # Run async backfill
+        try:
+            async_to_sync(run_full_backfill)()
+        except Exception as e:
+            self.message_user(request, f"❌ Full backfill failed: {str(e)}", level='error')
+
     # <<<--- ADD THESE METHODS FOR CUSTOM LOGGING --- >>>
 
     def log_change(self, request, object, message):
