@@ -60,7 +60,10 @@
       "Bash(git fetch:*)",
       "Bash(git rm:*)",
       "Bash(cat:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Correct Magic Eden buyV2 to SALE instead of BID\n\nCRITICAL BUG FIX: Magic Eden buyV2 instruction was incorrectly classified as BID.\n\nThe buyV2 instruction is when a buyer PURCHASES an NFT, which is a SALE event,\nnot a BID event. This was causing all Magic Eden sales to be saved as BIDs.\n\nChanges:\n- Changed event_type from ''BID'' to ''SALE'' in _parse_me_v2_bid function\n- Added NFT transfer detection to get accurate buyer/seller/mint info\n- Updated docstring to clarify this is a purchase \\(SALE\\), not an offer \\(BID\\)\n\nImpact:\n- Database had 5,378 LISTING events and 5 BID events\n- Those 5 \"BID\" events were actually SALES\n- After this fix, new sales will be correctly captured as SALE events\n- This fixes the 0 SALE events issue despite Magic Eden showing real sales\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Correct Magic Eden buyV2 to SALE instead of BID\n\nCRITICAL BUG FIX: Magic Eden buyV2 instruction was incorrectly classified as BID.\n\nThe buyV2 instruction is when a buyer PURCHASES an NFT, which is a SALE event,\nnot a BID event. This was causing all Magic Eden sales to be saved as BIDs.\n\nChanges:\n- Changed event_type from ''BID'' to ''SALE'' in _parse_me_v2_bid function\n- Added NFT transfer detection to get accurate buyer/seller/mint info\n- Updated docstring to clarify this is a purchase \\(SALE\\), not an offer \\(BID\\)\n\nImpact:\n- Database had 5,378 LISTING events and 5 BID events\n- Those 5 \"BID\" events were actually SALES\n- After this fix, new sales will be correctly captured as SALE events\n- This fixes the 0 SALE events issue despite Magic Eden showing real sales\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python manage.py:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

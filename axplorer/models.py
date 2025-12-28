@@ -1,9 +1,11 @@
 from django.db import models
+from nft_data.models import NFTCollection, TraitType, TraitValue
+from analytics.models import CollectionMarketStats
 
 # Create your models here.
-"""
+
 class CrossMarketplaceComparison(models.Model):
-   Compare performance across different marketplaces.
+    """Compare performance across different marketplaces."""
     
     collection = models.ForeignKey(
         NFTCollection,
@@ -76,7 +78,7 @@ class CrossMarketplaceComparison(models.Model):
 # ==================== ANALYTICS ALERT MODELS ====================
 
 class MarketAlert(models.Model):
-    Model for tracking and sending market-based alerts.
+    """Model for tracking and sending market-based alerts."""
     
     ALERT_TYPES = [
         ('price_spike', 'Price Spike'),
@@ -149,7 +151,7 @@ class MarketAlert(models.Model):
         return f"{self.alert_type} alert for {self.collection.name} - {self.severity}"
 
 class AnalyticsSnapshot(models.Model):
-    Periodic snapshots of key analytics for historical analysis.
+    """Periodic snapshots of key analytics for historical analysis."""
     
     collection = models.ForeignKey(
         NFTCollection,
@@ -214,7 +216,7 @@ class AnalyticsSnapshot(models.Model):
 # ==================== USAGE TRACKING ====================
 
 class AnalyticsUsage(models.Model):
-    Track which analytics features are being used most.
+    """Track which analytics features are being used most."""
     
     feature_name = models.CharField(max_length=100)
     collection = models.ForeignKey(
@@ -260,10 +262,10 @@ class AnalyticsUsage(models.Model):
 # ==================== ADVANCED ANALYTICS MODELS ====================
 
 class MarketRegime(models.Model):
-
-#    Track market regime changes for adaptive analytics.
-#    Critical for implementing regime-aware scoring and trend analysis.
-
+    """
+    Track market regime changes for adaptive analytics.
+    Critical for implementing regime-aware scoring and trend analysis.
+    """
     
     REGIME_TYPES = [
         ('bull_run', 'Bull Run'),
@@ -345,10 +347,10 @@ class MarketRegime(models.Model):
         return f"{self.regime_type} regime{duration} - {self.confidence_score:.2f} confidence"
 
 class AdvancedCrossMarketplaceAnalysis(models.Model):
-
+    """
     Enhanced cross-marketplace analysis with advanced metrics.
     Replaces/enhances your existing CrossMarketplaceComparison model.
-
+    """
     
     collection = models.ForeignKey(
         NFTCollection,
@@ -472,10 +474,10 @@ class AdvancedCrossMarketplaceAnalysis(models.Model):
 
 
 class AdvancedTraitAnalytics(models.Model):
-
- #   Advanced trait performance analytics with cross-platform analysis.
- #   Enhances your existing TraitPerformanceScore model.
- 
+    """
+    Advanced trait performance analytics with cross-platform analysis.
+    Enhances your existing TraitPerformanceScore model.
+    """
     
     trait_type = models.ForeignKey(TraitType, on_delete=models.CASCADE, related_name='advanced_analytics')
     trait_value = models.ForeignKey(TraitValue, on_delete=models.CASCADE, related_name='advanced_analytics')
@@ -649,10 +651,10 @@ class AdvancedTraitAnalytics(models.Model):
         return f"Advanced analytics: {self.trait_type.name}={self.trait_value.value} ({self.collection.name})"
 
 class PredictionRecord(models.Model):
-
+    """
     Track predictions made by analytics algorithms and their accuracy.
     Essential for ML model validation and improvement.
-
+    """
     
     PREDICTION_TYPES = [
         ('price_direction', 'Price Direction'),
@@ -820,9 +822,9 @@ class PredictionRecord(models.Model):
         return f"{self.prediction_type} prediction for {target} - {self.confidence_score:.2f} confidence"
 
 class AnomalyDetection(models.Model):
-
+    """
     Track market anomalies and unusual patterns for advanced market intelligence.
-
+    """
     
     ANOMALY_TYPES = [
         ('price_anomaly', 'Price Anomaly'),
@@ -1082,9 +1084,9 @@ Add these fields to your existing CrossMarketplaceComparison model:
 # ==================== ADDITIONAL HELPER MODELS ====================
 
 class MarketRegimeTransition(models.Model):
-
+    """
     Track transitions between market regimes for better regime prediction.
-
+    """
     
     from_regime = models.ForeignKey(
         MarketRegime,
@@ -1129,9 +1131,9 @@ class MarketRegimeTransition(models.Model):
         return f"Transition: {self.from_regime.regime_type} → {self.to_regime.regime_type}"
 
 class PredictionAccuracyTracker(models.Model):
-
+    """
     Aggregate prediction accuracy metrics for different models and prediction types.
-
+    """
     
     model_name = models.CharField(max_length=100)
     model_version = models.CharField(max_length=20)
@@ -1182,9 +1184,9 @@ class PredictionAccuracyTracker(models.Model):
 # ==================== ML PREPARATION MODELS ====================
 
 class MLModelMetadata(models.Model):
-
+    """
     Track ML model versions, features, and performance for the future ML implementation.
-
+    """
     
     MODEL_TYPES = [
         ('price_prediction', 'Price Prediction'),
@@ -1251,9 +1253,9 @@ class MLModelMetadata(models.Model):
         return f"{self.model_name} v{self.version} ({self.model_type})"
 
 class FeatureEngineering(models.Model):
-
+    """
     Track feature engineering experiments for ML model development.
-
+    """
     
     experiment_name = models.CharField(max_length=100)
     feature_set_name = models.CharField(max_length=100)
@@ -1288,4 +1290,3 @@ class FeatureEngineering(models.Model):
     
     def __str__(self):
         return f"{self.experiment_name} - {self.feature_set_name} (+{self.performance_lift:.2f}%)"
-        """
