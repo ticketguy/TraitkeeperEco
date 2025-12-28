@@ -1,6 +1,6 @@
 from django.db import models
 from nft_data.models import NFTCollection, TraitType, TraitValue
-from analytics.models import CollectionMarketStats
+from analytics.models import AggregatedCollectionStats
 
 # Create your models here.
 
@@ -119,7 +119,7 @@ class MarketAlert(models.Model):
     
     # Associated data
     associated_stats = models.ForeignKey(
-        CollectionMarketStats,
+        AggregatedCollectionStats,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
