@@ -15,6 +15,7 @@ from .models import (
     TrendingTrait,
     TopTrait,
     BlacklistedWallet,
+    BlacklistedCollection,
     WalletSuspiciousActivity,
 )
 

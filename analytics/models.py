@@ -474,6 +474,118 @@ class BlacklistedWallet(models.Model):
         return self.status == 'active'
 
 
+class BlacklistedCollection(models.Model):
+    """
+    Collections that are blacklisted due to suspicious activity or scams.
+    Entire collections can be excluded from platform calculations and displays.
+    """
+
+    BLACKLIST_REASONS = [
+        ('scam', 'Scam Collection'),
+        ('rug_pull', 'Rug Pull'),
+        ('wash_trading_collection', 'Collection-Wide Wash Trading'),
+        ('bot_network', 'Bot Network Operation'),
+        ('copyright_violation', 'Copyright Violation'),
+        ('spam_collection', 'Spam/Low Quality'),
+        ('malicious_contract', 'Malicious Smart Contract'),
+        ('impersonation', 'Impersonating Legitimate Project'),
+        ('manual_review', 'Manual Review Required'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active (Blacklisted)'),
+        ('monitoring', 'Under Monitoring'),
+        ('cleared', 'Cleared'),
+    ]
+
+    # Core identification
+    collection = models.OneToOneField(
+        NFTCollection,
+        on_delete=models.CASCADE,
+        related_name='blacklist_status',
+        help_text="Collection to blacklist"
+    )
+
+    # Blacklist details
+    reason = models.CharField(
+        max_length=30,
+        choices=BLACKLIST_REASONS,
+        help_text="Primary reason for blacklisting"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active',
+        help_text="Current blacklist status"
+    )
+
+    # Detection information
+    detection_method = models.CharField(
+        max_length=50,
+        choices=[
+            ('automatic', 'Automatic Detection'),
+            ('manual', 'Manual Review'),
+            ('community_report', 'Community Reported'),
+            ('third_party', 'Third-Party Intelligence'),
+        ],
+        default='manual',
+        help_text="How this collection was flagged"
+    )
+
+    # Evidence
+    evidence_data = models.JSONField(
+        default=dict,
+        help_text="Evidence and suspicious patterns detected"
+    )
+    risk_score = models.FloatField(
+        default=0.0,
+        help_text="Overall risk score (0-100, higher = more suspicious)"
+    )
+
+    # Review
+    reviewer_notes = models.TextField(
+        blank=True,
+        help_text="Notes from review"
+    )
+    reviewed_by = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Who reviewed this"
+    )
+
+    # Timestamps
+    first_detected = models.DateTimeField(auto_now_add=True)
+    blacklisted_at = models.DateTimeField(auto_now_add=True)
+    cleared_at = models.DateTimeField(null=True, blank=True)
+
+    # Display options
+    hide_from_listings = models.BooleanField(
+        default=True,
+        help_text="Hide from public collection listings"
+    )
+    show_warning = models.BooleanField(
+        default=True,
+        help_text="Show warning banner if accessed directly"
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', 'reason']),
+            models.Index(fields=['risk_score', 'status']),
+        ]
+        ordering = ['-risk_score', '-first_detected']
+        verbose_name = 'Blacklisted Collection'
+        verbose_name_plural = 'Blacklisted Collections'
+
+    def __str__(self):
+        return f"{self.collection.name} - {self.reason} ({self.status})"
+
+    def is_currently_blacklisted(self) -> bool:
+        """Check if collection is currently blacklisted"""
+        return self.status == 'active'
+
+
 class WalletSuspiciousActivity(models.Model):
     """
     Tracks individual suspicious activities by wallets for audit trail.

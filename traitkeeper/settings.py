@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'profiles',                  # User profiles app
     'core',                      # Core utilities and services
     'analytics',                 # Analytics app
+    'axplorer',                  # Axplorer - Advanced anomaly detection & market intelligence
     'nft_data',                  # NFT data management app
     'nftmemories',               # NFT memories app
     'marketplace',               # Marketplace app
