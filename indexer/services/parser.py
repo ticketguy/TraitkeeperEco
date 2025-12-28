@@ -428,17 +428,26 @@ class TransactionParserService:
             'traits': {}
         }
 
-    async def _parse_me_v2_bid(self, tx_details: dict, accounts: list, 
+    async def _parse_me_v2_bid(self, tx_details: dict, accounts: list,
                                parsed_data: Any, collection: str, ts: Any) -> Optional[dict]:
-        """Parse ME V2 buyV2 instruction (creates a bid/offer)."""
-        mint_address = accounts[2] if len(accounts) > 2 else ''
-        
+        """Parse ME V2 buyV2 instruction (buyer purchases NFT = SALE)."""
+        # Find the NFT transfer to get accurate buyer/seller/mint info
+        nft_transfer = next(
+            (t for t in tx_details.get('tokenTransfers', [])
+             if t.get('tokenStandard') in ['NonFungible', 'NonFungibleEdition']),
+            None
+        )
+
+        if not nft_transfer:
+            logger.warning("No NFT transfer found in buyV2")
+            return None
+
         return {
-            'event_type': 'BID',
-            'mint_address': mint_address,
+            'event_type': 'SALE',
+            'mint_address': nft_transfer.get('mint'),
             'amount': parsed_data.buyer_price / 1e9,
-            'buyer': accounts[0] if accounts else '',
-            'seller': '',
+            'buyer': nft_transfer.get('toUserAccount'),
+            'seller': nft_transfer.get('fromUserAccount'),
             'timestamp': ts,
             'collection_address': collection,
             'marketplace': 'magic_eden_v2',
