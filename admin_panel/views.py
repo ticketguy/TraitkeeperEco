@@ -1160,6 +1160,7 @@ def provider_status_api(request):
 
         if not config:
             provider_statuses.append({
+                'id': provider_setting.id,
                 'name': provider_setting.name,
                 'is_primary': provider_setting.is_primary,
                 'tier': provider_setting.tier,
@@ -1192,6 +1193,7 @@ def provider_status_api(request):
             is_online = False
 
         provider_statuses.append({
+            'id': provider_setting.id,
             'name': provider_setting.name,
             'is_primary': provider_setting.is_primary,
             'is_active': provider_setting.is_active,
