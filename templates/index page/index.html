@@ -247,7 +247,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                            ${{ collection_stats.market_cap|floatformat:2 }}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -286,7 +286,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            {{ collection_stats.market_cap|floatformat:2 }} SOL
+                            ${{ collection_stats.market_cap|floatformat:2 }}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -969,7 +969,7 @@
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.volume|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.floor_price|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.sales }}</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.market_cap|floatformat:2 }} SOL</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${{ trait.market_cap|floatformat:2 }}</td>
                         <td
                             class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
                             ↑ {{ trait.trend_percentage }}%</td>
@@ -1618,7 +1618,7 @@
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.volume.toFixed(2)} SOL</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.floor_price.toFixed(2)} SOL</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.sales}</td>
-                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.market_cap.toFixed(2)} SOL</td>
+                                    <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">$${trait.market_cap.toFixed(2)}</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-green-600 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">↑ ${trait.trend_percentage}%</td>
                                     <td class="p-1 xs:p-2 sm:p-3 text-[10px] xs:text-xs sm:text-sm whitespace-nowrap">${trait.count}</td>
                                 </tr>
@@ -1665,8 +1665,8 @@
                                             </div>
                                             <div class="flex justify-between">
                                                 <div class="text-center">
-                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.market_cap.toFixed(2)}</div>
-                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">MARKET CAP</div>
+                                                    <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">$${trait.market_cap.toFixed(2)}</div>
+                                                    <div class="text-[8px] xs:text-[9px] sm:text-xs text-secondary-light dark:text-gray-400">MARKET CAP (USD)</div>
                                                 </div>
                                                 <div class="text-center">
                                                     <div class="text-[10px] xs:text-xs sm:text-sm font-bold text-text-dark dark:text-white">${trait.count}</div>
