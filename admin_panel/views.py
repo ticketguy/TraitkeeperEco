@@ -1114,3 +1114,224 @@ def secrets_management(request):
     }
 
     return render(request, 'admin_panel/secrets_management.html', context)
+
+
+# ==============================================================================
+# PROVIDER MANAGEMENT
+# ==============================================================================
+
+@staff_member_required
+def provider_management(request):
+    """
+    Modern provider management interface with real-time status and quota monitoring.
+    """
+    from .models import PrimaryProviderSetting, MarketplaceProviderSetting
+
+    rpc_providers = PrimaryProviderSetting.objects.all().order_by('-is_primary', 'name')
+    marketplace_providers = MarketplaceProviderSetting.objects.all().order_by('name')
+
+    context = {
+        'rpc_providers': rpc_providers,
+        'marketplace_providers': marketplace_providers,
+    }
+
+    return render(request, 'admin_panel/provider_management.html', context)
+
+
+@api_view(['GET'])
+@staff_member_required
+def provider_status_api(request):
+    """
+    API endpoint for real-time provider status and quota information.
+    Returns JSON with provider health, quota usage, and rate limit stats.
+    """
+    from .models import PrimaryProviderSetting
+    from core.api_provider.api_providers import APIProviderManager
+    from indexer.quota_manager import ProviderQuotaManager
+    from datetime import date
+
+    provider_statuses = []
+    manager = APIProviderManager()
+    quota_manager = ProviderQuotaManager()
+
+    for provider_setting in PrimaryProviderSetting.objects.filter(is_active=True):
+        # Get provider config
+        config = quota_manager._get_provider_config(provider_setting.name)
+
+        if not config:
+            provider_statuses.append({
+                'name': provider_setting.name,
+                'is_primary': provider_setting.is_primary,
+                'tier': provider_setting.tier,
+                'status': 'offline',
+                'quota_used': 0,
+                'quota_total': 0,
+                'quota_percent': 0,
+                'rate_limit': 0,
+                'error': 'No config found for tier'
+            })
+            continue
+
+        # Get quota usage from cache
+        today = date.today().isoformat()
+        daily_usage_key = f"quota:{provider_setting.name}:daily:{today}"
+
+        try:
+            daily_usage = async_to_sync(cache_manager.get)(daily_usage_key, cache_type=CacheType.STATS) or 0
+        except:
+            daily_usage = 0
+
+        daily_limit = config.get('daily_credits', 0)
+        quota_percent = (daily_usage / daily_limit * 100) if daily_limit > 0 else 0
+
+        # Try to ping provider to check if online
+        try:
+            provider_instance = manager.get_provider_by_name(provider_setting.name)
+            is_online = provider_instance is not None
+        except:
+            is_online = False
+
+        provider_statuses.append({
+            'name': provider_setting.name,
+            'is_primary': provider_setting.is_primary,
+            'is_active': provider_setting.is_active,
+            'tier': provider_setting.tier,
+            'status': 'online' if is_online else 'offline',
+            'quota_used': int(daily_usage),
+            'quota_total': daily_limit,
+            'quota_percent': round(quota_percent, 2),
+            'rate_limit_rps': config.get('requests_per_second', 0),
+            'rpc_url': provider_setting.rpc_url,
+            'has_websocket': bool(provider_setting.ws_url),
+        })
+
+    return Response({
+        'providers': provider_statuses,
+        'timestamp': timezone.now().isoformat()
+    })
+
+
+@api_view(['POST'])
+@staff_member_required
+def provider_set_primary_api(request, provider_id):
+    """
+    API endpoint to set a provider as primary.
+    Publishes reload signal to notify all services.
+    """
+    from .models import PrimaryProviderSetting
+    import redis
+    from django.conf import settings
+
+    try:
+        provider = get_object_or_404(PrimaryProviderSetting, pk=provider_id)
+
+        # Set as primary (model's save() method handles ensuring only one primary)
+        provider.is_primary = True
+        provider.save()
+
+        # Publish reload signal
+        try:
+            redis_client = redis.Redis.from_url(settings.CACHES['default']['LOCATION'])
+            redis_client.publish("config_updates", "reload")
+        except Exception as e:
+            logger.warning(f"Failed to publish config reload: {e}")
+
+        return Response({
+            'success': True,
+            'message': f'{provider.name} is now the primary provider',
+            'provider_name': provider.name
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@staff_member_required
+def provider_toggle_active_api(request, provider_id):
+    """
+    API endpoint to toggle provider active status.
+    Publishes reload signal to notify all services.
+    """
+    from .models import PrimaryProviderSetting
+    import redis
+    from django.conf import settings
+
+    try:
+        provider = get_object_or_404(PrimaryProviderSetting, pk=provider_id)
+
+        # Toggle active status
+        provider.is_active = not provider.is_active
+        provider.save()
+
+        # Publish reload signal
+        try:
+            redis_client = redis.Redis.from_url(settings.CACHES['default']['LOCATION'])
+            redis_client.publish("config_updates", "reload")
+        except Exception as e:
+            logger.warning(f"Failed to publish config reload: {e}")
+
+        return Response({
+            'success': True,
+            'message': f'{provider.name} is now {"active" if provider.is_active else "inactive"}',
+            'is_active': provider.is_active
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@staff_member_required
+def provider_update_tier_api(request, provider_id):
+    """
+    API endpoint to update provider tier.
+    Publishes reload signal to notify all services.
+    """
+    from .models import PrimaryProviderSetting
+    import redis
+    from django.conf import settings
+
+    try:
+        provider = get_object_or_404(PrimaryProviderSetting, pk=provider_id)
+        new_tier = request.data.get('tier')
+
+        if not new_tier:
+            return Response({
+                'success': False,
+                'error': 'Tier is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate tier is valid
+        valid_tiers = [choice[0] for choice in PrimaryProviderSetting.TIER_CHOICES]
+        if new_tier not in valid_tiers:
+            return Response({
+                'success': False,
+                'error': f'Invalid tier. Must be one of: {", ".join(valid_tiers)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update tier
+        provider.tier = new_tier
+        provider.save()
+
+        # Publish reload signal
+        try:
+            redis_client = redis.Redis.from_url(settings.CACHES['default']['LOCATION'])
+            redis_client.publish("config_updates", "reload")
+        except Exception as e:
+            logger.warning(f"Failed to publish config reload: {e}")
+
+        return Response({
+            'success': True,
+            'message': f'{provider.name} tier updated to {new_tier}',
+            'tier': new_tier
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
