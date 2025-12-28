@@ -110,10 +110,23 @@ class ProviderQuotaManager:
         await cache_manager.set(tier_usage_key, tier_usage, cache_type=CacheType.STATS)
 
     def _get_provider_config(self, provider_name: str) -> Optional[Dict[str, Any]]:
-        """Gets the configuration for a provider from settings."""
-        # In the future, this could auto-detect the plan (e.g., 'free' vs 'developer')
-        plan = 'free' # Default to the most restrictive plan
-        return self.provider_configs.get(provider_name, {}).get(plan)
+        """Gets the configuration for a provider from settings, using tier from DB."""
+        from admin_panel.models import PrimaryProviderSetting
+
+        # Get tier from database provider setting
+        try:
+            provider_setting = PrimaryProviderSetting.objects.get(name=provider_name, is_active=True)
+            tier = provider_setting.tier
+        except PrimaryProviderSetting.DoesNotExist:
+            tier = 'free'  # Default to most restrictive plan if not found
+
+        # Get config for provider + tier, fallback to generic if not found
+        provider_config = self.provider_configs.get(provider_name, {}).get(tier)
+        if not provider_config and provider_name != 'generic':
+            # Fallback to generic/default if specific provider config not found
+            provider_config = self.provider_configs.get('generic', {}).get('default')
+
+        return provider_config
 
 class QuotaAwareProviderWrapper:
     """

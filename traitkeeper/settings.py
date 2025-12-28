@@ -697,24 +697,42 @@ VAPID_PUBLIC_KEY = WEBPUSH_SETTINGS["VAPID_PUBLIC_KEY"]
 PROVIDER_QUOTA_CONFIGS = {
     'helius': {
         'free': {
-            'daily_credits': int(os.getenv('HELIUS_FREE_DAILY_CREDITS', '1000000')), 
+            'daily_credits': int(os.getenv('HELIUS_FREE_DAILY_CREDITS', '100000')),  # 100K/day actual Helius free tier
             'requests_per_second': int(os.getenv('HELIUS_FREE_RPS', '10'))
         },
         'developer': {
-            'daily_credits': int(os.getenv('HELIUS_DEV_DAILY_CREDITS', '10000000')), 
+            'daily_credits': int(os.getenv('HELIUS_DEV_DAILY_CREDITS', '50000000')),  # 50M/day
             'requests_per_second': int(os.getenv('HELIUS_DEV_RPS', '50'))
+        },
+        'professional': {
+            'daily_credits': int(os.getenv('HELIUS_PRO_DAILY_CREDITS', '200000000')),  # 200M/day
+            'requests_per_second': int(os.getenv('HELIUS_PRO_RPS', '100'))
+        },
+        'business': {
+            'daily_credits': int(os.getenv('HELIUS_BIZ_DAILY_CREDITS', '1000000000')),  # 1B/day
+            'requests_per_second': int(os.getenv('HELIUS_BIZ_RPS', '200'))
         }
     },
     'quicknode': {
         'free': {
-            'daily_credits': int(os.getenv('QUICKNODE_FREE_DAILY_CREDITS', '10000000')), 
+            'daily_credits': int(os.getenv('QUICKNODE_FREE_DAILY_CREDITS', '10000000')),  # 10M/day
             'requests_per_second': int(os.getenv('QUICKNODE_FREE_RPS', '15'))
         },
         'build': {
-            'daily_credits': int(os.getenv('QUICKNODE_BUILD_DAILY_CREDITS', '80000000')), 
+            'daily_credits': int(os.getenv('QUICKNODE_BUILD_DAILY_CREDITS', '80000000')),  # 80M/day
             'requests_per_second': int(os.getenv('QUICKNODE_BUILD_RPS', '50'))
+        },
+        'scale': {
+            'daily_credits': int(os.getenv('QUICKNODE_SCALE_DAILY_CREDITS', '300000000')),  # 300M/day
+            'requests_per_second': int(os.getenv('QUICKNODE_SCALE_RPS', '150'))
         }
     },
+    'generic': {  # Fallback for unlisted providers
+        'default': {
+            'daily_credits': int(os.getenv('GENERIC_DAILY_CREDITS', '10000000')),  # 10M/day default
+            'requests_per_second': int(os.getenv('GENERIC_RPS', '25'))
+        }
+    }
 }
 
 PROVIDER_PRIORITY_ALLOCATIONS = {

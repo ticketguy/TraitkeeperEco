@@ -164,6 +164,16 @@ class AdminLogEntry(models.Model):
 
 
 class PrimaryProviderSetting(models.Model):
+    TIER_CHOICES = [
+        ('free', 'Free'),
+        ('developer', 'Developer'),
+        ('professional', 'Professional'),
+        ('business', 'Business'),
+        ('build', 'Build'),  # QuickNode
+        ('scale', 'Scale'),  # QuickNode
+        ('default', 'Default'),  # Generic
+    ]
+
     name = models.CharField(max_length=50, unique=True)
     rpc_url = models.URLField(max_length=200)
     api_key = models.CharField(max_length=100, blank=True, null=True)
@@ -173,6 +183,12 @@ class PrimaryProviderSetting(models.Model):
         null=True,
         help_text="WebSocket URL for real-time subscriptions (optional)"
     )  # Changed from URLField to CharField
+    tier = models.CharField(
+        max_length=20,
+        choices=TIER_CHOICES,
+        default='free',
+        help_text="Subscription tier for quota and rate limiting"
+    )
     is_active = models.BooleanField(default=True)
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
