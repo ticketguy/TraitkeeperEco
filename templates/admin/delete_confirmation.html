@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Confirm Deletion | {{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 sm:p-6 rounded-lg mb-6 animate-fade-in">
+        <div class="flex items-center mb-4">
+            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl mr-3"></i>
+            <h1 class="text-xl sm:text-2xl font-bold text-red-800 dark:text-red-300" style="font-family: 'Space Mono', monospace;">
+                Confirm Deletion
+            </h1>
+        </div>
+        <p class="text-red-700 dark:text-red-300 text-sm sm:text-base">
+            Are you sure you want to delete the selected {{ object_name }}? This action cannot be undone.
+        </p>
+    </div>
+
+    <!-- Object Details -->
+    <div class="bg-accent-light dark:bg-accent-dark rounded-lg p-4 sm:p-6 mb-6 border border-border-light dark:border-border-dark animate-slide-up">
+        <h2 class="text-lg font-semibold text-text-light dark:text-text-dark mb-4">
+            <i class="fas fa-info-circle mr-2 text-brand-purple"></i>Object to be deleted:
+        </h2>
+        <div class="bg-background-light dark:bg-background-dark rounded-lg p-4 border border-border-light dark:border-border-dark">
+            <p class="text-text-light dark:text-text-dark font-mono text-sm sm:text-base break-words">
+                {{ object }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Related Objects Warning -->
+    {% if deleted_objects %}
+    <div class="bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 p-4 sm:p-6 rounded-lg mb-6 animate-slide-up">
+        <h2 class="text-lg font-semibold text-orange-800 dark:text-orange-300 mb-3 flex items-center">
+            <i class="fas fa-link mr-2"></i>
+            Warning: Related objects will also be deleted
+        </h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 max-h-64 overflow-y-auto">
+            <ul class="space-y-2 text-sm">
+                {% for deleted_object in deleted_objects %}
+                <li class="flex items-start text-orange-700 dark:text-orange-300">
+                    <i class="fas fa-trash-alt mr-2 mt-1 text-xs"></i>
+                    <span class="break-words">{{ deleted_object }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <p class="text-orange-600 dark:text-orange-400 text-xs sm:text-sm mt-3">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            Total: {{ deleted_objects|length }} related object{{ deleted_objects|length|pluralize }}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Confirmation Form -->
+    <form method="post" class="animate-fade-in">
+        {% csrf_token %}
+        <input type="hidden" name="post" value="yes">
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-end">
+            <a href="{{ cancel_url|default:'../' }}"
+               class="inline-flex items-center justify-center px-6 py-3 border border-border-light dark:border-border-dark rounded-lg text-text-light dark:text-text-dark hover:bg-accent-light dark:hover:bg-accent-dark transition-all duration-300 text-sm sm:text-base font-medium">
+                <i class="fas fa-times mr-2"></i>
+                No, Cancel
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center justify-center glow-button text-white px-6 py-3 rounded-lg text-sm sm:text-base font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                    style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                <i class="fas fa-trash mr-2"></i>
+                Yes, Delete
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+/* Custom scrollbar for related objects list */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(128, 0, 128, 0.1);
+    border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(128, 0, 128, 0.4);
+    border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 0, 128, 0.6);
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(128, 0, 128, 0.2);
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(128, 0, 128, 0.5);
+}
+</style>
+{% endblock %}

@@ -748,63 +748,64 @@
         {% endwith %}
     </button>
     <div
-        class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-3 w-80 border border-gray-200 dark:border-gray-700 right-0 z-50 animate-slide-up">
+        class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-2 border border-gray-200 dark:border-gray-700 right-0 z-50 animate-slide-up"
+        style="width: 320px; max-width: calc(100vw - 2rem); max-height: 70vh; overflow: hidden; display: flex; flex-direction: column;">
         {% if user.is_authenticated and user.is_staff %}
         {% with recent_notifications=user.notifications.all|slice:":3" %}
         {% if recent_notifications %}
         <!-- Severity Filter -->
-        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-            <label for="severity-filter-desktop" class="text-sm font-semibold text-gray-800 dark:text-gray-200">Filter by Severity:</label>
+        <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <label for="severity-filter-desktop" class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-1">Filter:</label>
             <select id="severity-filter-desktop" onchange="filterNotifications(this, 'desktop')"
-                class="ml-2 text-xs text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded px-2 py-1">
-                <option value="all">All</option>
+                class="w-full text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple">
+                <option value="all">All Notifications</option>
                 <option value="info">Info</option>
                 <option value="warning">Warning</option>
                 <option value="error">Error</option>
             </select>
         </div>
-        <div class="px-4 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Recent Notifications</span>
+        <div class="px-3 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Recent</span>
             <a href="{% url 'admin:mark_all_notifications_read' %}"
-                class="text-brand-purple hover:text-primary-dark text-xs font-medium">Mark All as Read</a>
+                class="text-brand-purple hover:text-primary-dark text-xs font-medium whitespace-nowrap">Mark All Read</a>
         </div>
-        <div id="notifications-list-desktop">
+        <div id="notifications-list-desktop" class="overflow-y-auto flex-1" style="min-height: 0;">
             {% for notification in recent_notifications %}
             <a href="{% url 'admin:view_notification' notification.id %}" class="block notification-item group relative"
                 data-severity="{{ notification.severity|lower }}">
                 <div
-                    class="px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700">
+                    class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <!-- Simplified Content: Severity, Name, Success/Failure -->
-                    <div class="flex justify-between items-center">
-                        <span class="font-semibold {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="font-semibold truncate {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
                             {{ notification.severity|capfirst }}: {{ notification.get_type_display }}
                         </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                             {% if notification.details %}
                             {% if notification.details.failed == 0 %}Success{% else %}Failed{% endif %}
                             {% endif %}
                         </span>
                     </div>
                     <!-- Tooltip for Message Preview -->
-                    <div class="notification-tooltip">
-                        {{ notification.message|safe }}
+                    <div class="notification-tooltip" style="max-width: 280px;">
+                        {{ notification.message|safe|truncatewords:20 }}
                     </div>
                 </div>
             </a>
             {% empty %}
-            <div class="px-4 py-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">No notifications</div>
+            <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">No notifications</div>
             {% endfor %}
         </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-2">
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-2 flex-shrink-0">
             <a href="{% url 'admin:notifications_view' %}"
-                class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-sm text-center">
+                class="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-xs text-center font-medium">
                 View All Notifications
             </a>
         </div>
         {% endif %}
         {% endwith %}
         {% else %}
-        <div class="px-4 py-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
+        <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
         {% endif %}
     </div>
 </div>
@@ -898,46 +899,42 @@
         {% endwith %}
         {% endif %}
     </button>
-    <div id="notifications-dropdown-mobile" class="hidden pl-4">
+    <div id="notifications-dropdown-mobile" class="hidden pl-2 max-h-96 overflow-y-auto">
         {% if user.is_authenticated and user.is_staff %}
         {% with recent_notifications=user.notifications.all|slice:":3" %}
         {% if recent_notifications %}
         <!-- Severity Filter -->
         <div class="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
-            <label for="severity-filter-mobile" class="text-sm font-semibold text-gray-800 dark:text-gray-200">Filter by Severity:</label>
+            <label for="severity-filter-mobile" class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-1">Filter:</label>
             <select id="severity-filter-mobile" onchange="filterNotifications(this, 'mobile')"
-                class="ml-2 text-xs text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-600 rounded px-2 py-1">
-                <option value="all">All</option>
+                class="w-full text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple">
+                <option value="all">All Notifications</option>
                 <option value="info">Info</option>
                 <option value="warning">Warning</option>
                 <option value="error">Error</option>
             </select>
         </div>
         <div class="px-2 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Recent Notifications</span>
+            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Recent</span>
             <a href="{% url 'admin:mark_all_notifications_read' %}"
-                class="text-brand-purple hover:text-primary-dark text-xs font-medium">Mark All as Read</a>
+                class="text-brand-purple hover:text-primary-dark text-xs font-medium whitespace-nowrap">Mark All Read</a>
         </div>
         <div id="notifications-list-mobile">
             {% for notification in recent_notifications %}
             <a href="{% url 'admin:view_notification' notification.id %}" class="block notification-item group relative"
                 data-severity="{{ notification.severity|lower }}">
                 <div
-                    class="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700">
+                    class="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <!-- Simplified Content: Severity, Name, Success/Failure -->
-                    <div class="flex justify-between items-center">
-                        <span class="font-semibold {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="font-semibold truncate {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
                             {{ notification.severity|capfirst }}: {{ notification.get_type_display }}
                         </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                             {% if notification.details %}
                             {% if notification.details.failed == 0 %}Success{% else %}Failed{% endif %}
                             {% endif %}
                         </span>
-                    </div>
-                    <!-- Tooltip for Message Preview -->
-                    <div class="notification-tooltip">
-                        {{ notification.message|safe }}
                     </div>
                 </div>
             </a>
@@ -945,9 +942,9 @@
             <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">No notifications</div>
             {% endfor %}
         </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-2">
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
             <a href="{% url 'admin:notifications_view' %}"
-                class="block px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-sm text-center">
+                class="block px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-xs text-center font-medium">
                 View All Notifications
             </a>
         </div>

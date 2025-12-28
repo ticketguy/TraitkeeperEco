@@ -815,14 +815,97 @@
             {{ cl.formset.management_form }}
           {% endif %}
 
-          <!-- Actions -->
+          <!-- Modern Actions Section -->
           {% if action_form and actions_on_top and cl.show_admin_actions %}
-            <div class="actions-container flex flex-wrap gap-2.5 items-center mb-5">
-              <div class="flex-1">
-                {{ action_form }}
+            <div class="actions-container bg-gradient-to-r from-purple-50 to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-purple-200 dark:border-purple-900 rounded-xl p-4 sm:p-6 mb-6 shadow-sm">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <!-- Selected Count -->
+                <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <i class="fas fa-check-circle text-brand-purple"></i>
+                  <span id="selected-count" class="font-medium">0 selected</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex-1 flex flex-wrap gap-2">
+                  {% for value, label in action_form.action.field.choices %}
+                    {% if value %}
+                      <button type="submit" name="action" value="{{ value }}"
+                              class="action-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-105 hover:shadow-lg
+                                     {% if 'delete' in value or 'remove' in value %}
+                                       bg-red-500 hover:bg-red-600 text-white
+                                     {% elif 'approve' in value or 'list' in value or 'mark_featured' in value %}
+                                       bg-green-500 hover:bg-green-600 text-white
+                                     {% elif 'backfill' in value %}
+                                       bg-blue-500 hover:bg-blue-600 text-white
+                                     {% else %}
+                                       bg-brand-purple hover:bg-brand-purple-dark text-white
+                                     {% endif %}"
+                              title="{{ label }}">
+                        <i class="fas {% if 'delete' in value or 'remove' in value %}fa-trash
+                                      {% elif 'approve' in value %}fa-check
+                                      {% elif 'backfill' in value %}fa-sync
+                                      {% elif 'analytics' in value %}fa-chart-line
+                                      {% elif 'list' in value or 'featured' in value %}fa-star
+                                      {% else %}fa-cog{% endif %}"></i>
+                        <span class="hidden sm:inline">{{ label }}</span>
+                      </button>
+                    {% endif %}
+                  {% endfor %}
+                </div>
               </div>
-              <button type="submit" name="index" value="0" title="Run the selected action" class="bg-brand-purple text-white border-none py-2 px-4 rounded cursor-pointer transition-colors hover:bg-brand-purple-dark">Go</button>
+
+              <!-- Info Text -->
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 flex items-center gap-1">
+                <i class="fas fa-info-circle"></i>
+                Select items below, then click an action button
+              </p>
             </div>
+
+            <script>
+              // Update selected count
+              document.addEventListener('DOMContentLoaded', function() {
+                function updateSelectedCount() {
+                  const selected = document.querySelectorAll('.action-select:checked').length;
+                  const countEl = document.getElementById('selected-count');
+                  if (countEl) {
+                    countEl.textContent = `${selected} selected`;
+                    countEl.classList.toggle('text-brand-purple', selected > 0);
+                    countEl.classList.toggle('font-bold', selected > 0);
+                  }
+                }
+
+                // Listen to checkbox changes
+                document.querySelectorAll('.action-select, #action-toggle').forEach(cb => {
+                  cb.addEventListener('change', updateSelectedCount);
+                });
+
+                // Confirm dangerous actions
+                document.querySelectorAll('.action-btn').forEach(btn => {
+                  btn.addEventListener('click', function(e) {
+                    const action = this.value;
+                    const selectedCount = document.querySelectorAll('.action-select:checked').length;
+
+                    if (selectedCount === 0) {
+                      e.preventDefault();
+                      alert('Please select at least one item first');
+                      return false;
+                    }
+
+                    if (action.includes('delete') || action.includes('remove')) {
+                      if (!confirm(`Are you sure you want to delete ${selectedCount} item(s)? This cannot be undone.`)) {
+                        e.preventDefault();
+                        return false;
+                      }
+                    } else if (action.includes('backfill')) {
+                      if (!confirm(`Start backfill for ${selectedCount} collection(s)? This may take some time.`)) {
+                        e.preventDefault();
+                        return false;
+                      }
+                    }
+                  });
+                });
+              });
+            </script>
           {% endif %}
 
           <!-- Add Button -->
