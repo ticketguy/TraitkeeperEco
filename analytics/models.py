@@ -332,3 +332,243 @@ class WalletBehaviorProfile(models.Model):
         return f"{self.wallet_address[:8]} - {self.behavior_type} (confidence: {self.confidence_score:.2f})"
 
 
+# ===================================================================
+# Wallet Blacklist System
+# Tracks and excludes bot/manipulation wallets from calculations
+# ===================================================================
+
+class BlacklistedWallet(models.Model):
+    """
+    Wallets that are blacklisted due to bot activity, wash trading, or manipulation.
+    Transactions from these wallets are excluded from performance calculations.
+    """
+
+    BLACKLIST_REASONS = [
+        ('bot_listing', 'Bot Listing Activity'),
+        ('wash_trading', 'Wash Trading'),
+        ('price_manipulation', 'Price Manipulation'),
+        ('spam_transactions', 'Spam Transactions'),
+        ('sybil_attack', 'Sybil Attack'),
+        ('coordinated_pumping', 'Coordinated Pumping'),
+        ('fake_volume', 'Fake Volume Generation'),
+        ('manual_review', 'Manual Review'),
+        ('other', 'Other Suspicious Activity'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active (Blacklisted)'),
+        ('monitoring', 'Under Monitoring'),
+        ('cleared', 'Cleared (No Longer Blacklisted)'),
+    ]
+
+    # Core identification
+    wallet_address = models.CharField(
+        max_length=44,
+        unique=True,
+        db_index=True,
+        help_text="Solana wallet address to blacklist"
+    )
+
+    # Blacklist details
+    reason = models.CharField(
+        max_length=30,
+        choices=BLACKLIST_REASONS,
+        help_text="Primary reason for blacklisting"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active',
+        help_text="Current blacklist status"
+    )
+
+    # Detection information
+    detection_method = models.CharField(
+        max_length=50,
+        choices=[
+            ('automatic', 'Automatic Detection'),
+            ('manual', 'Manual Review'),
+            ('community_report', 'Community Reported'),
+            ('third_party', 'Third-Party Intelligence'),
+        ],
+        default='automatic',
+        help_text="How this wallet was identified"
+    )
+
+    # Evidence and metrics
+    suspicious_patterns = models.JSONField(
+        default=dict,
+        help_text="Detected suspicious patterns and their scores"
+    )
+    affected_collections = models.ManyToManyField(
+        NFTCollection,
+        blank=True,
+        related_name='blacklisted_wallets',
+        help_text="Collections where this wallet showed suspicious activity"
+    )
+
+    # Activity summary
+    total_transactions_analyzed = models.IntegerField(
+        default=0,
+        help_text="Total transactions analyzed for this wallet"
+    )
+    suspicious_transaction_count = models.IntegerField(
+        default=0,
+        help_text="Number of transactions flagged as suspicious"
+    )
+    manipulation_score = models.FloatField(
+        default=0.0,
+        help_text="Overall manipulation score (0-100, higher = more suspicious)"
+    )
+
+    # Review and notes
+    reviewer_notes = models.TextField(
+        blank=True,
+        help_text="Notes from manual review or automated analysis"
+    )
+    reviewed_by = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Username or system that reviewed this wallet"
+    )
+
+    # Timestamps
+    first_detected = models.DateTimeField(auto_now_add=True)
+    last_activity_detected = models.DateTimeField(
+        auto_now=True,
+        help_text="Last time suspicious activity was detected"
+    )
+    blacklisted_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this wallet was added to blacklist"
+    )
+    cleared_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When blacklist was removed (if applicable)"
+    )
+
+    # Auto-unblacklist settings
+    auto_clear_after_days = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Automatically clear from blacklist after N days of no suspicious activity"
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['wallet_address', 'status']),
+            models.Index(fields=['status', 'reason']),
+            models.Index(fields=['manipulation_score', 'status']),
+            models.Index(fields=['first_detected', 'status']),
+        ]
+        ordering = ['-manipulation_score', '-first_detected']
+        verbose_name = 'Blacklisted Wallet'
+        verbose_name_plural = 'Blacklisted Wallets'
+
+    def __str__(self):
+        return f"{self.wallet_address[:8]}... - {self.reason} ({self.status})"
+
+    def is_currently_blacklisted(self) -> bool:
+        """Check if wallet is currently blacklisted (active status)"""
+        return self.status == 'active'
+
+
+class WalletSuspiciousActivity(models.Model):
+    """
+    Tracks individual suspicious activities by wallets for audit trail.
+    Used to build evidence for blacklisting decisions.
+    """
+
+    ACTIVITY_TYPES = [
+        ('rapid_listing_creation', 'Rapid Listing Creation/Cancellation'),
+        ('circular_trading', 'Circular Trading Pattern'),
+        ('price_spiking', 'Artificial Price Spiking'),
+        ('volume_inflation', 'Volume Inflation'),
+        ('collection_sweep_bot', 'Automated Collection Sweeping'),
+        ('listing_manipulation', 'Listing Count Manipulation'),
+        ('bid_spoofing', 'Bid Spoofing'),
+        ('front_running', 'Front Running'),
+    ]
+
+    # Link to wallet (may or may not be blacklisted yet)
+    wallet_address = models.CharField(
+        max_length=44,
+        db_index=True,
+        help_text="Wallet address showing suspicious activity"
+    )
+    blacklisted_wallet = models.ForeignKey(
+        BlacklistedWallet,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='suspicious_activities',
+        help_text="Link to blacklist record if wallet is blacklisted"
+    )
+
+    # Activity details
+    activity_type = models.CharField(
+        max_length=40,
+        choices=ACTIVITY_TYPES,
+        help_text="Type of suspicious activity detected"
+    )
+    collection = models.ForeignKey(
+        NFTCollection,
+        on_delete=models.CASCADE,
+        related_name='wallet_suspicious_activities',
+        help_text="Collection where activity occurred"
+    )
+
+    # Detection metrics
+    severity_score = models.FloatField(
+        default=0.0,
+        help_text="Severity of this activity (0-100)"
+    )
+    confidence_score = models.FloatField(
+        default=0.0,
+        help_text="Confidence in detection (0-1)"
+    )
+
+    # Evidence
+    transaction_signatures = models.JSONField(
+        default=list,
+        help_text="List of transaction signatures involved"
+    )
+    evidence_data = models.JSONField(
+        default=dict,
+        help_text="Detailed evidence and metrics"
+    )
+
+    # Pattern details
+    pattern_description = models.TextField(
+        help_text="Description of the suspicious pattern detected"
+    )
+    time_window_start = models.DateTimeField()
+    time_window_end = models.DateTimeField()
+
+    # Review status
+    reviewed = models.BooleanField(
+        default=False,
+        help_text="Whether this activity has been reviewed"
+    )
+    false_positive = models.BooleanField(
+        default=False,
+        help_text="Marked as false positive after review"
+    )
+
+    detected_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['wallet_address', 'activity_type', 'detected_at']),
+            models.Index(fields=['collection', 'severity_score']),
+            models.Index(fields=['reviewed', 'false_positive']),
+        ]
+        ordering = ['-severity_score', '-detected_at']
+        verbose_name = 'Suspicious Wallet Activity'
+        verbose_name_plural = 'Suspicious Wallet Activities'
+
+    def __str__(self):
+        return f"{self.wallet_address[:8]}... - {self.activity_type} (severity: {self.severity_score:.1f})"
+
+
