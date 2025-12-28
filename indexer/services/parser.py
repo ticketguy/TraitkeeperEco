@@ -110,7 +110,7 @@ class TransactionParserService:
             # --- OPTIMIZATION: Pre-filter by collection before expensive parsing ---
             has_tracked_collection = await self._has_tracked_collection(normalized_tx)
             if not has_tracked_collection:
-                logger.debug(f"[{signature}] No tracked collections involved. Skipping parsing.")
+                logger.info(f"⏭️  [{signature[:16]}...] SKIPPED - No tracked collections involved in transaction")
                 return None  # Skip silently - not a parsing error, just not relevant
 
             # --- Call the tiered parser ---
@@ -134,13 +134,15 @@ class TransactionParserService:
                 collection_address = await self._get_collection_for_mint(parsed_event['mint_address'])
             
             if not collection_address:
-                logger.info(f"[{signature}] Could not determine collection for event. Skipping.")
+                logger.info(f"⏭️  [{signature[:16]}...] SKIPPED - Could not resolve collection address for NFT mint")
                 return None  # Not a parsing failure, just can't determine collection
 
             # --- Validate Collection Exists in Database ---
             collection = await sync_to_async(NFTCollection.objects.filter(address=collection_address).first)()
             if not collection:
-                logger.debug(f"[{signature}] Skipping event - belongs to non-tracked collection {collection_address}")
+                logger.info(
+                    f"⏭️  [{signature[:16]}...] SKIPPED - Collection {collection_address[:8]}... not tracked in database"
+                )
                 return None  # Don't save as failed, just skip silently
 
             # --- Validate Parsed Event ---

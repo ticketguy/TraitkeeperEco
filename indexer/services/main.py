@@ -181,22 +181,38 @@ class IndexerService:
                 # Wait for all parsing to complete
                 parse_results = await asyncio.gather(*parse_tasks, return_exceptions=True)
 
-                # Count successes and failures
+                # Count successes, failures, and track skip reasons
                 successful_parses = 0
+                failed_count = 0
+                skipped_events = []  # Track skipped events with reasons
+
                 for i, result in enumerate(parse_results):
                     if isinstance(result, Exception):
                         logger.error(f"Failed to parse event: {result}")
                         self.performance_metrics['failed_events'] += 1
+                        failed_count += 1
 
                         # Store for retry
                         await self._store_failed_event(events_to_process[i]['raw_data'], str(result))
                     elif result:
                         successful_parses += 1
                         self.performance_metrics['total_events_processed'] += 1
+                    else:
+                        # Event was skipped (returned None) - extract signature for logging
+                        sig = events_to_process[i]['raw_data'].get('signature', 'unknown')[:16]
+                        skipped_events.append(sig)
 
                 logger.info(
-                    f"✅ Batch parsed: {successful_parses}/{len(events_to_process)} successful"
+                    f"✅ Batch parsed: {successful_parses}/{len(events_to_process)} successful, "
+                    f"{failed_count} failed, {len(skipped_events)} skipped"
                 )
+
+                # Log details about skipped events
+                if skipped_events:
+                    logger.info(
+                        f"⏭️  Skipped {len(skipped_events)} event(s) - See parser logs for reasons: "
+                        f"{', '.join(skipped_events[:5])}{'...' if len(skipped_events) > 5 else ''}"
+                    )
 
                 # OPTIMIZATION: Update metrics ONCE per collection (not per event)
                 if self.collections_to_update:

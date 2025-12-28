@@ -40,6 +40,9 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 # Core catalog models
 from nft_data.models import NFTCollection, NFT
 
+# Network services for SOL price
+from traitkeeper.network_services import SolanaNetworkService
+
 # Raw indexer data
 from indexer.models import (
     CollectionMarketStats,
@@ -82,6 +85,7 @@ class MarketAggregationService:
     
     def __init__(self):
         """Initialize the service."""
+        self.network_service = SolanaNetworkService()
         logger.info("Initialized MarketAggregationService")
     
     # ==================== MAIN AGGREGATION METHOD ====================
@@ -322,9 +326,13 @@ class MarketAggregationService:
             )
             
             bid_count = int(base_data.get('listed_count', 0) * 0.2)  # Simple estimation
-            
-            market_cap = current_floor * total_supply if total_supply > 0 else 0.0
-            
+
+            # Calculate market cap in USD
+            market_cap_sol = current_floor * total_supply if total_supply > 0 else 0.0
+            sol_price_data = self.network_service.get_solana_price()
+            sol_price_usd = sol_price_data.get('price_usd', 0)
+            market_cap = market_cap_sol * sol_price_usd if sol_price_usd > 0 else market_cap_sol
+
             return {
                 'highest_bid': highest_bid,
                 'price_change_24h': price_change_24h,
@@ -1035,7 +1043,11 @@ class MarketAggregationService:
         # Market cap (if not already calculated)
         if 'market_cap' not in base_data or base_data['market_cap'] == 0:
             total_supply = base_data.get('total_supply', 0)
-            derived['market_cap'] = floor_price * total_supply
+            market_cap_sol = floor_price * total_supply
+            # Convert to USD
+            sol_price_data = self.network_service.get_solana_price()
+            sol_price_usd = sol_price_data.get('price_usd', 0)
+            derived['market_cap'] = market_cap_sol * sol_price_usd if sol_price_usd > 0 else market_cap_sol
         
         # Listing percentage (if not already calculated)
         if 'percent_listed' not in base_data or base_data['percent_listed'] == 0:
