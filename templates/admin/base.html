@@ -749,8 +749,8 @@
         {% endwith %}
     </button>
     <div
-        class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-2 border border-gray-200 dark:border-gray-700 right-0 z-50 animate-slide-up"
-        style="width: 320px; max-width: calc(100vw - 2rem); max-height: 70vh; overflow: hidden; display: flex; flex-direction: column;">
+        class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-2 border border-gray-200 dark:border-gray-700 right-0 z-50 animate-slide-up flex flex-col overflow-hidden"
+        style="width: 320px; max-width: calc(100vw - 2rem); max-height: 70vh;">
         {% if user.is_authenticated and user.is_staff %}
         {% with recent_notifications=user.notifications.all|slice:":3" %}
         {% if recent_notifications %}

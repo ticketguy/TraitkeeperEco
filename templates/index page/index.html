@@ -2,6 +2,7 @@
 {% extends 'index page/base.html' %}
 {% load static %}
 {% load math_filters %}
+{% load humanize %}
 
 {% block extra_style %}
 <style>
@@ -247,7 +248,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            ${{ collection_stats.market_cap|floatformat:2 }}
+                            ${{ collection_stats.market_cap|floatformat:2|intcomma }}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -286,7 +287,7 @@
                     <div class="flex items-center gap-3 px-6">
                         <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Market Cap</span>
                         <p class="text-lg font-bold text-primary dark:text-primary-light font-space-mono">
-                            ${{ collection_stats.market_cap|floatformat:2 }}
+                            ${{ collection_stats.market_cap|floatformat:2|intcomma }}
                         </p>
                         <span class="text-primary/30">•</span>
                     </div>
@@ -969,7 +970,7 @@
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.volume|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.floor_price|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.sales }}</td>
-                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${{ trait.market_cap|floatformat:2 }}</td>
+                        <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">${{ trait.market_cap|floatformat:2|intcomma }}</td>
                         <td
                             class="p-1 xs:p-2 sm:p-3 text-green-400 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
                             ↑ {{ trait.trend_percentage }}%</td>
@@ -1348,8 +1349,8 @@
                     priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-text-light dark:text-text-dark'
                 }`;
 
-                // Market cap display
-                collectionModalMarketCap.textContent = `${marketCap.toFixed(2)} SOL`;
+                // Market cap display (in USD with comma formatting)
+                collectionModalMarketCap.textContent = `$${marketCap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
                 // Price change with color
                 collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;
