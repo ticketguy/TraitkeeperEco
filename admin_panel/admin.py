@@ -502,8 +502,9 @@ class GroupAdmin(ProtectedActionsAdmin, admin.ModelAdmin):
 
 
 class PrimaryProviderSettingAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active', 'is_primary', 'rpc_url', 'ws_url')
-    list_editable = ('is_active', 'is_primary')
+    list_display = ('name', 'tier', 'is_active', 'is_primary', 'rpc_url', 'ws_url')
+    list_editable = ('tier', 'is_active', 'is_primary')
+    list_filter = ('is_active', 'is_primary', 'tier')
 
     def save_model(self, request, obj, form, change):
         """
