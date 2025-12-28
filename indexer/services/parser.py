@@ -1505,21 +1505,14 @@ class TransactionParserService:
             version = raw_data[offset]
             offset += 1
             logger.debug(f"[_parse_tensor_cnft_edit] Version: {version}")
-            
-            # Read bump Vec<u8>
-            if offset + 4 > len(raw_data):
-                raise Exception("Cannot read bump length")
-            bump_len = struct.unpack('<I', raw_data[offset:offset+4])[0]
-            offset += 4
-            
-            # ✅ FIX: Validate bump_len is reasonable
-            if bump_len > 100:  # Bump should never be this large
-                logger.error(f"[_parse_tensor_cnft_edit] Invalid bump_len: {bump_len}")
-                raise Exception(f"Invalid bump length: {bump_len}")
-            
-            offset += bump_len
-            logger.debug(f"[_parse_tensor_cnft_edit] Bump length: {bump_len}, offset after bump: {offset}")
-            
+
+            # Read bump [u8; 1] - Fixed 1-byte array (NOT Vec<u8>!)
+            if offset >= len(raw_data):
+                raise Exception("Cannot read bump")
+            bump = raw_data[offset]
+            offset += 1
+            logger.debug(f"[_parse_tensor_cnft_edit] Bump: {bump}, offset after bump: {offset}")
+
             # ✅ FIX: Check if we have enough data left
             if offset + 32 > len(raw_data):
                 logger.error(f"[_parse_tensor_cnft_edit] Not enough data for owner. Offset: {offset}, Data length: {len(raw_data)}")
