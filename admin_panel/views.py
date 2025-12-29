@@ -1337,3 +1337,222 @@ def provider_update_tier_api(request, provider_id):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================================================
+# ROLE & PERMISSION MANAGEMENT VIEWS (RBAC)
+# ============================================================================
+
+from .models import AdminRole, AdminPermission
+from .decorators import superuser_required
+
+@superuser_required
+def role_list(request):
+    """List all roles with their permissions count"""
+    roles = AdminRole.objects.all().annotate(
+        permission_count=Count('permissions'),
+        user_count=Count('users')
+    ).order_by('name')
+
+    context = {
+        'roles': roles,
+        'total_permissions': AdminPermission.objects.count(),
+    }
+    return render(request, 'admin_panel/roles/role_list.html', context)
+
+
+@superuser_required
+def role_create(request):
+    """Create a new role"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        permission_ids = request.POST.getlist('permissions')
+
+        if not name:
+            messages.error(request, 'Role name is required')
+            return redirect('admin_panel:role-create')
+
+        try:
+            # Create role
+            role = AdminRole.objects.create(
+                name=name,
+                description=description,
+                created_by=request.user,
+                is_system_role=False
+            )
+
+            # Assign permissions
+            if permission_ids:
+                permissions = AdminPermission.objects.filter(id__in=permission_ids)
+                role.permissions.set(permissions)
+
+            messages.success(request, f'Role "{name}" created successfully with {len(permission_ids)} permissions')
+            return redirect('admin_panel:role-list')
+
+        except Exception as e:
+            messages.error(request, f'Error creating role: {str(e)}')
+            return redirect('admin_panel:role-create')
+
+    # GET request - show form
+    permissions_by_category = {}
+    for category_code, category_name in AdminPermission.PERMISSION_CATEGORIES:
+        permissions_by_category[category_name] = AdminPermission.objects.filter(
+            category=category_code
+        ).order_by('name')
+
+    context = {
+        'permissions_by_category': permissions_by_category,
+    }
+    return render(request, 'admin_panel/roles/role_form.html', context)
+
+
+@superuser_required
+def role_edit(request, role_id):
+    """Edit an existing role"""
+    role = get_object_or_404(AdminRole, id=role_id)
+
+    if role.is_system_role:
+        messages.warning(request, 'System roles cannot be modified')
+        return redirect('admin_panel:role-list')
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        permission_ids = request.POST.getlist('permissions')
+
+        if not name:
+            messages.error(request, 'Role name is required')
+            return redirect('admin_panel:role-edit', role_id=role_id)
+
+        try:
+            # Update role
+            role.name = name
+            role.description = description
+            role.save()
+
+            # Update permissions
+            if permission_ids:
+                permissions = AdminPermission.objects.filter(id__in=permission_ids)
+                role.permissions.set(permissions)
+            else:
+                role.permissions.clear()
+
+            messages.success(request, f'Role "{name}" updated successfully')
+            return redirect('admin_panel:role-list')
+
+        except Exception as e:
+            messages.error(request, f'Error updating role: {str(e)}')
+            return redirect('admin_panel:role-edit', role_id=role_id)
+
+    # GET request - show form
+    permissions_by_category = {}
+    for category_code, category_name in AdminPermission.PERMISSION_CATEGORIES:
+        permissions_by_category[category_name] = AdminPermission.objects.filter(
+            category=category_code
+        ).order_by('name')
+
+    context = {
+        'role': role,
+        'permissions_by_category': permissions_by_category,
+        'assigned_permission_ids': list(role.permissions.values_list('id', flat=True)),
+    }
+    return render(request, 'admin_panel/roles/role_form.html', context)
+
+
+@superuser_required
+def role_delete(request, role_id):
+    """Delete a role"""
+    role = get_object_or_404(AdminRole, id=role_id)
+
+    if role.is_system_role:
+        messages.error(request, 'System roles cannot be deleted')
+        return redirect('admin_panel:role-list')
+
+    if request.method == 'POST':
+        role_name = role.name
+        user_count = role.users.count()
+
+        if user_count > 0:
+            messages.warning(request, f'Cannot delete role "{role_name}" - {user_count} users are assigned to it')
+            return redirect('admin_panel:role-list')
+
+        role.delete()
+        messages.success(request, f'Role "{role_name}" deleted successfully')
+        return redirect('admin_panel:role-list')
+
+    context = {'role': role}
+    return render(request, 'admin_panel/roles/role_confirm_delete.html', context)
+
+
+@superuser_required
+def user_role_management(request):
+    """Manage user role assignments"""
+    users = AdminUser.objects.select_related('role').order_by('username')
+    roles = AdminRole.objects.all().order_by('name')
+
+    # Apply filters
+    role_filter = request.GET.get('role')
+    search = request.GET.get('search')
+
+    if role_filter:
+        users = users.filter(role_id=role_filter)
+
+    if search:
+        users = users.filter(
+            Q(username__icontains=search) |
+            Q(email__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search)
+        )
+
+    # Pagination
+    paginator = Paginator(users, 20)
+    page = request.GET.get('page', 1)
+    users_page = paginator.get_page(page)
+
+    context = {
+        'users': users_page,
+        'all_roles': roles,
+        'selected_role': role_filter,
+        'search_query': search,
+    }
+    return render(request, 'admin_panel/roles/user_role_management.html', context)
+
+
+@superuser_required
+@require_http_methods(["POST"])
+def user_assign_role(request, user_id):
+    """Assign a role to a user"""
+    user = get_object_or_404(AdminUser, id=user_id)
+    role_id = request.POST.get('role_id')
+
+    if role_id:
+        role = get_object_or_404(AdminRole, id=role_id)
+        user.role = role
+        user.save()
+        messages.success(request, f'Assigned role "{role.name}" to {user.username}')
+    else:
+        user.role = None
+        user.save()
+        messages.success(request, f'Removed role from {user.username}')
+
+    return redirect('admin_panel:user-role-management')
+
+
+@superuser_required
+def permission_matrix(request):
+    """View permission matrix showing roles and their permissions"""
+    roles = AdminRole.objects.prefetch_related('permissions').order_by('name')
+
+    permissions_by_category = {}
+    for category_code, category_name in AdminPermission.PERMISSION_CATEGORIES:
+        permissions_by_category[category_name] = AdminPermission.objects.filter(
+            category=category_code
+        ).order_by('name')
+
+    context = {
+        'roles': roles,
+        'permissions_by_category': permissions_by_category,
+    }
+    return render(request, 'admin_panel/roles/permission_matrix.html', context)

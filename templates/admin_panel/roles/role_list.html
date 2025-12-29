@@ -1,0 +1,165 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Role Management{% endblock %}
+
+{% block admin_inner_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-user-shield mr-3 text-purple-600"></i>
+                Role Management
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Manage roles and their permissions</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'admin_panel:permission-matrix' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition flex items-center">
+                <i class="fas fa-table mr-2"></i>
+                Permission Matrix
+            </a>
+            <a href="{% url 'admin_panel:role-create' %}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Create Role
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Roles</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ roles.count }}</p>
+                </div>
+                <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                    <i class="fas fa-user-shield text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Permissions</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ total_permissions }}</p>
+                </div>
+                <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                    <i class="fas fa-key text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">System Roles</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ roles|length|add:"-1" }}</p>
+                </div>
+                <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <i class="fas fa-lock text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roles Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Roles</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Permissions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Users</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for role in roles %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-shield text-purple-600 mr-3"></i>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ role.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ role.description|truncatewords:10 }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
+                                {{ role.permission_count }} permissions
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
+                                {{ role.user_count }} users
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if role.is_system_role %}
+                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-full text-sm font-medium">
+                                <i class="fas fa-lock mr-1"></i>System
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-medium">
+                                Custom
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <a href="{% url 'admin_panel:role-edit' role.id %}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            {% if not role.is_system_role %}
+                            <a href="{% url 'admin_panel:role-delete' role.id %}" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-user-shield text-4xl mb-4"></i>
+                            <p>No roles found. Create your first role to get started.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="{% url 'admin_panel:user-role-management' %}" class="bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Manage User Roles</h3>
+                    <p class="text-purple-100 text-sm">Assign roles to admin users</p>
+                </div>
+                <i class="fas fa-users text-4xl opacity-50"></i>
+            </div>
+        </a>
+
+        <a href="{% url 'admin_panel:permission-matrix' %}" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Permission Matrix</h3>
+                    <p class="text-blue-100 text-sm">View all permissions across roles</p>
+                </div>
+                <i class="fas fa-table text-4xl opacity-50"></i>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

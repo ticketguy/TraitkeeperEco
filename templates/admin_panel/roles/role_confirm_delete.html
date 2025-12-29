@@ -1,0 +1,50 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}Delete Role{% endblock %}
+
+{% block admin_inner_content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="text-center mb-6">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Delete Role?</h1>
+        </div>
+
+        <div class="mb-6">
+            <p class="text-gray-600 dark:text-gray-400 text-center mb-4">
+                Are you sure you want to delete the role <strong class="text-gray-900 dark:text-white">"{{ role.name }}"</strong>?
+            </p>
+
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <p class="text-sm text-yellow-800 dark:text-yellow-300">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    This action cannot be undone. The role will be permanently removed.
+                </p>
+            </div>
+
+            {% if role.users.count > 0 %}
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mt-4">
+                <p class="text-sm text-red-800 dark:text-red-300">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <strong>Warning:</strong> {{ role.users.count }} user(s) are assigned to this role. You must reassign or remove these users before deleting the role.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post" class="flex items-center justify-center space-x-4">
+            {% csrf_token %}
+            <a href="{% url 'admin_panel:role-list' %}"
+                class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </a>
+            <button type="submit" {% if role.users.count > 0 %}disabled{% endif %}
+                class="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition">
+                Delete Role
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

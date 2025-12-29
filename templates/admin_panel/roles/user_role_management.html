@@ -1,0 +1,198 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block page_title %}User Role Management{% endblock %}
+
+{% block admin_inner_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-users-cog mr-3 text-purple-600"></i>
+                User Role Management
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Assign roles to admin users</p>
+        </div>
+        <a href="{% url 'admin_panel:role-list' %}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Roles
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+        <form method="get" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <input type="text" name="search" value="{{ search_query|default:'' }}"
+                    placeholder="Search by username, email, or name..."
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            </div>
+            <div class="md:w-64">
+                <select name="role"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">All Roles</option>
+                    {% for role in all_roles %}
+                    <option value="{{ role.id }}" {% if selected_role == role.id|stringformat:"s" %}selected{% endif %}>
+                        {{ role.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+                <i class="fas fa-filter mr-2"></i>Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for user in users %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="font-medium text-gray-900 dark:text-white">{{ user.get_full_name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">@{{ user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</td>
+                        <td class="px-6 py-4">
+                            {% if user.is_superuser %}
+                            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm font-medium">
+                                <i class="fas fa-crown mr-1"></i>Master Admin
+                            </span>
+                            {% elif user.role %}
+                            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-medium">
+                                {{ user.role.name }}
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-sm">
+                                No Role
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if user.is_active %}
+                            <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm">
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full text-sm">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if not user.is_superuser %}
+                            <button onclick="showAssignRoleModal({{ user.id }}, '{{ user.username }}', {{ user.role.id|default:'null' }})"
+                                class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300">
+                                <i class="fas fa-edit mr-1"></i>Assign Role
+                            </button>
+                            {% else %}
+                            <span class="text-gray-400 text-sm">Master Admin</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-users text-4xl mb-4"></i>
+                            <p>No users found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if users.has_other_pages %}
+    <div class="mt-6 flex justify-center">
+        <nav class="flex space-x-2">
+            {% if users.has_previous %}
+            <a href="?page={{ users.previous_page_number }}&search={{ search_query }}&role={{ selected_role }}"
+                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                Previous
+            </a>
+            {% endif %}
+            <span class="px-4 py-2 bg-purple-600 text-white rounded-lg">
+                Page {{ users.number }} of {{ users.paginator.num_pages }}
+            </span>
+            {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}&search={{ search_query }}&role={{ selected_role }}"
+                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                Next
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Assign Role Modal -->
+<div id="assignRoleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Assign Role</h3>
+        <form id="assignRoleForm" method="post" action="">
+            {% csrf_token %}
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Assign a role to <strong id="modalUsername" class="text-gray-900 dark:text-white"></strong>
+            </p>
+            <select name="role_id" id="roleSelect"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4">
+                <option value="">No Role</option>
+                {% for role in all_roles %}
+                <option value="{{ role.id }}">{{ role.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeAssignRoleModal()"
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+                    Assign
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAssignRoleModal(userId, username, currentRoleId) {
+    document.getElementById('modalUsername').textContent = username;
+    document.getElementById('assignRoleForm').action = `/admin-panel/users/${userId}/assign-role/`;
+    document.getElementById('roleSelect').value = currentRoleId || '';
+    document.getElementById('assignRoleModal').classList.remove('hidden');
+}
+
+function closeAssignRoleModal() {
+    document.getElementById('assignRoleModal').classList.add('hidden');
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAssignRoleModal();
+    }
+});
+</script>
+{% endblock %}

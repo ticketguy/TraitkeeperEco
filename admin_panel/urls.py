@@ -57,4 +57,13 @@ urlpatterns = [
     path('api/rpc-config-7f9a2e8c/<int:provider_id>/set-primary/', views.provider_set_primary_api, name='provider-set-primary'),
     path('api/rpc-config-7f9a2e8c/<int:provider_id>/toggle-active/', views.provider_toggle_active_api, name='provider-toggle-active'),
     path('api/rpc-config-7f9a2e8c/<int:provider_id>/update-tier/', views.provider_update_tier_api, name='provider-update-tier'),
+
+    # Role & Permission Management (RBAC)
+    path('roles/', views.role_list, name='role-list'),
+    path('roles/create/', views.role_create, name='role-create'),
+    path('roles/<int:role_id>/edit/', views.role_edit, name='role-edit'),
+    path('roles/<int:role_id>/delete/', views.role_delete, name='role-delete'),
+    path('users/role-management/', views.user_role_management, name='user-role-management'),
+    path('users/<int:user_id>/assign-role/', views.user_assign_role, name='user-assign-role'),
+    path('roles/permission-matrix/', views.permission_matrix, name='permission-matrix'),
 ]

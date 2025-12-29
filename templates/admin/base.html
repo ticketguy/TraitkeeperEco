@@ -922,6 +922,23 @@
             // Apply dropdown behavior to Notifications
             setupDropdown(notificationsToggle, notificationsDropdown);
 
+            // Apply dropdown behavior to User Profile
+            const userProfileToggle = document.getElementById('user-profile-toggle');
+            const userProfileMenu = document.getElementById('user-profile-menu');
+            if (userProfileToggle && userProfileMenu) {
+                userProfileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userProfileMenu.classList.toggle('open');
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userProfileToggle.contains(e.target) && !userProfileMenu.contains(e.target)) {
+                        userProfileMenu.classList.remove('open');
+                    }
+                });
+            }
+
             // Logout confirmation
             function confirmLogout() {
                 if (confirm('Are you sure you want to log out?')) {
@@ -963,7 +980,7 @@
         </div>
 
         <nav class="sidebar-menu">
-            <div class="sidebar-section-title">Main</div>
+            <div class="sidebar-section-title">Overview</div>
 
             <div class="sidebar-menu-item">
                 <a href="{% url 'admin:index' %}" class="sidebar-menu-link" data-tooltip="Dashboard">
@@ -972,62 +989,11 @@
                 </a>
             </div>
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-menu-link" data-tooltip="Logs">
-                    <i class="fas fa-history"></i>
-                    <span>Logs</span>
-                </a>
-            </div>
-
             {% if user.is_authenticated and user.is_staff %}
             <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:nft_data_models' %}" class="sidebar-menu-link" data-tooltip="NFT Data">
-                    <i class="fas fa-database"></i>
-                    <span>NFT Data</span>
-                </a>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:provider-management' %}" class="sidebar-menu-link" data-tooltip="Providers">
-                    <i class="fas fa-server"></i>
-                    <span>Providers</span>
-                </a>
-            </div>
-
-            <div class="sidebar-section-title">Tools</div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:populate_collections' %}" class="sidebar-menu-link" data-tooltip="Populate Collections">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Populate Collections</span>
-                </a>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:refresh_collections' %}" class="sidebar-menu-link" data-tooltip="Refresh Collections">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Refresh Collections</span>
-                </a>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:set_primary_provider' %}" class="sidebar-menu-link" data-tooltip="Set Primary RPC">
-                    <i class="fas fa-network-wired"></i>
-                    <span>Set Primary RPC</span>
-                </a>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:token_list_view' %}" class="sidebar-menu-link" data-tooltip="Manage API Tokens">
-                    <i class="fas fa-key"></i>
-                    <span>Manage API Tokens</span>
-                </a>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:generate_tokens' %}" class="sidebar-menu-link" data-tooltip="Generate Tokens">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Generate Tokens</span>
+                <a href="{% url 'system_health:dashboard' %}" class="sidebar-menu-link" data-tooltip="System Health">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>System Health</span>
                 </a>
             </div>
 
@@ -1035,6 +1001,73 @@
                 <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-menu-link" data-tooltip="Task Manager">
                     <i class="fas fa-tasks"></i>
                     <span>Task Manager</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:statistics' %}" class="sidebar-menu-link" data-tooltip="Statistics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistics</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section-title">Content</div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:pending_collections' %}" class="sidebar-menu-link" data-tooltip="Pending Collections">
+                    <i class="fas fa-list-alt"></i>
+                    <span>Pending Collections</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:nft_data_nftcollection_changelist' %}" class="sidebar-menu-link" data-tooltip="NFT Collections">
+                    <i class="fas fa-folder"></i>
+                    <span>NFT Collections</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:marketplace_nftlisting_changelist' %}" class="sidebar-menu-link" data-tooltip="Listings">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Listings</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:wallet_customuser_changelist' %}" class="sidebar-menu-link" data-tooltip="Users">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section-title">Settings</div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:role-list' %}" class="sidebar-menu-link" data-tooltip="Role Management">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Role Management</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:provider-management' %}" class="sidebar-menu-link" data-tooltip="RPC Providers">
+                    <i class="fas fa-server"></i>
+                    <span>RPC Providers</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:secrets-management' %}" class="sidebar-menu-link" data-tooltip="Secrets">
+                    <i class="fas fa-lock"></i>
+                    <span>Secrets</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-menu-link" data-tooltip="Activity Logs">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Logs</span>
                 </a>
             </div>
 
@@ -1082,15 +1115,15 @@
             <nav class="flex items-center space-x-2 sm:space-x-4">
                 {% if user.is_authenticated and user.is_staff %}
                 <!-- User Profile Dropdown -->
-                <div class="relative group">
-                    <button class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <div class="relative" id="user-profile-dropdown">
+                    <button id="user-profile-toggle" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-semibold text-sm">
                             {{ user.username|slice:":1"|upper }}
                         </div>
                         <span class="hidden sm:block text-sm font-medium text-text-light dark:text-text-dark">{{ user.username }}</span>
                         <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                     </button>
-                    <div class="dropdown-menu absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                    <div id="user-profile-menu" class="dropdown-menu absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
                         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                             <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ user.username }}</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ user.email }}</p>
