@@ -51,10 +51,10 @@ urlpatterns = [
     # Secrets Management
     path('secrets/', views.secrets_management, name='secrets-management'),
 
-    # Provider Management
-    path('providers/', views.provider_management, name='provider-management'),
-    path('api/providers/status/', views.provider_status_api, name='provider-status-api'),
-    path('api/providers/<int:provider_id>/set-primary/', views.provider_set_primary_api, name='provider-set-primary'),
-    path('api/providers/<int:provider_id>/toggle-active/', views.provider_toggle_active_api, name='provider-toggle-active'),
-    path('api/providers/<int:provider_id>/update-tier/', views.provider_update_tier_api, name='provider-update-tier'),
+    # Provider Management - Secure path
+    path('rpc-config-panel-7f9a2e8c/', views.provider_management, name='provider-management'),
+    path('api/rpc-config-7f9a2e8c/status/', views.provider_status_api, name='provider-status-api'),
+    path('api/rpc-config-7f9a2e8c/<int:provider_id>/set-primary/', views.provider_set_primary_api, name='provider-set-primary'),
+    path('api/rpc-config-7f9a2e8c/<int:provider_id>/toggle-active/', views.provider_toggle_active_api, name='provider-toggle-active'),
+    path('api/rpc-config-7f9a2e8c/<int:provider_id>/update-tier/', views.provider_update_tier_api, name='provider-update-tier'),
 ]

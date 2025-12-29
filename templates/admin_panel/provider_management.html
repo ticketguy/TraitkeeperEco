@@ -432,7 +432,7 @@
 
         async function loadProviderStatus() {
             try {
-                const response = await fetch('/admin-panel/api/providers/status/');
+                const response = await fetch('/admin-panel/api/rpc-config-7f9a2e8c/status/');
                 const data = await response.json();
 
                 const container = document.getElementById('providers-container');
@@ -526,7 +526,7 @@
 
         async function setPrimary(providerId, providerName) {
             try {
-                const response = await fetch(`/admin-panel/api/providers/${providerId}/set-primary/`, {
+                const response = await fetch(`/admin-panel/api/rpc-config-7f9a2e8c/${providerId}/set-primary/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -549,7 +549,7 @@
 
         async function toggleActive(providerId, providerName, currentlyActive) {
             try {
-                const response = await fetch(`/admin-panel/api/providers/${providerId}/toggle-active/`, {
+                const response = await fetch(`/admin-panel/api/rpc-config-7f9a2e8c/${providerId}/toggle-active/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -572,7 +572,7 @@
 
         async function updateTier(providerId, newTier) {
             try {
-                const response = await fetch(`/admin-panel/api/providers/${providerId}/update-tier/`, {
+                const response = await fetch(`/admin-panel/api/rpc-config-7f9a2e8c/${providerId}/update-tier/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
