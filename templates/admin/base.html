@@ -453,12 +453,16 @@
         max-height: 70vh;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        pointer-events: none;
+        visibility: hidden;
     }
 
     .dropdown-menu.open {
         display: block;
         opacity: 1;
         transform: translateY(0);
+        pointer-events: auto;
+        visibility: visible;
     }
 
     @media (max-width: 640px) {
