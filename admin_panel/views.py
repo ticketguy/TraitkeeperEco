@@ -1152,7 +1152,7 @@ def provider_status_api(request):
 
     provider_statuses = []
     manager = APIProviderManager()
-    quota_manager = ProviderQuotaManager()
+    quota_manager = ProviderQuotaManager(manager)
 
     for provider_setting in PrimaryProviderSetting.objects.filter(is_active=True):
         # Get provider config
