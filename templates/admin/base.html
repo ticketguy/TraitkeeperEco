@@ -160,60 +160,229 @@
         background: rgba(128, 0, 128, 0.1);
     }
 
-    /* Mobile Navigation - RESPONSIVE - Push Style */
-    .page-wrapper {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .page-wrapper.shifted {
-        transform: translateX(280px);
-    }
-
-    .mobile-nav {
+    /* Modern Sidebar Navigation - Works on ALL screen sizes */
+    .sidebar {
         position: fixed;
         top: 0;
         left: 0;
-        height: 100%;
+        height: 100vh;
         width: 280px;
-        background: #FFFFFF;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-        z-index: 9999;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+        z-index: 1000;
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        border-right: 1px solid rgba(128, 0, 128, 0.1);
     }
 
-    .dark .mobile-nav {
-        background: #1E1E1E;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    .dark .sidebar {
+        background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        border-right: 1px solid rgba(128, 0, 128, 0.2);
     }
 
-    .mobile-nav.open {
-        transform: translateX(0);
+    /* Desktop: Always show sidebar */
+    @media (min-width: 1024px) {
+        .sidebar {
+            transform: translateX(0);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-220px);
+        }
     }
 
-    .mobile-nav-overlay {
+    /* Mobile/Tablet: Slide in when open */
+    @media (max-width: 1023px) {
+        .sidebar.open {
+            transform: translateX(0);
+        }
+    }
+
+    /* Main content wrapper */
+    .main-wrapper {
+        min-height: 100vh;
+        transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @media (min-width: 1024px) {
+        .main-wrapper {
+            margin-left: 280px;
+        }
+
+        .main-wrapper.expanded {
+            margin-left: 60px;
+        }
+    }
+
+    /* Overlay for mobile */
+    .sidebar-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(2px);
-        z-index: 9998;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    .mobile-nav-overlay.active {
+    .sidebar-overlay.active {
         opacity: 1;
         visibility: visible;
     }
 
-    body.menu-open {
-        overflow-x: hidden;
+    @media (min-width: 1024px) {
+        .sidebar-overlay {
+            display: none !important;
+        }
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    @media (min-width: 1024px) {
+        body.sidebar-open {
+            overflow: auto;
+        }
+    }
+
+    /* Sidebar toggle button */
+    .sidebar-toggle {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #800080, #660066);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(128, 0, 128, 0.4);
+    }
+
+    .sidebar-toggle i {
+        color: white;
+        font-size: 18px;
+    }
+
+    @media (min-width: 1024px) {
+        .sidebar-toggle {
+            left: 300px;
+        }
+
+        .sidebar-toggle.shifted {
+            left: 80px;
+        }
+    }
+
+    /* Modern Sidebar Content Styling */
+    .sidebar-header {
+        padding: 24px 20px;
+        border-bottom: 1px solid rgba(128, 0, 128, 0.1);
+        background: linear-gradient(135deg, rgba(128, 0, 128, 0.05) 0%, transparent 100%);
+    }
+
+    .dark .sidebar-header {
+        border-bottom-color: rgba(128, 0, 128, 0.2);
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #800080;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .dark .sidebar-brand {
+        color: #a855f7;
+    }
+
+    .sidebar-brand i {
+        font-size: 28px;
+        animation: pulse 2s infinite;
+    }
+
+    .sidebar-menu {
+        padding: 16px 0;
+    }
+
+    .sidebar-menu-item {
+        margin: 4px 12px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .sidebar-menu-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #4a5568;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .dark .sidebar-menu-link {
+        color: #a0aec0;
+    }
+
+    .sidebar-menu-link:hover {
+        background: linear-gradient(135deg, rgba(128, 0, 128, 0.1) 0%, rgba(128, 0, 128, 0.05) 100%);
+        color: #800080;
+        transform: translateX(4px);
+    }
+
+    .dark .sidebar-menu-link:hover {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.08) 100%);
+        color: #a855f7;
+    }
+
+    .sidebar-menu-link.active {
+        background: linear-gradient(135deg, #800080 0%, #660066 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.3);
+    }
+
+    .sidebar-menu-link i {
+        width: 20px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .sidebar-section-title {
+        padding: 20px 20px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #9ca3af;
+    }
+
+    .dark .sidebar-section-title {
+        color: #6b7280;
     }
 
     /* Dropdown Menus - RESPONSIVE */
@@ -460,6 +629,7 @@
             // Theme toggling functionality
             const themeToggle = document.getElementById('theme-toggle');
             const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+            const themeToggleSidebar = document.getElementById('theme-toggle-sidebar');
             const html = document.documentElement;
 
             function updateThemeIcon() {
@@ -467,6 +637,7 @@
                 const icon = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
                 if (themeToggle) themeToggle.innerHTML = icon;
                 if (themeToggleMobile) themeToggleMobile.innerHTML = `${icon} Toggle Theme`;
+                if (themeToggleSidebar) themeToggleSidebar.innerHTML = `${icon}<span>Toggle Theme</span>`;
             }
 
             function setTheme(theme) {
@@ -509,6 +680,13 @@
                 });
             }
 
+            if (themeToggleSidebar) {
+                themeToggleSidebar.addEventListener('click', () => {
+                    const newTheme = html.classList.contains('dark') ? 'light' : 'dark';
+                    setTheme(newTheme);
+                });
+            }
+
             // Update theme when system preference changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                 if (!localStorage.getItem('theme')) {
@@ -516,44 +694,83 @@
                 }
             });
 
-            // Mobile Navigation Toggle
-            const hamburgerMenu = document.getElementById('hamburger-menu');
-            const mobileNav = document.querySelector('.mobile-nav');
-            const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
-            const closeMenu = document.getElementById('close-menu');
+            // Modern Sidebar Navigation
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const sidebarOverlay = document.querySelector('.sidebar-overlay');
+            const mainWrapper = document.querySelector('.main-wrapper');
             const body = document.body;
-            const pageWrapper = document.querySelector('.page-wrapper');
 
-            function openMobileMenu() {
-                mobileNav.classList.add('open');
-                mobileNavOverlay.classList.add('active');
-                body.classList.add('menu-open');
-                if (pageWrapper) pageWrapper.classList.add('shifted');
+            let sidebarOpen = window.innerWidth >= 1024; // Open by default on desktop
+            let sidebarCollapsed = false;
+
+            function toggleSidebar() {
+                if (window.innerWidth >= 1024) {
+                    // Desktop: Toggle collapse/expand
+                    sidebarCollapsed = !sidebarCollapsed;
+                    sidebar.classList.toggle('collapsed', sidebarCollapsed);
+                    mainWrapper.classList.toggle('expanded', sidebarCollapsed);
+                    sidebarToggle.classList.toggle('shifted', sidebarCollapsed);
+                    localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+                } else {
+                    // Mobile: Toggle open/close
+                    sidebarOpen = !sidebarOpen;
+                    sidebar.classList.toggle('open', sidebarOpen);
+                    sidebarOverlay.classList.toggle('active', sidebarOpen);
+                    body.classList.toggle('sidebar-open', sidebarOpen);
+                }
             }
 
-            function closeMobileMenu() {
-                mobileNav.classList.remove('open');
-                mobileNavOverlay.classList.remove('active');
-                body.classList.remove('menu-open');
-                if (pageWrapper) pageWrapper.classList.remove('shifted');
+            function closeSidebar() {
+                if (window.innerWidth < 1024) {
+                    sidebarOpen = false;
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
             }
 
-            if (hamburgerMenu) {
-                hamburgerMenu.addEventListener('click', openMobileMenu);
+            // Toggle button click
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
             }
 
-            if (closeMenu) {
-                closeMenu.addEventListener('click', closeMobileMenu);
+            // Overlay click closes sidebar on mobile
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
             }
 
-            if (mobileNavOverlay) {
-                mobileNavOverlay.addEventListener('click', closeMobileMenu);
-            }
-
-            // Handle escape key to close mobile menu
+            // Close sidebar with Escape key on mobile
             document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && mobileNav.classList.contains('open')) {
-                    closeMobileMenu();
+                if (e.key === 'Escape' && sidebarOpen && window.innerWidth < 1024) {
+                    closeSidebar();
+                }
+            });
+
+            // Restore sidebar state from localStorage on desktop
+            const savedCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (window.innerWidth >= 1024 && savedCollapsed) {
+                sidebarCollapsed = true;
+                sidebar.classList.add('collapsed');
+                mainWrapper.classList.add('expanded');
+                sidebarToggle.classList.add('shifted');
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1024) {
+                    // Desktop: Remove mobile classes
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                    // Restore collapsed state
+                    sidebar.classList.toggle('collapsed', sidebarCollapsed);
+                    mainWrapper.classList.toggle('expanded', sidebarCollapsed);
+                } else {
+                    // Mobile: Remove desktop classes
+                    sidebar.classList.remove('collapsed');
+                    mainWrapper.classList.remove('expanded');
+                    sidebarToggle.classList.remove('shifted');
                 }
             });
 
@@ -670,9 +887,125 @@
 </head>
 
 <body
-    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans min-h-screen flex flex-col transition-colors duration-300">
-    <!-- Page Wrapper for Sidebar Push Effect -->
-    <div class="page-wrapper">
+    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans transition-colors duration-300">
+
+    <!-- Modern Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Modern Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>TraitKeeper</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="sidebar-section-title">Main</div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:index' %}" class="sidebar-menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Logs</span>
+                </a>
+            </div>
+
+            {% if user.is_authenticated and user.is_staff %}
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:nft_data_models' %}" class="sidebar-menu-link">
+                    <i class="fas fa-database"></i>
+                    <span>NFT Data</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:provider-management' %}" class="sidebar-menu-link">
+                    <i class="fas fa-server"></i>
+                    <span>Providers</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section-title">Tools</div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:populate_collections' %}" class="sidebar-menu-link">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Populate Collections</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:refresh_collections' %}" class="sidebar-menu-link">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh Collections</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:set_primary_provider' %}" class="sidebar-menu-link">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Set Primary RPC</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:token_list_view' %}" class="sidebar-menu-link">
+                    <i class="fas fa-key"></i>
+                    <span>Manage API Tokens</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin:generate_tokens' %}" class="sidebar-menu-link">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Generate Tokens</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-menu-link">
+                    <i class="fas fa-tasks"></i>
+                    <span>Task Manager</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section-title">Account</div>
+
+            <div class="sidebar-menu-item">
+                <button id="theme-toggle-sidebar" class="sidebar-menu-link" style="width: 100%; border: none; background: none; cursor: pointer;">
+                    <i class="fas fa-moon"></i>
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <form id="logout-form-sidebar" method="post" action="{% url 'admin_panel:logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="button" onclick="confirmLogout()" class="sidebar-menu-link" style="width: 100%; border: none; background: none; cursor: pointer;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <!-- Sidebar Overlay (Mobile only) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
     <!-- Admin Header -->
     <header class="header-glass fixed top-0 left-0 w-full z-50 animate-fade-in">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3 sm:py-4">
@@ -849,156 +1182,6 @@
         </div>
     </header>
 
-    <!-- Mobile Navigation (outside header to avoid layout issues) -->
-    <div class="mobile-nav flex flex-col pt-16 px-4 z-50 md:hidden">
-        <button id="close-menu" class="absolute top-4 right-4 text-text-light dark:text-text-dark focus:outline-none">
-            <i class="fas fa-times text-lg sm:text-xl"></i>
-        </button>
-        <a href="{% url 'admin:index' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-home mr-2"></i>Dashboard
-        </a>
-        <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-history mr-2"></i>Logs
-        </a>
-        <!-- Tools Dropdown for Mobile -->
-        <div class="relative">
-            <button id="tools-toggle-mobile"
-                class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
-                <i class="fas fa-tools mr-2"></i>Tools<i class="fas fa-chevron-down ml-2"></i>
-            </button>
-            <div id="tools-dropdown-mobile" class="hidden pl-4">
-                <a href="{% url 'admin:populate_collections' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-plus-circle mr-2"></i>Populate Collections
-                </a>
-                <a href="{% url 'admin:refresh_collections' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-sync-alt mr-2"></i>Refresh Collections
-                </a>
-                <a href="{% url 'admin:set_primary_provider' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-server mr-2"></i>Set Primary RPC Provider
-                </a>
-                <a href="{% url 'admin:token_list_view' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-key mr-2"></i>Manage API Tokens
-                </a>
-                <a href="{% url 'admin:generate_tokens' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-ticket-alt mr-2"></i>Generate API Tokens
-                </a>
-                <a href="{% url 'admin_panel:task-dashboard' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-tasks mr-2"></i>Task Manager
-                </a>
-                <a href="{% url 'admin_panel:provider-management' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-server mr-2"></i>Provider Management
-                </a>
-            </div>
-        </div>
-        <!-- NFT Data Models Link -->
-        {% if user.is_authenticated and user.is_staff %}
-        <a href="{% url 'admin_panel:nft_data_models' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-database mr-2"></i>NFT Data Models
-        </a>
-        {% endif %}
-
-<!-- Notifications dropdown in Mobile Navigation -->
-<div class="relative">
-    <button id="notifications-toggle-mobile"
-        class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
-        <i class="fas fa-bell mr-2"></i>Notifications
-        {% if user.is_authenticated and user.is_staff %}
-        {% with unread_notifications=user.notifications.unread %}
-        {% if unread_notifications %}
-        {% with notification_count=unread_notifications.count %}
-        {% if notification_count > 0 %}
-        <span class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {{ notification_count }}
-        </span>
-        {% endif %}
-        {% endwith %}
-        {% endif %}
-        {% endwith %}
-        {% endif %}
-    </button>
-    <div id="notifications-dropdown-mobile" class="hidden pl-2 max-h-96 overflow-y-auto">
-        {% if user.is_authenticated and user.is_staff %}
-        {% with recent_notifications=user.notifications.all|slice:":3" %}
-        {% if recent_notifications %}
-        <!-- Severity Filter -->
-        <div class="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
-            <label for="severity-filter-mobile" class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-1">Filter:</label>
-            <select id="severity-filter-mobile" onchange="filterNotifications(this, 'mobile')"
-                class="w-full text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple">
-                <option value="all">All Notifications</option>
-                <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
-            </select>
-        </div>
-        <div class="px-2 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Recent</span>
-            <a href="{% url 'admin:mark_all_notifications_read' %}"
-                class="text-brand-purple hover:text-primary-dark text-xs font-medium whitespace-nowrap">Mark All Read</a>
-        </div>
-        <div id="notifications-list-mobile">
-            {% for notification in recent_notifications %}
-            <a href="{% url 'admin:view_notification' notification.id %}" class="block notification-item group relative"
-                data-severity="{{ notification.severity|lower }}">
-                <div
-                    class="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                    <!-- Simplified Content: Severity, Name, Success/Failure -->
-                    <div class="flex justify-between items-start gap-2">
-                        <span class="font-semibold truncate {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
-                            {{ notification.severity|capfirst }}: {{ notification.get_type_display }}
-                        </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                            {% if notification.details %}
-                            {% if notification.details.failed == 0 %}Success{% else %}Failed{% endif %}
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-            </a>
-            {% empty %}
-            <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">No notifications</div>
-            {% endfor %}
-        </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-            <a href="{% url 'admin:notifications_view' %}"
-                class="block px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-xs text-center font-medium">
-                View All Notifications
-            </a>
-        </div>
-        {% endif %}
-        {% endwith %}
-        {% else %}
-        <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
-        {% endif %}
-    </div>
-</div>
-        <!-- Logout Button -->
-        <form id="logout-form-mobile" method="post" action="{% url 'admin_panel:logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="button" onclick="confirmLogout()"
-                class="glow-button text-white px-3 py-1.5 rounded-lg text-sm inline-flex items-center my-2">
-                <i class="fas fa-sign-out-alt mr-2"></i>Logout
-            </button>
-        </form>
-        <!-- Theme Toggle Button -->
-        <button id="theme-toggle-mobile" aria-label="Toggle dark mode"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-moon mr-2"></i>Toggle Theme
-        </button>
-    </div>
-
-    <!-- Mobile Navigation Overlay -->
-    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden"></div>
 
     <!-- Main Content -->
     <main class="flex-1 pt-16 sm:pt-20 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 bg-background-light dark:bg-background-dark">
@@ -1060,163 +1243,7 @@
         </div>
     </footer>
     </div>
-    <!-- End Page Wrapper -->
-
-    <!-- Mobile Navigation (outside page wrapper to avoid being shifted) -->
-    <div class="mobile-nav flex flex-col pt-16 px-4 z-50 md:hidden">
-        <button id="close-menu" class="absolute top-4 left-4 text-text-light dark:text-text-dark focus:outline-none">
-            <i class="fas fa-times text-lg sm:text-xl"></i>
-        </button>
-        <a href="{% url 'admin:index' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-home mr-2"></i>Dashboard
-        </a>
-        <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-history mr-2"></i>Logs
-        </a>
-        <!-- Tools Dropdown for Mobile -->
-        <div class="relative">
-            <button id="tools-toggle-mobile"
-                class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
-                <i class="fas fa-tools mr-2"></i>Tools<i class="fas fa-chevron-down ml-2"></i>
-            </button>
-            <div id="tools-dropdown-mobile" class="hidden pl-4">
-                <a href="{% url 'admin:populate_collections' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-plus-circle mr-2"></i>Populate Collections
-                </a>
-                <a href="{% url 'admin:refresh_collections' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-sync-alt mr-2"></i>Refresh Collections
-                </a>
-                <a href="{% url 'admin:set_primary_provider' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-server mr-2"></i>Set Primary RPC Provider
-                </a>
-                <a href="{% url 'admin:token_list_view' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-key mr-2"></i>Manage API Tokens
-                </a>
-                <a href="{% url 'admin:generate_tokens' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-ticket-alt mr-2"></i>Generate API Tokens
-                </a>
-                <a href="{% url 'admin_panel:task-dashboard' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-tasks mr-2"></i>Task Manager
-                </a>
-                <a href="{% url 'admin_panel:provider-management' %}"
-                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
-                    <i class="fas fa-server mr-2"></i>Provider Management
-                </a>
-            </div>
-        </div>
-        <!-- NFT Data Models Link -->
-        {% if user.is_authenticated and user.is_staff %}
-        <a href="{% url 'admin_panel:nft_data_models' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-database mr-2"></i>NFT Data Models
-        </a>
-        <!-- Provider Management Link -->
-        <a href="{% url 'admin_panel:provider-management' %}"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-server mr-2"></i>Providers
-        </a>
-        {% endif %}
-
-        <!-- Notifications dropdown in Mobile Navigation -->
-        <div class="relative">
-            <button id="notifications-toggle-mobile"
-                class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
-                <i class="fas fa-bell mr-2"></i>Notifications
-                {% if user.is_authenticated and user.is_staff %}
-                {% with unread_notifications=user.notifications.unread %}
-                {% if unread_notifications %}
-                {% with notification_count=unread_notifications.count %}
-                {% if notification_count > 0 %}
-                <span class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {{ notification_count }}
-                </span>
-                {% endif %}
-                {% endwith %}
-                {% endif %}
-                {% endwith %}
-                {% endif %}
-            </button>
-            <div id="notifications-dropdown-mobile" class="hidden pl-2 max-h-96 overflow-y-auto">
-                {% if user.is_authenticated and user.is_staff %}
-                {% with recent_notifications=user.notifications.all|slice:":3" %}
-                {% if recent_notifications %}
-                <!-- Severity Filter -->
-                <div class="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <label for="severity-filter-mobile" class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-1">Filter:</label>
-                    <select id="severity-filter-mobile" onchange="filterNotifications(this, 'mobile')"
-                        class="w-full text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple">
-                        <option value="all">All Notifications</option>
-                        <option value="info">Info</option>
-                        <option value="warning">Warning</option>
-                        <option value="error">Error</option>
-                    </select>
-                </div>
-                <div class="px-2 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                    <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Recent</span>
-                    <a href="{% url 'admin:mark_all_notifications_read' %}"
-                        class="text-brand-purple hover:text-primary-dark text-xs font-medium whitespace-nowrap">Mark All Read</a>
-                </div>
-                <div id="notifications-list-mobile">
-                    {% for notification in recent_notifications %}
-                    <a href="{% url 'admin:view_notification' notification.id %}" class="block notification-item group relative"
-                        data-severity="{{ notification.severity|lower }}">
-                        <div
-                            class="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <!-- Simplified Content: Severity, Name, Success/Failure -->
-                            <div class="flex justify-between items-start gap-2">
-                                <span class="font-semibold truncate {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
-                                    {{ notification.severity|capfirst }}: {{ notification.get_type_display }}
-                                </span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                    {% if notification.details %}
-                                    {% if notification.details.failed == 0 %}Success{% else %}Failed{% endif %}
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </div>
-                    </a>
-                    {% empty %}
-                    <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">No notifications</div>
-                    {% endfor %}
-                </div>
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-                    <a href="{% url 'admin:notifications_view' %}"
-                        class="block px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-xs text-center font-medium">
-                        View All Notifications
-                    </a>
-                </div>
-                {% endif %}
-                {% endwith %}
-                {% else %}
-                <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
-                {% endif %}
-            </div>
-        </div>
-        <!-- Logout Button -->
-        <form id="logout-form-mobile" method="post" action="{% url 'admin_panel:logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="button" onclick="confirmLogout()"
-                class="glow-button text-white px-3 py-1.5 rounded-lg text-sm inline-flex items-center my-2">
-                <i class="fas fa-sign-out-alt mr-2"></i>Logout
-            </button>
-        </form>
-        <!-- Theme Toggle Button -->
-        <button id="theme-toggle-mobile" aria-label="Toggle dark mode"
-            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
-            <i class="fas fa-moon mr-2"></i>Toggle Theme
-        </button>
-    </div>
-
-    <!-- Mobile Navigation Overlay -->
-    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden"></div>
+    <!-- End Main Wrapper -->
 </body>
 
 </html>
