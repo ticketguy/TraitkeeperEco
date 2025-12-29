@@ -1065,103 +1065,68 @@
 
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
-    <!-- Admin Header -->
-    <header class="header-glass fixed top-0 left-0 w-full z-50 animate-fade-in">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3 sm:py-4">
-            <!-- Admin Logo -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <i class="fas fa-shield-alt text-brand-purple text-lg sm:text-2xl animate-pulse"></i>
-                <h1 class="text-lg sm:text-xl font-bold text-text-light dark:text-text-dark"
-                    style="font-family: 'Space Mono', monospace;">TraitKeeper Admin</h1>
+    <!-- Modern Admin Header - Simplified for sidebar navigation -->
+    <header class="header-glass fixed top-0 left-0 w-full z-40 animate-fade-in">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
+            <!-- Empty spacer for sidebar toggle button -->
+            <div class="w-16"></div>
+
+            <!-- Page Title / Breadcrumb Area -->
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark">
+                    {% block page_title %}Dashboard{% endblock %}
+                </h1>
             </div>
 
-            <!-- Hamburger Menu for Mobile -->
-            <button id="hamburger-menu"
-                class="hamburger-menu text-text-light dark:text-text-dark focus:outline-none md:hidden">
-                <i class="fas fa-bars text-lg sm:text-xl"></i>
-            </button>
-
-            <!-- Desktop Navigation -->
-            <nav class="desktop-nav hidden md:flex items-center space-x-3 sm:space-x-4">
-                <a href="{% url 'admin:index' %}"
-                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-                    <i class="fas fa-home mr-1"></i>Dashboard
-                </a>
-                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}"
-                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-                    <i class="fas fa-history mr-1"></i>Logs
-                </a>
-                <!-- Dropdown for Tools -->
-                <div class="relative dropdown group" id="tools-dropdown">
-                    <button id="tools-toggle"
-                        class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-                        <i class="fas fa-tools mr-1"></i>Tools<i class="fas fa-chevron-down ml-1"></i>
+            <!-- Right Side Actions - Minimal Modern Header -->
+            <nav class="flex items-center space-x-2 sm:space-x-4">
+                {% if user.is_authenticated and user.is_staff %}
+                <!-- User Profile Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-semibold text-sm">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                        <span class="hidden sm:block text-sm font-medium text-text-light dark:text-text-dark">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                     </button>
-                    <div
-                        class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-2 border border-gray-200 dark:border-gray-700 right-0 z-50"
-                        style="width: 240px; max-width: calc(100vw - 2rem); max-height: 70vh; overflow-y: auto;">
-                        <a href="{% url 'admin:populate_collections' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-plus-circle mr-2 text-brand-purple"></i>Populate Collections
-                        </a>
-                        <a href="{% url 'admin:refresh_collections' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-sync-alt mr-2 text-brand-purple"></i>Refresh Collections
-                        </a>
-                        <a href="{% url 'admin:set_primary_provider' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-server mr-2 text-brand-purple"></i>Set Primary RPC Provider
-                        </a>
-                        <a href="{% url 'admin:token_list_view' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-key mr-2 text-brand-purple"></i>Manage API Tokens
-                        </a>
-                         <a href="{% url 'admin:generate_tokens' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-ticket-alt mr-2 text-brand-purple"></i>Generate API Tokens
-                        </a>
-                        <a href="{% url 'admin_panel:task-dashboard' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                            <i class="fas fa-tasks mr-2 text-brand-purple"></i>Task Manager
-                        </a>
-                        <a href="{% url 'admin_panel:provider-management' %}"
-                            class="block px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-purple transition-colors duration-300 flex items-center">
-                            <i class="fas fa-server mr-2 text-brand-purple"></i>Provider Management
-                        </a>
-
+                    <div class="dropdown-menu absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ user.username }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ user.email }}</p>
+                        </div>
+                        <div class="py-2">
+                            <a href="{% url 'admin:index' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-user-cog mr-2 text-purple-600"></i>Profile Settings
+                            </a>
+                            <a href="{% url 'admin_panel:task-dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tasks mr-2 text-blue-600"></i>Task Monitor
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+                            <button onclick="confirmLogout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <!-- NFT Data Models Link -->
-                {% if user.is_authenticated and user.is_staff %}
-                <a href="{% url 'admin_panel:nft_data_models' %}"
-                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-                    <i class="fas fa-database mr-1"></i>NFT Data Models
-                </a>
-                <!-- Provider Management Link -->
-                <a href="{% url 'admin_panel:provider-management' %}"
-                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-                    <i class="fas fa-server mr-1"></i>Providers
-                </a>
-                {% endif %}
-<!-- Notifications dropdown in Desktop Navigation -->
-<div class="relative group" id="notifications-dropdown">
-    <button
-        class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
-        <i class="fas fa-bell mr-2"></i> 
-        {% with unread_notifications=user.notifications.unread %}
-        {% if user.is_authenticated and user.is_staff %}
-        {% if unread_notifications %}
-        {% with notification_count=unread_notifications.count %}
-        {% if notification_count > 0 %}
-        <span class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {{ notification_count }}
-        </span>
-        {% endif %}
-        {% endwith %}
-        {% endif %}
-        {% endif %}
-        {% endwith %}
-    </button>
+
+                <!-- Notifications Dropdown -->
+                <div class="relative group" id="notifications-dropdown">
+                    <button class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-bell text-gray-600 dark:text-gray-400"></i>
+                        {% with unread_notifications=user.notifications.unread %}
+                        {% if unread_notifications %}
+                        {% with notification_count=unread_notifications.count %}
+                        {% if notification_count > 0 %}
+                        <span class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ notification_count }}
+                        </span>
+                        {% endif %}
+                        {% endwith %}
+                        {% endif %}
+                        {% endwith %}
+                    </button>
     <div
         class="dropdown-menu absolute bg-white dark:bg-gray-800 shadow-xl rounded-lg mt-2 py-2 border border-gray-200 dark:border-gray-700 right-0 z-50 animate-slide-up flex flex-col overflow-hidden"
         style="width: 320px; max-width: calc(100vw - 2rem); max-height: 70vh;">
@@ -1223,20 +1188,18 @@
         <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
         {% endif %}
     </div>
-</div>
-                <!-- Logout Button -->
-                <form id="logout-form" method="post" action="{% url 'admin_panel:logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="button" onclick="confirmLogout()"
-                        class="glow-button text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm inline-flex items-center">
-                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
-                    </button>
-                </form>
+                </div>
+
                 <!-- Theme Toggle Button -->
-                <button id="theme-toggle" aria-label="Toggle dark mode"
-                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple text-sm sm:text-base">
-                    <i class="fas fa-moon"></i>
+                <button id="theme-toggle" aria-label="Toggle dark mode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>
                 </button>
+
+                <!-- Hidden logout form for confirmLogout function -->
+                <form id="logout-form" method="post" action="{% url 'admin_panel:logout' %}" style="display: none;">
+                    {% csrf_token %}
+                </form>
+                {% endif %}
             </nav>
         </div>
     </header>
