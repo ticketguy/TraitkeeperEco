@@ -34,6 +34,62 @@ class AdminUserManager(BaseUserManager):
         
         return self.create_user(username, email, password, **extra_fields)
 
+class AdminRole(models.Model):
+    """
+    Custom roles for RBAC system.
+    Allows creating custom roles with specific permissions.
+    """
+    name = models.CharField(max_length=50, unique=True, help_text="Role name (e.g., 'Content Manager', 'System Admin')")
+    description = models.TextField(blank=True, help_text="Description of what this role can do")
+    is_system_role = models.BooleanField(default=False, help_text="System roles cannot be deleted")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey('AdminUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_roles')
+
+    class Meta:
+        verbose_name = 'Admin Role'
+        verbose_name_plural = 'Admin Roles'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def get_permission_count(self):
+        return self.permissions.count()
+
+
+class AdminPermission(models.Model):
+    """
+    Custom permissions for granular access control.
+    """
+    PERMISSION_CATEGORIES = [
+        ('dashboard', 'Dashboard & Overview'),
+        ('users', 'User Management'),
+        ('nft', 'NFT & Collections'),
+        ('providers', 'Provider Management'),
+        ('tasks', 'Task Management'),
+        ('logs', 'Logs & Monitoring'),
+        ('settings', 'System Settings'),
+        ('roles', 'Role Management'),
+    ]
+
+    codename = models.CharField(max_length=100, unique=True, help_text="Unique permission identifier (e.g., 'can_manage_providers')")
+    name = models.CharField(max_length=255, help_text="Human-readable permission name")
+    description = models.TextField(blank=True, help_text="Detailed description of what this permission grants")
+    category = models.CharField(max_length=50, choices=PERMISSION_CATEGORIES, default='dashboard')
+    roles = models.ManyToManyField(AdminRole, related_name='permissions', blank=True)
+    is_system_permission = models.BooleanField(default=False, help_text="System permissions cannot be deleted")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Admin Permission'
+        verbose_name_plural = 'Admin Permissions'
+        ordering = ['category', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.codename})"
+
+
 class AdminUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
@@ -42,6 +98,9 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)  # All admin users are staff by default
     date_joined = models.DateTimeField(default=timezone.now)
+
+    # RBAC fields
+    role = models.ForeignKey(AdminRole, on_delete=models.SET_NULL, null=True, blank=True, related_name='users', help_text="Primary role for this admin user")
     
     # Override PermissionsMixin fields to add related_name
     groups = models.ManyToManyField(
@@ -91,6 +150,43 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.first_name or self.username
+
+    def has_admin_permission(self, permission_codename):
+        """
+        Check if user has a specific admin permission through their role.
+        Superusers always have all permissions.
+        """
+        if self.is_superuser:
+            return True
+
+        if not self.role:
+            return False
+
+        return self.role.permissions.filter(codename=permission_codename).exists()
+
+    def get_all_admin_permissions(self):
+        """
+        Get all admin permissions for this user through their role.
+        """
+        if self.is_superuser:
+            return AdminPermission.objects.all()
+
+        if not self.role:
+            return AdminPermission.objects.none()
+
+        return self.role.permissions.all()
+
+    def get_permission_codenames(self):
+        """
+        Get list of permission codenames for this user.
+        """
+        if self.is_superuser:
+            return list(AdminPermission.objects.values_list('codename', flat=True))
+
+        if not self.role:
+            return []
+
+        return list(self.role.permissions.values_list('codename', flat=True))
 
 class AdminLoginAttempt(models.Model):
     # Generic relation to allow different user types
