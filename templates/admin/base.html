@@ -160,18 +160,25 @@
         background: rgba(128, 0, 128, 0.1);
     }
 
-    /* Mobile Navigation - RESPONSIVE */
+    /* Mobile Navigation - RESPONSIVE - Push Style */
+    .page-wrapper {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .page-wrapper.shifted {
+        transform: translateX(280px);
+    }
+
     .mobile-nav {
         position: fixed;
         top: 0;
-        right: 0;
+        left: 0;
         height: 100%;
-        width: 85%;
-        max-width: 320px;
+        width: 280px;
         background: #FFFFFF;
-        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
         z-index: 9999;
-        transform: translateX(100%);
+        transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -179,7 +186,7 @@
 
     .dark .mobile-nav {
         background: #1E1E1E;
-        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
     }
 
     .mobile-nav.open {
@@ -192,20 +199,21 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(2px);
         z-index: 9998;
-        display: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     .mobile-nav-overlay.active {
-        display: block;
+        opacity: 1;
+        visibility: visible;
     }
 
     body.menu-open {
-        overflow: hidden;
-        position: fixed;
-        width: 100%;
+        overflow-x: hidden;
     }
 
     /* Dropdown Menus - RESPONSIVE */
@@ -514,17 +522,20 @@
             const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
             const closeMenu = document.getElementById('close-menu');
             const body = document.body;
+            const pageWrapper = document.querySelector('.page-wrapper');
 
             function openMobileMenu() {
                 mobileNav.classList.add('open');
                 mobileNavOverlay.classList.add('active');
                 body.classList.add('menu-open');
+                if (pageWrapper) pageWrapper.classList.add('shifted');
             }
 
             function closeMobileMenu() {
                 mobileNav.classList.remove('open');
                 mobileNavOverlay.classList.remove('active');
                 body.classList.remove('menu-open');
+                if (pageWrapper) pageWrapper.classList.remove('shifted');
             }
 
             if (hamburgerMenu) {
@@ -660,6 +671,8 @@
 
 <body
     class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans min-h-screen flex flex-col transition-colors duration-300">
+    <!-- Page Wrapper for Sidebar Push Effect -->
+    <div class="page-wrapper">
     <!-- Admin Header -->
     <header class="header-glass fixed top-0 left-0 w-full z-50 animate-fade-in">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3 sm:py-4">
@@ -731,6 +744,11 @@
                 <a href="{% url 'admin_panel:nft_data_models' %}"
                     class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
                     <i class="fas fa-database mr-1"></i>NFT Data Models
+                </a>
+                <!-- Provider Management Link -->
+                <a href="{% url 'admin_panel:provider-management' %}"
+                    class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center text-sm sm:text-base">
+                    <i class="fas fa-server mr-1"></i>Providers
                 </a>
                 {% endif %}
 <!-- Notifications dropdown in Desktop Navigation -->
@@ -1041,6 +1059,164 @@
             <a href="#" class="hover:text-brand-purple transition-colors duration-300">Support</a>
         </div>
     </footer>
+    </div>
+    <!-- End Page Wrapper -->
+
+    <!-- Mobile Navigation (outside page wrapper to avoid being shifted) -->
+    <div class="mobile-nav flex flex-col pt-16 px-4 z-50 md:hidden">
+        <button id="close-menu" class="absolute top-4 left-4 text-text-light dark:text-text-dark focus:outline-none">
+            <i class="fas fa-times text-lg sm:text-xl"></i>
+        </button>
+        <a href="{% url 'admin:index' %}"
+            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
+            <i class="fas fa-home mr-2"></i>Dashboard
+        </a>
+        <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}"
+            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
+            <i class="fas fa-history mr-2"></i>Logs
+        </a>
+        <!-- Tools Dropdown for Mobile -->
+        <div class="relative">
+            <button id="tools-toggle-mobile"
+                class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
+                <i class="fas fa-tools mr-2"></i>Tools<i class="fas fa-chevron-down ml-2"></i>
+            </button>
+            <div id="tools-dropdown-mobile" class="hidden pl-4">
+                <a href="{% url 'admin:populate_collections' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-plus-circle mr-2"></i>Populate Collections
+                </a>
+                <a href="{% url 'admin:refresh_collections' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh Collections
+                </a>
+                <a href="{% url 'admin:set_primary_provider' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-server mr-2"></i>Set Primary RPC Provider
+                </a>
+                <a href="{% url 'admin:token_list_view' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-key mr-2"></i>Manage API Tokens
+                </a>
+                <a href="{% url 'admin:generate_tokens' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-ticket-alt mr-2"></i>Generate API Tokens
+                </a>
+                <a href="{% url 'admin_panel:task-dashboard' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-tasks mr-2"></i>Task Manager
+                </a>
+                <a href="{% url 'admin_panel:provider-management' %}"
+                    class="block py-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple transition-colors duration-300 flex items-center text-sm">
+                    <i class="fas fa-server mr-2"></i>Provider Management
+                </a>
+            </div>
+        </div>
+        <!-- NFT Data Models Link -->
+        {% if user.is_authenticated and user.is_staff %}
+        <a href="{% url 'admin_panel:nft_data_models' %}"
+            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
+            <i class="fas fa-database mr-2"></i>NFT Data Models
+        </a>
+        <!-- Provider Management Link -->
+        <a href="{% url 'admin_panel:provider-management' %}"
+            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
+            <i class="fas fa-server mr-2"></i>Providers
+        </a>
+        {% endif %}
+
+        <!-- Notifications dropdown in Mobile Navigation -->
+        <div class="relative">
+            <button id="notifications-toggle-mobile"
+                class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm w-full">
+                <i class="fas fa-bell mr-2"></i>Notifications
+                {% if user.is_authenticated and user.is_staff %}
+                {% with unread_notifications=user.notifications.unread %}
+                {% if unread_notifications %}
+                {% with notification_count=unread_notifications.count %}
+                {% if notification_count > 0 %}
+                <span class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {{ notification_count }}
+                </span>
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+            </button>
+            <div id="notifications-dropdown-mobile" class="hidden pl-2 max-h-96 overflow-y-auto">
+                {% if user.is_authenticated and user.is_staff %}
+                {% with recent_notifications=user.notifications.all|slice:":3" %}
+                {% if recent_notifications %}
+                <!-- Severity Filter -->
+                <div class="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <label for="severity-filter-mobile" class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-1">Filter:</label>
+                    <select id="severity-filter-mobile" onchange="filterNotifications(this, 'mobile')"
+                        class="w-full text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple">
+                        <option value="all">All Notifications</option>
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                    </select>
+                </div>
+                <div class="px-2 py-2 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+                    <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">Recent</span>
+                    <a href="{% url 'admin:mark_all_notifications_read' %}"
+                        class="text-brand-purple hover:text-primary-dark text-xs font-medium whitespace-nowrap">Mark All Read</a>
+                </div>
+                <div id="notifications-list-mobile">
+                    {% for notification in recent_notifications %}
+                    <a href="{% url 'admin:view_notification' notification.id %}" class="block notification-item group relative"
+                        data-severity="{{ notification.severity|lower }}">
+                        <div
+                            class="px-2 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                            <!-- Simplified Content: Severity, Name, Success/Failure -->
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="font-semibold truncate {% if notification.severity|lower == 'error' %}text-red-600 dark:text-red-400{% elif notification.severity|lower == 'warning' %}text-orange-600 dark:text-orange-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                                    {{ notification.severity|capfirst }}: {{ notification.get_type_display }}
+                                </span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                    {% if notification.details %}
+                                    {% if notification.details.failed == 0 %}Success{% else %}Failed{% endif %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">No notifications</div>
+                    {% endfor %}
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                    <a href="{% url 'admin:notifications_view' %}"
+                        class="block px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-brand-purple dark:hover:text-brand-purple transition-colors duration-300 text-xs text-center font-medium">
+                        View All Notifications
+                    </a>
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">Please log in to view notifications</div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Logout Button -->
+        <form id="logout-form-mobile" method="post" action="{% url 'admin_panel:logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="button" onclick="confirmLogout()"
+                class="glow-button text-white px-3 py-1.5 rounded-lg text-sm inline-flex items-center my-2">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </form>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-mobile" aria-label="Toggle dark mode"
+            class="nav-link text-text-secondary-light dark:text-text-secondary-dark hover:text-brand-purple flex items-center py-2 text-sm">
+            <i class="fas fa-moon mr-2"></i>Toggle Theme
+        </button>
+    </div>
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden"></div>
 </body>
 
 </html>
