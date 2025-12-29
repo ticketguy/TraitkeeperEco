@@ -916,13 +916,26 @@
                 }
             }
 
-            // Apply dropdown behavior to Tools
+            // Apply dropdown behavior to Tools (hover-based)
             setupDropdown(toolsToggle, toolsDropdown);
 
-            // Apply dropdown behavior to Notifications
-            setupDropdown(notificationsToggle, notificationsDropdown);
+            // Notifications dropdown - Click-based (not hover)
+            const notificationsButton = document.querySelector('#notifications-dropdown button');
+            if (notificationsButton && notificationsDropdown) {
+                notificationsButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationsDropdown.classList.toggle('open');
+                });
 
-            // Apply dropdown behavior to User Profile
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!notificationsToggle.contains(e.target) && !notificationsDropdown.contains(e.target)) {
+                        notificationsDropdown.classList.remove('open');
+                    }
+                });
+            }
+
+            // User Profile dropdown - Click-based
             const userProfileToggle = document.getElementById('user-profile-toggle');
             const userProfileMenu = document.getElementById('user-profile-menu');
             if (userProfileToggle && userProfileMenu) {
