@@ -1156,7 +1156,7 @@ def provider_status_api(request):
 
     for provider_setting in PrimaryProviderSetting.objects.filter(is_active=True):
         # Get provider config
-        config = quota_manager._get_provider_config(provider_setting.name)
+        config = async_to_sync(quota_manager._get_provider_config)(provider_setting.name)
 
         if not config:
             provider_statuses.append({

@@ -5,6 +5,7 @@ import time
 from typing import Dict, Optional, Any
 from django.conf import settings
 from django.utils import timezone
+from asgiref.sync import sync_to_async
 
 # Refactored to use the central, site-wide cache manager
 from core.cache_manager import cache_manager, CacheType
@@ -57,7 +58,7 @@ class ProviderQuotaManager:
 
     async def _check_quota_available(self, provider_name: str, priority_tier: str) -> bool:
         """Checks if both the daily and tier-specific quotas are within limits."""
-        config = self._get_provider_config(provider_name)
+        config = await self._get_provider_config(provider_name)
         if not config:
             return False
 
@@ -69,7 +70,7 @@ class ProviderQuotaManager:
         # Get usage stats from the central cache_manager
         daily_usage_key = f"quota:{provider_name}:daily:{today}"
         tier_usage_key = f"quota:{provider_name}:tier:{priority_tier}:{today}"
-        
+
         daily_usage = await cache_manager.get(daily_usage_key) or 0
         tier_usage = await cache_manager.get(tier_usage_key) or 0
 
@@ -77,20 +78,20 @@ class ProviderQuotaManager:
 
     async def _apply_rate_limiting(self, provider_name: str):
         """Enforces a delay between requests to respect provider rate limits."""
-        config = self._get_provider_config(provider_name)
+        config = await self._get_provider_config(provider_name)
         # Calculate min delay based on requests per second
         min_delay = 1.0 / config['requests_per_second'] if config else 0.2
 
         # Use the cache for persistent, scalable rate limiting
         rate_limit_key = f"rate_limit:{provider_name}:last_request_time"
         last_request_time = await cache_manager.get(rate_limit_key) or 0
-        
+
         time_since_last = time.time() - last_request_time
         if time_since_last < min_delay:
             sleep_time = min_delay - time_since_last
             logger.debug(f"Rate limiting {provider_name}: sleeping for {sleep_time:.3f}s")
             await asyncio.sleep(sleep_time)
-        
+
         # Update the last request time in the cache
         await cache_manager.set(rate_limit_key, time.time(), cache_type=CacheType.RATE_LIMIT)
 
@@ -104,21 +105,26 @@ class ProviderQuotaManager:
         tier_usage_key = f"quota:{provider_name}:tier:{priority_tier}:{today}"
         daily_usage = (await cache_manager.get(daily_usage_key) or 0) + 1
         tier_usage = (await cache_manager.get(tier_usage_key) or 0) + 1
-        
+
         # Set the new incremented values
         await cache_manager.set(daily_usage_key, daily_usage, cache_type=CacheType.STATS)
         await cache_manager.set(tier_usage_key, tier_usage, cache_type=CacheType.STATS)
 
-    def _get_provider_config(self, provider_name: str) -> Optional[Dict[str, Any]]:
-        """Gets the configuration for a provider from settings, using tier from DB."""
+    @sync_to_async
+    def _get_provider_tier_from_db(self, provider_name: str) -> str:
+        """Gets the provider's tier from the database (async-safe)."""
         from admin_panel.models import PrimaryProviderSetting
 
-        # Get tier from database provider setting
         try:
             provider_setting = PrimaryProviderSetting.objects.get(name=provider_name, is_active=True)
-            tier = provider_setting.tier
+            return provider_setting.tier
         except PrimaryProviderSetting.DoesNotExist:
-            tier = 'free'  # Default to most restrictive plan if not found
+            return 'free'  # Default to most restrictive plan if not found
+
+    async def _get_provider_config(self, provider_name: str) -> Optional[Dict[str, Any]]:
+        """Gets the configuration for a provider from settings, using tier from DB."""
+        # Get tier from database provider setting (async-safe)
+        tier = await self._get_provider_tier_from_db(provider_name)
 
         # Get config for provider + tier, fallback to generic if not found
         provider_config = self.provider_configs.get(provider_name, {}).get(tier)
