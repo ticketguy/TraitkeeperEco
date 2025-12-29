@@ -9,7 +9,12 @@
     <meta name="theme-color" content="#800080">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>{% block title %}{{ title|default:"TraitKeeper Admin" }} | Admin Panel{% endblock %}</title>
+    <title>{% block title %}{{ title|default:"KeeperPortal" }}{% endblock %}</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon_green/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon_green/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon_green/favicon-16x16.png' %}">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -282,24 +287,24 @@
     /* Sidebar toggle button */
     .sidebar-toggle {
         position: fixed;
-        top: 20px;
-        left: 20px;
+        top: 16px;
+        left: 16px;
         z-index: 1001;
         width: 44px;
         height: 44px;
-        background: linear-gradient(135deg, #800080, #660066);
+        background: linear-gradient(135deg, #10b981, #059669);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(128, 0, 128, 0.3);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         transition: all 0.3s ease;
     }
 
     .sidebar-toggle:hover {
         transform: scale(1.05);
-        box-shadow: 0 6px 16px rgba(128, 0, 128, 0.4);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
     }
 
     .sidebar-toggle i {
@@ -309,11 +314,11 @@
 
     @media (min-width: 1024px) {
         .sidebar-toggle {
-            left: 300px;
+            left: 290px;
         }
 
         .sidebar-toggle.shifted {
-            left: 80px;
+            left: 78px;
         }
     }
 
@@ -332,19 +337,26 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
-        color: #800080;
+        color: #10b981;
         font-family: 'Space Mono', monospace;
     }
 
     .dark .sidebar-brand {
-        color: #a855f7;
+        color: #10b981;
     }
 
-    .sidebar-brand i {
-        font-size: 28px;
-        animation: pulse 2s infinite;
+    .sidebar-brand img {
+        flex-shrink: 0;
+    }
+
+    .sidebar.collapsed .sidebar-brand img {
+        margin: 0 auto;
+    }
+
+    .sidebar.collapsed .sidebar-brand span {
+        display: none;
     }
 
     .sidebar-menu {
@@ -991,8 +1003,8 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-brand">
-                <i class="fas fa-shield-alt"></i>
-                <span>TraitKeeper</span>
+                <img src="{% static 'img/trait-keeper-logo-t-green-combination-mark.png' %}" alt="KeeperPortal" class="h-8">
+                <span>KeeperPortal</span>
             </div>
         </div>
 
