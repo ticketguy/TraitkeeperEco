@@ -64,7 +64,8 @@
       "Bash(python manage.py:*)",
       "Bash(find:*)",
       "Bash(python3:*)",
-      "Bash(docker compose logs:*)"
+      "Bash(docker compose logs:*)",
+      "Bash(git ls-files:*)"
     ],
     "deny": [],
     "ask": []
