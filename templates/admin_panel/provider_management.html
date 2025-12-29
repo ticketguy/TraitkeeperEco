@@ -437,7 +437,7 @@
 
                 const container = document.getElementById('providers-container');
 
-                if (data.providers.length === 0) {
+                if (!data.providers || data.providers.length === 0) {
                     container.innerHTML = '<div class="loading">No active providers found</div>';
                     return;
                 }
