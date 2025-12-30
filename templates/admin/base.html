@@ -1210,28 +1210,52 @@
                 <!-- User Profile Dropdown -->
                 <div class="relative" id="user-profile-dropdown">
                     <button id="user-profile-toggle" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-semibold text-sm">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-semibold text-sm">
                             {{ user.username|slice:":1"|upper }}
                         </div>
                         <span class="hidden sm:block text-sm font-medium text-text-light dark:text-text-dark">{{ user.username }}</span>
                         <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                     </button>
-                    <div id="user-profile-menu" class="dropdown-menu absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
-                        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ user.username }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ user.email }}</p>
+                    <div id="user-profile-menu" class="dropdown-menu absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                        <!-- User Info Header -->
+                        <div class="px-5 py-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{{ user.username }}</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate mt-0.5">{{ user.email }}</p>
+                                    {% if user.role %}
+                                    <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
+                                        {{ user.role.name }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Menu Items -->
                         <div class="py-2">
-                            <a href="{% url 'admin:index' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <i class="fas fa-user-cog mr-2 text-purple-600"></i>Profile Settings
+                            <a href="{% url 'admin_panel:user-profile' %}" class="flex items-center px-5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-user-cog w-5 text-green-600 dark:text-green-400"></i>
+                                <span class="ml-3 flex-1">My Profile</span>
                             </a>
-                            <a href="{% url 'admin_panel:task-dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <i class="fas fa-tasks mr-2 text-blue-600"></i>Task Monitor
+                            <a href="{% url 'admin_panel:task-dashboard' %}" class="flex items-center px-5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-tasks w-5 text-blue-600 dark:text-blue-400"></i>
+                                <span class="ml-3 flex-1">My Tasks</span>
+                            </a>
+                            <a href="#" class="flex items-center px-5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-bell w-5 text-purple-600 dark:text-purple-400"></i>
+                                <span class="ml-3 flex-1">Notifications</span>
                             </a>
                         </div>
+
+                        <!-- Logout Section -->
                         <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                            <button onclick="confirmLogout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            <button onclick="confirmLogout()" class="flex items-center w-full px-5 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                <i class="fas fa-sign-out-alt w-5"></i>
+                                <span class="ml-3 flex-1 text-left">Logout</span>
                             </button>
                         </div>
                     </div>

@@ -66,4 +66,7 @@ urlpatterns = [
     path('users/role-management/', views.user_role_management, name='user-role-management'),
     path('users/<int:user_id>/assign-role/', views.user_assign_role, name='user-assign-role'),
     path('roles/permission-matrix/', views.permission_matrix, name='permission-matrix'),
+
+    # User Profile
+    path('profile/', views.user_profile, name='user-profile'),
 ]

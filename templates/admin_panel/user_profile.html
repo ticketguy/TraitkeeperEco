@@ -1,0 +1,171 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block admin_inner_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Profile Header -->
+    <div class="bg-gradient-to-r from-green-600 to-green-800 rounded-2xl shadow-xl p-8 mb-8">
+        <div class="flex items-center space-x-6">
+            <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-green-800 font-bold text-4xl shadow-2xl">
+                {{ user.username|slice:":1"|upper }}
+            </div>
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-white mb-2">{{ user.username }}</h1>
+                <p class="text-green-100 mb-3">{{ user.email }}</p>
+                <div class="flex items-center space-x-4">
+                    {% if user.role %}
+                    <span class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg font-medium">
+                        <i class="fas fa-shield-alt mr-2"></i>{{ user.role.name }}
+                    </span>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                    <span class="px-4 py-2 bg-yellow-400/30 backdrop-blur-sm text-yellow-100 rounded-lg font-medium">
+                        <i class="fas fa-crown mr-2"></i>Superuser
+                    </span>
+                    {% endif %}
+                    <span class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg">
+                        <i class="fas fa-clock mr-2"></i>Last login: {{ last_login|naturaltime }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Total Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <i class="fas fa-history text-2xl text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Total Actions</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ total_actions|intcomma }}</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">All-time activity count</p>
+        </div>
+
+        <!-- Recent Actions (30 days) -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <i class="fas fa-bolt text-2xl text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Recent Actions</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ recent_actions|intcomma }}</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Last 30 days</p>
+        </div>
+
+        <!-- Permissions Count -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <i class="fas fa-key text-2xl text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Permissions</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ all_permissions|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Active permissions</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Activity -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <i class="fas fa-clock-rotate-left mr-2 text-blue-600"></i>Recent Activity
+                </h2>
+            </div>
+            <div class="p-6">
+                {% if recent_logs %}
+                <div class="space-y-4">
+                    {% for log in recent_logs %}
+                    <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-circle text-xs
+                                    {% if log.action == 'create' %}text-green-600
+                                    {% elif log.action == 'update' %}text-blue-600
+                                    {% elif log.action == 'delete' %}text-red-600
+                                    {% else %}text-gray-600{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {{ log.action|title }} {{ log.content_type|default:"item" }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ log.created_at|naturaltime }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-4xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No recent activity</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <i class="fas fa-shield-alt mr-2 text-green-600"></i>My Permissions
+                </h2>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto">
+                {% if user.is_superuser %}
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mb-4">
+                        <i class="fas fa-crown text-3xl text-yellow-600 dark:text-yellow-400"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Full Access</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">You have superuser privileges with access to all features</p>
+                </div>
+                {% elif all_permissions %}
+                <div class="space-y-2">
+                    {% for permission in all_permissions %}
+                    <div class="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-3"></i>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ permission.name }}</p>
+                            {% if permission.description %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ permission.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <i class="fas fa-lock text-4xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No permissions assigned</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Contact an administrator to assign a role</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

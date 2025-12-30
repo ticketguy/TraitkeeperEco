@@ -1556,3 +1556,57 @@ def permission_matrix(request):
         'permissions_by_category': permissions_by_category,
     }
     return render(request, 'admin_panel/roles/permission_matrix.html', context)
+
+
+# ============================================================================
+# USER PROFILE
+# ============================================================================
+
+@login_required
+def user_profile(request):
+    """
+    Display admin user profile with stats, tasks, and notifications
+    """
+    if not request.user.is_staff:
+        return redirect('admin_panel:login')
+
+    user = request.user
+
+    # Get user statistics
+    from admin_panel.models import AdminLogEntry
+    from django.utils import timezone
+    from datetime import timedelta
+
+    # Recent activity (last 30 days)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    recent_logs = AdminLogEntry.objects.filter(
+        user=user,
+        created_at__gte=thirty_days_ago
+    ).order_by('-created_at')[:10]
+
+    # Activity counts
+    total_actions = AdminLogEntry.objects.filter(user=user).count()
+    recent_actions = AdminLogEntry.objects.filter(
+        user=user,
+        created_at__gte=thirty_days_ago
+    ).count()
+
+    # Login stats
+    last_login = user.last_login
+
+    # User permissions summary
+    all_permissions = []
+    if user.role:
+        all_permissions = user.role.permissions.all()
+
+    context = {
+        'user': user,
+        'total_actions': total_actions,
+        'recent_actions': recent_actions,
+        'last_login': last_login,
+        'recent_logs': recent_logs,
+        'all_permissions': all_permissions,
+        'title': 'My Profile',
+    }
+
+    return render(request, 'admin_panel/user_profile.html', context)
