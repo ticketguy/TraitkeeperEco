@@ -1688,14 +1688,14 @@ def user_profile(request):
     thirty_days_ago = timezone.now() - timedelta(days=30)
     recent_logs = AdminLogEntry.objects.filter(
         user=user,
-        created_at__gte=thirty_days_ago
-    ).order_by('-created_at')[:10]
+        action_time__gte=thirty_days_ago
+    ).order_by('-action_time')[:10]
 
     # Activity counts
     total_actions = AdminLogEntry.objects.filter(user=user).count()
     recent_actions = AdminLogEntry.objects.filter(
         user=user,
-        created_at__gte=thirty_days_ago
+        action_time__gte=thirty_days_ago
     ).count()
 
     # Login stats

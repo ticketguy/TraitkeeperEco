@@ -101,18 +101,18 @@
                         <div class="flex-shrink-0">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                                 <i class="fas fa-circle text-xs
-                                    {% if log.action == 'create' %}text-green-600
-                                    {% elif log.action == 'update' %}text-blue-600
-                                    {% elif log.action == 'delete' %}text-red-600
+                                    {% if log.action_flag == 1 %}text-green-600
+                                    {% elif log.action_flag == 2 %}text-blue-600
+                                    {% elif log.action_flag == 3 %}text-red-600
                                     {% else %}text-gray-600{% endif %}"></i>
                             </div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                {{ log.action|title }} {{ log.content_type|default:"item" }}
+                                {{ log.get_action_flag_display }} - {{ log.object_repr|truncatewords:5 }}
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ log.created_at|naturaltime }}
+                                {{ log.action_time|naturaltime }}
                             </p>
                         </div>
                     </div>
