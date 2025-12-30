@@ -660,11 +660,11 @@
                     <div class="">
                         <table class="w-full min-w-[300px] text-text-light dark:text-text-dark table-auto">
                             <thead>
-                                <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px]">Collection</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-vitality">Vitality</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-volume">Volume</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-sales">Sales</th>
+                                <tr class="text-text-secondary-light dark:text-text-secondary-dark">
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px] text-left">Collection</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-center" id="sort-header-vitality">Vitality</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-right" id="sort-header-volume">Volume</th>
+                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-right" id="sort-header-sales">Sales</th>
                                 </tr>
                             </thead>
                             <tbody id="top-collections-table">
@@ -684,15 +684,15 @@
                                             <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
                                         </a>
                                     </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-center">
                                         <span class="vitality-value font-bold" data-score="{{ collection.vitality.vitality_score|default:0 }}">
                                             {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
                                         </span>
                                     </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-right text-text-light dark:text-text-dark">
                                         {{ collection.volume|floatformat:2 }} SOL
                                     </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
+                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-right text-text-light dark:text-text-dark">
                                         {{ collection.sales_24h|default:0 }}
                                     </td>
                                 </tr>

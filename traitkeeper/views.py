@@ -1287,7 +1287,7 @@ def stream_highest_vitality_collections(request):
                     market_stat = market_stats_dict.get(coll.pk)
 
                     # Calculate market cap from floor_price * total_supply
-                    floor_price = float(market_stat.floor_price) if market_stat and market_stat.floor_price else 0.0
+                    floor_price = float(market_stat.floor_price) if market_stat and market_stat.floor_price else (float(stat.floor_price) if stat and hasattr(stat, 'floor_price') and stat.floor_price else 0.0)
                     total_supply = stat.total_supply if stat else (market_stat.total_supply if market_stat and hasattr(market_stat, 'total_supply') else (coll.total_supply if hasattr(coll, 'total_supply') else 0))
                     calculated_market_cap = floor_price * total_supply if floor_price and total_supply else 0.0
 
