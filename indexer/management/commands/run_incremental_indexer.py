@@ -19,6 +19,7 @@ from django.utils import timezone
 from asgiref.sync import sync_to_async
 from nft_data.models import NFTCollection
 from indexer.services import IndexerService
+from admin_panel.heartbeat import ServiceHeartbeat
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,17 @@ class Command(BaseCommand):
         self.shutdown_event = asyncio.Event()
         self.indexer_service = IndexerService()
         self.is_running = False
+        self.heartbeat = ServiceHeartbeat('indexer-incremental')
+
+    async def heartbeat_loop(self):
+        """Send heartbeat every 30 seconds."""
+        while self.is_running and not self.shutdown_event.is_set():
+            try:
+                self.heartbeat.beat()
+                await asyncio.sleep(30)
+            except Exception as e:
+                logger.error(f"Heartbeat error: {e}")
+                await asyncio.sleep(30)
 
     async def main(self):
         """Main async logic for incremental indexing."""
@@ -38,10 +50,22 @@ class Command(BaseCommand):
         logger.info("⏰ STARTING INCREMENTAL TRANSACTION INDEXER")
         logger.info("=" * 80)
 
+        self.heartbeat.start()
         self.is_running = True
 
-        # Start the main scheduler loop
-        await self._run_scheduler()
+        try:
+            # Start heartbeat loop in background
+            heartbeat_task = asyncio.create_task(self.heartbeat_loop())
+
+            # Start the main scheduler loop
+            await self._run_scheduler()
+        except Exception as e:
+            logger.error(f"❌ Incremental indexer crashed: {e}", exc_info=True)
+            self.heartbeat.log_error(str(e))
+            self.heartbeat.beat(state='failed')
+            raise
+        finally:
+            self.heartbeat.stop()
 
     async def _run_scheduler(self):
         """Main scheduler loop that runs incremental indexing."""
