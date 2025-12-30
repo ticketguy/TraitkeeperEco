@@ -844,38 +844,97 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-lg border border-accent-light dark:border-accent-dark"
                 data-aos="fade-right">
-                <h3
-                    class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-3 xs:mb-4">
-                    Recent High-Profile Transfers</h3>
-                <ul class="space-y-3">
+                <h3 class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-3 xs:mb-4 flex items-center">
+                    <span class="mr-2">🔥</span> Recent High-Profile Transfers
+                </h3>
+                <div class="space-y-3">
                     {% if recent_transfers %}
                     {% for transfer in recent_transfers %}
-                    <li class="bg-accent-light dark:bg-accent-dark rounded-lg p-2 xs:p-3 flex items-start tilt-card"
-                        data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
-                        data-aos="fade-up" data-aos-delay="{{ transfer.delay }}">
-                        <img src="{% if transfer.image_url %}{{ transfer.image_url }}{% else %}{% static 'img/nft-default.png' %}{% endif %}"
-                            alt="NFT Image" class="w-6 xs:w-8 h-6 xs:h-8 rounded-full mr-2 xs:mr-3">
-                        <div class="flex-1">
-                            <span class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@{{ transfer.buyer|slice:":8"|default:"Unknown" }}</span> bought <strong
-                                class="text-[10px] xs:text-xs sm:text-sm">{{ transfer.mint_address|slice:":8"|default:"Unknown" }}</strong> from <span
-                                class="font-bold text-primary text-[10px] xs:text-xs sm:text-sm">@{{ transfer.seller|slice:":8"|default:"Unknown" }}</span> for <strong
-                                class="text-[10px] xs:text-xs sm:text-sm">{{ transfer.price|floatformat:2 }} SOL</strong>
-                            <span
-                                class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Collection: {{ transfer.collection|default:"Unknown" }}</span>
-                            <span
-                                class="block text-[9px] xs:text-[10px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark">Traits: {{ transfer.traits|default:"None" }}</span>
+                    <div class="group relative bg-gradient-to-br from-accent-light to-white dark:from-accent-dark dark:to-gray-900 rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 tilt-card cursor-pointer"
+                        data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-perspective="1000"
+                        data-aos="fade-up" data-aos-delay="{{ transfer.delay }}"
+                        data-nft-modal
+                        data-mint-address="{{ transfer.mint_address }}"
+                        data-nft-name="{{ transfer.nft_name|default:transfer.mint_address|slice:':16' }}"
+                        data-nft-image="{{ transfer.image_url }}"
+                        data-nft-description="Collection: {{ transfer.collection }}">
+
+                        <!-- Transfer Indicator Badge -->
+                        <div class="absolute top-2 right-2 px-2 py-1 bg-green-500/90 backdrop-blur-sm rounded-full flex items-center space-x-1 z-10 shadow-lg">
+                            <svg class="w-3 h-3 text-white animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-[10px] font-bold text-white">SOLD</span>
                         </div>
-                    </li>
+
+                        <div class="flex items-center p-3 space-x-3">
+                            <!-- NFT Image -->
+                            <div class="relative flex-shrink-0">
+                                <img src="{% if transfer.image_url %}{{ transfer.image_url }}{% else %}{% static 'img/nft-default.png' %}{% endif %}"
+                                    alt="NFT"
+                                    class="w-16 h-16 xs:w-20 xs:h-20 rounded-lg object-cover ring-2 ring-primary/50 group-hover:ring-primary transition-all duration-300">
+                                <!-- Animated glow effect -->
+                                <div class="absolute inset-0 rounded-lg bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+
+                            <!-- Transfer Details -->
+                            <div class="flex-1 min-w-0">
+                                <!-- Collection Name -->
+                                <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                                    </svg>
+                                    {{ transfer.collection|default:"Unknown Collection"|truncatechars:20 }}
+                                </div>
+
+                                <!-- Transfer Transaction -->
+                                <div class="flex items-center space-x-1 text-[11px] mb-2">
+                                    <span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full font-semibold">
+                                        @{{ transfer.buyer|slice:":6" }}
+                                    </span>
+                                    <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                    </svg>
+                                    <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-semibold">
+                                        @{{ transfer.seller|slice:":6" }}
+                                    </span>
+                                </div>
+
+                                <!-- Price and Traits -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-1">
+                                        <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-sm font-bold text-primary">{{ transfer.price|floatformat:2 }}</span>
+                                        <span class="text-[10px] text-gray-500">SOL</span>
+                                    </div>
+                                    {% if transfer.traits %}
+                                    <span class="text-[10px] px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full">
+                                        {{ transfer.traits|truncatechars:15 }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Animated border glow -->
+                        <div class="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-primary/50 transition-all duration-300"></div>
+                    </div>
                     {% endfor %}
                     {% else %}
-                    <li
-                        class="bg-accent-light dark:bg-accent-dark rounded-lg p-2 xs:p-3 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">
-                        No recent high-profile transfers available.</li>
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-accent-light dark:bg-accent-dark flex items-center justify-center">
+                            <svg class="w-8 h-8 text-text-secondary-light dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                        </div>
+                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">No recent transfers</p>
+                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1">Check back soon for high-profile sales!</p>
+                    </div>
                     {% endif %}
-                </ul>
-                <button
-                    class="view-more mt-3 xs:mt-4 block mx-auto bg-primary text-white px-3 xs:px-4 py-1 xs:py-2 rounded-full hover:bg-primary-dark transition text-[10px] xs:text-xs sm:text-sm"
-                    data-target="recent-transfers">View More</button>
+                </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-2xl p-2 xs:p-3 sm:p-6 border border-accent-light dark:border-accent-dark live-x-feed-container"
                 data-aos="fade-left">
