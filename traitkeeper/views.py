@@ -438,6 +438,23 @@ def index(request):
                 trait_values=trait_perf.trait_value
             ).select_related('collection').first()
 
+            # Get collection market stats for modal
+            collection_stats = CollectionMarketStats.objects.filter(
+                collection=trait_perf.collection
+            ).order_by('-timestamp').first()
+
+            # Get collection vitality for performance score
+            collection_vitality = None
+            if hasattr(trait_perf.collection, 'vitality'):
+                collection_vitality = trait_perf.collection.vitality
+            else:
+                try:
+                    collection_vitality = CollectionVitality.objects.filter(
+                        collection=trait_perf.collection
+                    ).first()
+                except:
+                    pass
+
             top_traits_list.append({
                 'trait_name': trait_perf.trait_type.name,
                 'trait_value': trait_perf.trait_value.value,
@@ -451,6 +468,16 @@ def index(request):
                 'momentum_score': float(trait_perf.momentum_score),
                 'image_url': sample_nft.image_url if sample_nft else '/static/img/nft-default.png',
                 'mint_address': sample_nft.mint_address if sample_nft else None,
+                # Collection-level data for modal
+                'collection_image_url': trait_perf.collection.image_url,
+                'collection_floor_price': float(collection_stats.floor_price) if collection_stats and collection_stats.floor_price else 0.0,
+                'collection_volume': float(collection_stats.volume_24h) if collection_stats and collection_stats.volume_24h else 0.0,
+                'collection_market_cap': float(collection_stats.market_cap) if collection_stats and collection_stats.market_cap else 0.0,
+                'collection_price_change': float(collection_stats.price_change_24h) if collection_stats and collection_stats.price_change_24h else 0.0,
+                'collection_holders': collection_stats.num_holders if collection_stats and collection_stats.num_holders else 0,
+                'collection_supply': trait_perf.collection.total_supply if hasattr(trait_perf.collection, 'total_supply') else 0,
+                'collection_listed': collection_stats.num_listed if collection_stats and collection_stats.num_listed else 0,
+                'collection_performance': float(collection_vitality.vitality_score) if collection_vitality and collection_vitality.vitality_score else 0.0,
             })
 
         # Build context

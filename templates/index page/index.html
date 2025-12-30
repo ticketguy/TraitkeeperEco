@@ -1036,9 +1036,20 @@
                             ↑ {{ trait.trend_percentage }}%</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.performance_score|default:trait.count }}</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs truncate">
-                            <a href="{% url 'collection_detail' address=trait.collection_address %}" class="hover:text-primary">
+                            <span class="hover:text-primary cursor-pointer"
+                                  data-collection-modal
+                                  data-collection-name="{{ trait.collection|urlencode }}"
+                                  data-collection-image="{{ trait.collection_image_url|default:'/static/img/collection-default.png' }}"
+                                  data-collection-address="{{ trait.collection_address }}"
+                                  data-collection-holders="{{ trait.collection_holders|default:0 }}"
+                                  data-collection-supply-listed="{{ trait.collection_supply|default:0 }}/{{ trait.collection_listed|default:0 }}"
+                                  data-collection-volume="{{ trait.collection_volume|default:0|floatformat:2 }}"
+                                  data-collection-floor="{{ trait.collection_floor_price|default:0|floatformat:2 }}"
+                                  data-collection-market-cap="{{ trait.collection_market_cap|default:0|floatformat:2 }}"
+                                  data-collection-price-change="{{ trait.collection_price_change|default:0|floatformat:1 }}"
+                                  data-collection-performance="{{ trait.collection_performance|default:0|floatformat:1 }}">
                                 {{ trait.collection }}
-                            </a>
+                            </span>
                         </td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.avg_sale_price|floatformat:2 }} SOL</td>
                         <td class="p-1 xs:p-2 sm:p-3 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">{{ trait.premium_score|floatformat:2 }}x</td>
