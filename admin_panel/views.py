@@ -905,121 +905,127 @@ def user_stats_data(request):
 def task_manager_status(request):
     """
     Get current status of containerized background task services.
-    Checks Docker container status for task manager services.
+    Uses Redis heartbeat system to track worker status.
     """
     try:
-        import subprocess
-        import json
-        from datetime import datetime
+        from django.core.cache import cache
+        from datetime import datetime, timedelta
+        from django.utils import timezone
 
-        # Define expected task manager containers
-        task_containers = [
-            'traitkeeper-task-manager',
-            'traitkeeper-indexer',
-            'traitkeeper-worker-1',
-            'traitkeeper-worker-2',
+        # Define all background service containers
+        service_containers = [
+            {'name': 'Web Server', 'key': 'traitkeeper-web', 'type': 'web'},
+            {'name': 'Live Indexer', 'key': 'indexer-live', 'type': 'indexer'},
+            {'name': 'Scheduled Indexer', 'key': 'indexer-scheduled', 'type': 'indexer'},
+            {'name': 'Incremental Indexer', 'key': 'indexer-incremental', 'type': 'indexer'},
+            {'name': 'Vitality Analytics', 'key': 'vitality-analytics', 'type': 'analytics'},
+            {'name': 'Health Monitor', 'key': 'traitkeeper-health', 'type': 'monitoring'},
+            {'name': 'Config Listener', 'key': 'config-listener', 'type': 'config'},
         ]
 
         containers_status = []
         total_running = 0
         error_logs = []
 
-        for container_name in task_containers:
-            try:
-                # Check container status
-                result = subprocess.run(
-                    ['docker', 'ps', '--filter', f'name={container_name}', '--format', '{{json .}}'],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
+        # Check heartbeat for each service via Redis
+        heartbeat_timeout = 90  # seconds - consider dead if no heartbeat in 90s
+        now = timezone.now()
 
-                if result.returncode == 0 and result.stdout.strip():
-                    # Container is running
-                    container_info = json.loads(result.stdout.strip().split('\n')[0]) if result.stdout.strip() else {}
-                    containers_status.append({
-                        'name': container_name,
-                        'status': 'running',
-                        'state': container_info.get('State', 'running'),
-                        'uptime': container_info.get('Status', 'N/A')
-                    })
-                    total_running += 1
+        for service in service_containers:
+            service_key = f"service_heartbeat:{service['key']}"
+            last_heartbeat_data = cache.get(service_key)
 
-                    # Check for recent errors in logs
-                    log_result = subprocess.run(
-                        ['docker', 'logs', '--tail', '50', container_name],
-                        capture_output=True,
-                        text=True,
-                        timeout=5
-                    )
+            if last_heartbeat_data:
+                try:
+                    last_heartbeat = datetime.fromisoformat(last_heartbeat_data.get('timestamp', ''))
+                    time_since_heartbeat = (now - last_heartbeat).total_seconds()
 
-                    if log_result.returncode == 0:
-                        logs = log_result.stderr + log_result.stdout
-                        # Look for error patterns
-                        for line in logs.split('\n')[-20:]:  # Last 20 lines
-                            if any(err in line.lower() for err in ['error', 'exception', 'failed', 'critical']):
+                    if time_since_heartbeat < heartbeat_timeout:
+                        # Service is alive
+                        uptime_seconds = last_heartbeat_data.get('uptime', 0)
+                        uptime_str = f"{uptime_seconds // 3600}h {(uptime_seconds % 3600) // 60}m"
+
+                        containers_status.append({
+                            'name': service['name'],
+                            'status': 'running',
+                            'state': last_heartbeat_data.get('state', 'healthy'),
+                            'uptime': uptime_str,
+                            'last_seen': f"{int(time_since_heartbeat)}s ago",
+                            'type': service['type']
+                        })
+                        total_running += 1
+
+                        # Check for errors in service data
+                        if 'errors' in last_heartbeat_data and last_heartbeat_data['errors']:
+                            for error in last_heartbeat_data['errors'][-5:]:  # Last 5 errors
                                 error_logs.append({
-                                    'container': container_name,
-                                    'message': line.strip(),
-                                    'timestamp': datetime.now().isoformat()
+                                    'container': service['name'],
+                                    'message': error.get('message', 'Unknown error'),
+                                    'timestamp': error.get('timestamp', datetime.now().isoformat())
                                 })
-                else:
-                    # Container not running
+                    else:
+                        # Service heartbeat expired
+                        containers_status.append({
+                            'name': service['name'],
+                            'status': 'stale',
+                            'state': 'heartbeat_expired',
+                            'uptime': f'Last seen {int(time_since_heartbeat)}s ago',
+                            'last_seen': f"{int(time_since_heartbeat)}s ago",
+                            'type': service['type']
+                        })
+                except Exception as e:
+                    logger.error(f"Error parsing heartbeat for {service['name']}: {e}")
                     containers_status.append({
-                        'name': container_name,
-                        'status': 'stopped',
-                        'state': 'exited',
-                        'uptime': 'Not running'
+                        'name': service['name'],
+                        'status': 'error',
+                        'state': 'parse_error',
+                        'uptime': str(e)[:50],
+                        'last_seen': 'Unknown',
+                        'type': service['type']
                     })
-
-            except subprocess.TimeoutExpired:
+            else:
+                # No heartbeat data found
                 containers_status.append({
-                    'name': container_name,
-                    'status': 'timeout',
-                    'state': 'unknown',
-                    'uptime': 'Check timeout'
-                })
-            except Exception as e:
-                logger.error(f"Error checking container {container_name}: {e}")
-                containers_status.append({
-                    'name': container_name,
-                    'status': 'error',
-                    'state': 'unknown',
-                    'uptime': str(e)[:50]
+                    'name': service['name'],
+                    'status': 'stopped',
+                    'state': 'no_heartbeat',
+                    'uptime': 'Not reporting',
+                    'last_seen': 'Never',
+                    'type': service['type']
                 })
 
-        # Fallback to local task manager if Docker commands not available
-        local_status = {}
-        try:
-            local_status = get_task_manager_status()
-        except:
-            pass
+        # Get system-wide error logs from cache
+        system_errors = cache.get('system_error_logs', [])
+        for error in system_errors[-10:]:  # Last 10 system errors
+            error_logs.append(error)
 
         status_data = {
             'deployment_type': 'containerized',
             'containers': containers_status,
-            'total_containers': len(task_containers),
+            'total_containers': len(service_containers),
             'running_containers': total_running,
-            'error_logs': error_logs[:10],  # Limit to 10 most recent errors
-            'is_healthy': total_running >= len(task_containers) // 2,  # At least half running
-            'local_fallback': local_status,  # Include local status as fallback
+            'error_logs': error_logs[:15],  # Limit to 15 most recent errors
+            'is_healthy': total_running >= len(service_containers) * 0.7,  # At least 70% running
+            'heartbeat_system': True,
+            'last_check': now.isoformat(),
         }
 
         return Response(status_data)
 
     except Exception as e:
         logger.error(f"Error getting task manager status: {e}", exc_info=True)
-        # Fallback to local task manager status
-        try:
-            status_data = get_task_manager_status()
-            status_data['deployment_type'] = 'local'
-            status_data['error'] = str(e)
-            return Response(status_data)
-        except:
-            return Response(
-                {'error': str(e), 'deployment_type': 'unknown'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        return Response(
+            {
+                'error': str(e),
+                'deployment_type': 'containerized',
+                'containers': [],
+                'total_containers': 0,
+                'running_containers': 0,
+                'error_logs': [{'message': f'Dashboard error: {str(e)}', 'timestamp': datetime.now().isoformat()}],
+                'is_healthy': False
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 @api_view(['POST'])
