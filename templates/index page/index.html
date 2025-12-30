@@ -638,73 +638,113 @@
                 {% endif %}
             </div>
 
-            <!-- Top Collections BY PERFORMANCE AND VOLUME -->
+            <!-- Top Collections BY PERFORMANCE AND VOLUME - Enhanced -->
             <div class="lg:col-span-1" data-aos="fade-up" data-aos-delay="200">
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-lg border border-accent-light dark:border-accent-dark h-full">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-3 xs:mb-4">
-                        <h3 class="text-base xs:text-lg sm:text-xl font-semibold text-text-light dark:text-text-dark mb-1 xs:mb-2 sm:mb-0">
+                <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-xl border border-accent-light dark:border-accent-dark h-full backdrop-blur-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 xs:mb-6">
+                        <h3 class="text-base xs:text-lg sm:text-xl font-bold text-text-light dark:text-text-dark mb-2 xs:mb-2 sm:mb-0 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
                             Top Collections
                         </h3>
                         <div class="flex gap-1 xs:gap-2">
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary active" data-sort="vitality">
-                                Vitality
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary text-white bg-primary shadow-lg shadow-primary/30 active" data-sort="vitality">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Vitality
+                                </span>
                             </button>
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="volume">
-                                Volume
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="volume">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Volume
+                                </span>
                             </button>
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary/30 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="sales">
-                                Sales
+                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="sales">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Sales
+                                </span>
                             </button>
                         </div>
                     </div>
-                    <div class="">
-                        <table class="w-full min-w-[300px] text-text-light dark:text-text-dark table-auto">
-                            <thead>
-                                <tr class="text-left text-text-secondary-light dark:text-text-secondary-dark">
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs min-w-[100px]">Collection</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-vitality">Vitality</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-volume">Volume</th>
-                                    <th class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap" id="sort-header-sales">Sales</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top-collections-table">
-                                {% for collection in top_collections %}
-                                <tr class="hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-lg collection-row"
-                                    data-vitality="{{ collection.vitality.vitality_score|default:0 }}"
-                                    data-volume="{{ collection.volume|default:0 }}"
-                                    data-sales="{{ collection.sales_24h|default:0 }}">
-                                    <td class="p-1 xs:p-2">
-                                        <a href="{% url 'collection_detail' address=collection.address %}"
-                                           class="flex items-center space-x-1 xs:space-x-2 min-w-0 cursor-pointer hover:no-underline">
-                                            <span class="text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">{{ forloop.counter }}</span>
-                                            <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
-                                                 alt="{{ collection.name }}"
-                                                 loading="lazy"
-                                                 class="w-4 xs:w-5 h-4 xs:h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0">
-                                            <span class="text-[9px] xs:text-[10px] sm:text-xs truncate text-text-light dark:text-text-dark">{{ collection.name }}</span>
-                                        </a>
-                                    </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">
-                                        <span class="vitality-value font-bold" data-score="{{ collection.vitality.vitality_score|default:0 }}">
-                                            {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
-                                        </span>
-                                    </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
-                                        {{ collection.volume|floatformat:2 }} SOL
-                                    </td>
-                                    <td class="p-1 xs:p-2 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap text-text-light dark:text-text-dark">
-                                        {{ collection.sales_24h|default:0 }}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="p-2 text-center text-text-secondary-light dark:text-text-secondary-dark text-[10px]">
-                                        No collections.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="space-y-2" id="top-collections-table">
+                        {% for collection in top_collections %}
+                        <a href="{% url 'collection_detail' address=collection.address %}"
+                           class="group flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 dark:hover:from-primary/10 dark:hover:to-purple-500/10 border border-gray-200 dark:border-gray-700 hover:border-primary/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-lg collection-row"
+                           data-vitality="{{ collection.vitality.vitality_score|default:0 }}"
+                           data-volume="{{ collection.volume|default:0 }}"
+                           data-sales="{{ collection.sales_24h|default:0 }}">
+
+                            <!-- Rank Badge -->
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br {% if forloop.counter == 1 %}from-yellow-400 to-orange-500{% elif forloop.counter == 2 %}from-gray-300 to-gray-400{% elif forloop.counter == 3 %}from-orange-400 to-orange-600{% else %}from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600{% endif %} flex items-center justify-center font-bold text-white text-sm shadow-md group-hover:scale-110 transition-transform duration-300">
+                                {{ forloop.counter }}
+                            </div>
+
+                            <!-- Collection Image -->
+                            <div class="flex-shrink-0 relative">
+                                <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                     alt="{{ collection.name }}"
+                                     loading="lazy"
+                                     class="w-12 h-12 rounded-lg object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-primary/50 group-hover:scale-105 transition-all duration-300 shadow-md">
+                                {% if forloop.counter <= 3 %}
+                                <div class="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center animate-pulse">
+                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Collection Info -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-semibold text-text-light dark:text-text-dark truncate group-hover:text-primary transition-colors">
+                                    {{ collection.name }}
+                                </h4>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] text-gray-500 dark:text-gray-400">
+                                        Vol: {{ collection.volume|floatformat:1 }} SOL
+                                    </span>
+                                    <span class="text-gray-300 dark:text-gray-600">•</span>
+                                    <span class="text-[10px] text-gray-500 dark:text-gray-400">
+                                        Sales: {{ collection.sales_24h|default:0 }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Vitality Score -->
+                            <div class="flex-shrink-0 text-right">
+                                <div class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
+                                    <p class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">VITALITY</p>
+                                    <p class="text-lg font-bold vitality-value" data-score="{{ collection.vitality.vitality_score|default:0 }}">
+                                        {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Hover Arrow -->
+                            <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                                No collections available.
+                            </p>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -856,50 +896,131 @@
 </section>
 {% endif %}
 
-<!-- Trending Traits -->
+<!-- Trending Traits - Enhanced -->
 <section id="trending-traits"
     class="py-8 xs:py-10 px-2 xs:px-4 bg-gradient-to-b from-accent-light to-background-light dark:from-accent-dark dark:to-background-dark">
     <div class="max-w-7xl mx-auto">
-        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 text-center"
-            data-aos="fade-up">Trending Solana Traits</h2>
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-2 text-center flex items-center justify-center"
+            data-aos="fade-up">
+            <svg class="w-6 h-6 xs:w-8 xs:h-8 mr-2 text-primary animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path>
+            </svg>
+            Trending Solana Traits
+        </h2>
+        <p class="text-center text-text-secondary-light dark:text-text-secondary-dark text-sm mb-6" data-aos="fade-up" data-aos-delay="100">
+            🎯 Hot traits making waves in the marketplace
+        </p>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 xs:gap-4">
             {% if trending_traits %}
             {% for nft in trending_traits %}
-            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer relative"
-                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
-                data-aos-delay="{{ nft.delay }}" data-nft-modal
+            <div class="group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl tilt-card cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-500"
+                data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000"
+                data-aos="fade-up" data-aos-delay="{{ nft.delay }}"
+                data-nft-modal
                 data-mint-address="{{ nft.mint_address }}"
                 data-nft-name="{{ nft.name }}"
                 data-nft-image="{{ nft.image_url }}"
                 data-nft-description="{{ nft.collection }}">
-                <div
-                    class="absolute top-1 xs:top-2 right-1 xs:right-2 bg-gradient-to-r from-primary to-accent-light text-white text-[10px] xs:text-xs px-1 xs:px-2 py-0.5 xs:py-1 rounded-full rarity-badge shadow-lg">
-                    🔥 Trending</div>
-                <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
-                    loading="lazy"
-                    class="w-full h-28 xs:h-32 sm:h-36 object-cover">
-                <div class="p-2 xs:p-3 sm:p-4">
-                    <h3 class="text-[13px] xs:text-sm sm:text-base font-semibold text-text-light dark:text-text-dark truncate">{{ nft.name }}</h3>
-                    <p class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
-                        {{ nft.collection }}</p>
-                    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <p class="text-[10px] xs:text-xs font-semibold text-primary">
-                            {{ nft.trait_type }}: {{ nft.trait_value }}
-                        </p>
-                        <p class="text-[9px] xs:text-[10px] text-text-secondary-light dark:text-text-secondary-dark">
-                            Score: {{ nft.performance_score|floatformat:1 }}
+
+                <!-- Trending Badge with Pulse Animation -->
+                <div class="absolute top-2 right-2 z-10 flex items-center gap-1">
+                    <div class="px-2 py-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 rounded-full shadow-lg animate-pulse">
+                        <span class="text-[10px] font-bold text-white flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                            </svg>
+                            HOT
+                        </span>
+                    </div>
+                </div>
+
+                <!-- NFT Image with Gradient Overlay -->
+                <div class="relative overflow-hidden">
+                    <img src="{{ nft.image_url }}" alt="{{ nft.name }}"
+                        loading="lazy"
+                        class="w-full h-40 xs:h-44 sm:h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    <!-- Floating Score Badge -->
+                    <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/80 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            <span class="text-white text-xs font-bold">{{ nft.performance_score|floatformat:1 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NFT Details -->
+                <div class="p-3 xs:p-4 space-y-2">
+                    <div>
+                        <h3 class="text-sm xs:text-base font-bold text-text-light dark:text-text-dark truncate group-hover:text-primary transition-colors">
+                            {{ nft.name }}
+                        </h3>
+                        <p class="text-[10px] xs:text-xs text-text-secondary-light dark:text-text-secondary-dark truncate flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ nft.collection }}
                         </p>
                     </div>
+
+                    <!-- Trait Info with Modern Badge -->
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-lg blur-sm"></div>
+                        <div class="relative p-2 rounded-lg bg-gradient-to-r from-primary/5 to-purple-500/5 border border-primary/20">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[9px] text-gray-500 dark:text-gray-400 font-medium uppercase">Trait</p>
+                                    <p class="text-xs font-bold text-primary truncate">
+                                        {{ nft.trait_type }}
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 ml-2">
+                                    <div class="px-2 py-1 bg-primary/10 rounded-md">
+                                        <p class="text-[10px] font-bold text-primary">
+                                            {{ nft.trait_value|truncatechars:8 }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Score Bar -->
+                    <div class="pt-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">Performance</span>
+                            <span class="text-[10px] font-bold text-primary">{{ nft.performance_score|floatformat:0 }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-500"
+                                 style="width: {{ nft.performance_score }}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animated Glow Border on Hover -->
+                <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div class="absolute inset-0 rounded-2xl shadow-[0_0_30px_rgba(var(--primary-rgb),0.4)] animate-pulse"></div>
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <div class="col-span-full text-center">
-                <p
-                    class="text-text-secondary-light dark:text-text-secondary-dark text-xs xs:text-sm sm:text-base mb-3 xs:mb-4">
-                    No trending traits available.</p>
-                <p class="text-text-secondary-light dark:text-text-secondary-dark text-[10px] xs:text-xs sm:text-sm">
-                    Discover trending Solana traits soon!</p>
+            <div class="col-span-full text-center py-12">
+                <div class="inline-block p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm xs:text-base font-semibold mb-2">
+                        No trending traits available
+                    </p>
+                    <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs">
+                        Check back soon for hot traits!
+                    </p>
+                </div>
             </div>
             {% endif %}
         </div>
