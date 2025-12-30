@@ -438,10 +438,22 @@ def index(request):
                 trait_values=trait_perf.trait_value
             ).select_related('collection').first()
 
-            # Get collection market stats for modal
+            # Get collection market stats for modal (raw marketplace data)
             collection_stats = CollectionMarketStats.objects.filter(
                 collection=trait_perf.collection
             ).order_by('-timestamp').first()
+
+            # Get aggregated stats for calculated fields (market cap, price changes)
+            aggregated_stats = None
+            if hasattr(trait_perf.collection, 'aggregated_stats'):
+                aggregated_stats = trait_perf.collection.aggregated_stats
+            else:
+                try:
+                    aggregated_stats = AggregatedCollectionStats.objects.filter(
+                        collection=trait_perf.collection
+                    ).first()
+                except:
+                    pass
 
             # Get collection vitality for performance score
             collection_vitality = None
@@ -468,15 +480,15 @@ def index(request):
                 'momentum_score': float(trait_perf.momentum_score),
                 'image_url': sample_nft.image_url if sample_nft else '/static/img/nft-default.png',
                 'mint_address': sample_nft.mint_address if sample_nft else None,
-                # Collection-level data for modal
+                # Collection-level data for modal (use both CollectionMarketStats and AggregatedCollectionStats)
                 'collection_image_url': trait_perf.collection.image_url,
-                'collection_floor_price': float(collection_stats.floor_price) if collection_stats and collection_stats.floor_price else 0.0,
-                'collection_volume': float(collection_stats.volume_24h) if collection_stats and collection_stats.volume_24h else 0.0,
-                'collection_market_cap': float(collection_stats.market_cap) if collection_stats and collection_stats.market_cap else 0.0,
-                'collection_price_change': float(collection_stats.price_change_24h) if collection_stats and collection_stats.price_change_24h else 0.0,
-                'collection_holders': collection_stats.num_holders if collection_stats and collection_stats.num_holders else 0,
+                'collection_floor_price': float(collection_stats.floor_price) if collection_stats and collection_stats.floor_price else (float(aggregated_stats.floor_price) if aggregated_stats and aggregated_stats.floor_price else 0.0),
+                'collection_volume': float(collection_stats.volume_24h) if collection_stats and collection_stats.volume_24h else (float(aggregated_stats.volume_24h) if aggregated_stats and aggregated_stats.volume_24h else 0.0),
+                'collection_market_cap': float(aggregated_stats.market_cap) if aggregated_stats and aggregated_stats.market_cap else 0.0,
+                'collection_price_change': float(aggregated_stats.price_change_24h) if aggregated_stats and aggregated_stats.price_change_24h else 0.0,
+                'collection_holders': collection_stats.owners_count if collection_stats and collection_stats.owners_count else (aggregated_stats.number_of_holders if aggregated_stats else 0),
                 'collection_supply': trait_perf.collection.total_supply if hasattr(trait_perf.collection, 'total_supply') else 0,
-                'collection_listed': collection_stats.num_listed if collection_stats and collection_stats.num_listed else 0,
+                'collection_listed': collection_stats.listed_count if collection_stats and collection_stats.listed_count else (aggregated_stats.listed_count if aggregated_stats else 0),
                 'collection_performance': float(collection_vitality.vitality_score) if collection_vitality and collection_vitality.vitality_score else 0.0,
             })
 
