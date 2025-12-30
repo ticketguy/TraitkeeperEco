@@ -641,34 +641,37 @@
             <!-- Top Collections BY PERFORMANCE AND VOLUME - Enhanced -->
             <div class="lg:col-span-1" data-aos="fade-up" data-aos-delay="200">
                 <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-3 xs:p-4 sm:p-6 shadow-xl border border-accent-light dark:border-accent-dark h-full backdrop-blur-sm">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 xs:mb-6">
-                        <h3 class="text-base xs:text-lg sm:text-xl font-bold text-text-light dark:text-text-dark mb-2 xs:mb-2 sm:mb-0 flex items-center">
+                    <!-- Header with Title and Sort Buttons -->
+                    <div class="flex flex-col gap-3 mb-4">
+                        <h3 class="text-base xs:text-lg sm:text-xl font-bold text-text-light dark:text-text-dark flex items-center">
                             <svg class="w-5 h-5 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
                                 <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
                             Top Collections
                         </h3>
-                        <div class="flex gap-1 xs:gap-2">
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-primary text-white bg-primary shadow-lg shadow-primary/30 active" data-sort="vitality">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+
+                        <!-- Modern Sort Buttons -->
+                        <div class="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
+                            <button class="collection-sort-btn flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-300 bg-primary text-white shadow-lg active" data-sort="vitality">
+                                <span class="flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
                                     </svg>
                                     Vitality
                                 </span>
                             </button>
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="volume">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <button class="collection-sort-btn flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600" data-sort="volume">
+                                <span class="flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                     </svg>
                                     Volume
                                 </span>
                             </button>
-                            <button class="collection-sort-btn px-2 xs:px-3 py-1.5 text-[10px] xs:text-xs rounded-lg border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 text-text-secondary-light dark:text-text-secondary-dark hover:border-primary hover:bg-primary/10 hover:text-primary" data-sort="sales">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <button class="collection-sort-btn flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600" data-sort="sales">
+                                <span class="flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
                                     </svg>
@@ -677,74 +680,95 @@
                             </button>
                         </div>
                     </div>
-                    <div class="space-y-2" id="top-collections-table">
-                        {% for collection in top_collections %}
-                        <a href="{% url 'collection_detail' address=collection.address %}"
-                           class="group flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 dark:hover:from-primary/10 dark:hover:to-purple-500/10 border border-gray-200 dark:border-gray-700 hover:border-primary/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-lg collection-row"
-                           data-vitality="{{ collection.vitality.vitality_score|default:0 }}"
-                           data-volume="{{ collection.volume|default:0 }}"
-                           data-sales="{{ collection.sales_24h|default:0 }}">
 
-                            <!-- Rank Badge -->
-                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br {% if forloop.counter == 1 %}from-yellow-400 to-orange-500{% elif forloop.counter == 2 %}from-gray-300 to-gray-400{% elif forloop.counter == 3 %}from-orange-400 to-orange-600{% else %}from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600{% endif %} flex items-center justify-center font-bold text-white text-sm shadow-md group-hover:scale-110 transition-transform duration-300">
-                                {{ forloop.counter }}
-                            </div>
+                    <!-- Table with Aligned Columns -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200 dark:border-gray-700">
+                                    <th class="text-left py-2 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">#</th>
+                                    <th class="text-left py-2 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Collection</th>
+                                    <th class="text-center py-2 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Vitality</th>
+                                    <th class="text-right py-2 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Volume</th>
+                                    <th class="text-right py-2 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-collections-table">
+                                {% for collection in top_collections %}
+                                <tr class="collection-row group border-b border-gray-100 dark:border-gray-700/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 dark:hover:from-primary/10 dark:hover:to-purple-500/10 transition-all duration-300"
+                                    data-vitality="{{ collection.vitality.vitality_score|default:0 }}"
+                                    data-volume="{{ collection.volume|default:0 }}"
+                                    data-sales="{{ collection.sales_24h|default:0 }}">
 
-                            <!-- Collection Image -->
-                            <div class="flex-shrink-0 relative">
-                                <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
-                                     alt="{{ collection.name }}"
-                                     loading="lazy"
-                                     class="w-12 h-12 rounded-lg object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-primary/50 group-hover:scale-105 transition-all duration-300 shadow-md">
-                                {% if forloop.counter <= 3 %}
-                                <div class="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center animate-pulse">
-                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                </div>
-                                {% endif %}
-                            </div>
+                                    <!-- Rank -->
+                                    <td class="py-3 px-2">
+                                        <div class="w-7 h-7 rounded-lg bg-gradient-to-br {% if forloop.counter == 1 %}from-yellow-400 to-orange-500{% elif forloop.counter == 2 %}from-gray-300 to-gray-400{% elif forloop.counter == 3 %}from-orange-400 to-orange-600{% else %}from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600{% endif %} flex items-center justify-center font-bold text-white text-xs shadow-md group-hover:scale-110 transition-transform duration-300 rank-badge">
+                                            {{ forloop.counter }}
+                                        </div>
+                                    </td>
 
-                            <!-- Collection Info -->
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-semibold text-text-light dark:text-text-dark truncate group-hover:text-primary transition-colors">
-                                    {{ collection.name }}
-                                </h4>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-gray-500 dark:text-gray-400">
-                                        Vol: {{ collection.volume|floatformat:1 }} SOL
-                                    </span>
-                                    <span class="text-gray-300 dark:text-gray-600">•</span>
-                                    <span class="text-[10px] text-gray-500 dark:text-gray-400">
-                                        Sales: {{ collection.sales_24h|default:0 }}
-                                    </span>
-                                </div>
-                            </div>
+                                    <!-- Collection Name & Image -->
+                                    <td class="py-3 px-2">
+                                        <a href="{% url 'collection_detail' address=collection.address %}" class="flex items-center gap-2 min-w-0 group/link">
+                                            <div class="flex-shrink-0 relative">
+                                                <img src="{% if collection.image_url %}{{ collection.image_url }}{% else %}{% static 'img/collection-default.png' %}{% endif %}"
+                                                     alt="{{ collection.name }}"
+                                                     loading="lazy"
+                                                     class="w-10 h-10 rounded-lg object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover/link:ring-primary/50 transition-all duration-300 shadow-sm">
+                                                {% if forloop.counter <= 3 %}
+                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center animate-pulse">
+                                                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                                    </svg>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <span class="text-sm font-semibold text-text-light dark:text-text-dark truncate group-hover/link:text-primary transition-colors">
+                                                {{ collection.name }}
+                                            </span>
+                                        </a>
+                                    </td>
 
-                            <!-- Vitality Score -->
-                            <div class="flex-shrink-0 text-right">
-                                <div class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
-                                    <p class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">VITALITY</p>
-                                    <p class="text-lg font-bold vitality-value" data-score="{{ collection.vitality.vitality_score|default:0 }}">
-                                        {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
-                                    </p>
-                                </div>
-                            </div>
+                                    <!-- Vitality Score -->
+                                    <td class="py-3 px-2 text-center">
+                                        <div class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
+                                            <span class="text-base font-bold vitality-value" data-score="{{ collection.vitality.vitality_score|default:0 }}">
+                                                {{ collection.vitality.vitality_score|floatformat:1|default:"--" }}
+                                            </span>
+                                        </div>
+                                    </td>
 
-                            <!-- Hover Arrow -->
-                            <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
-                        {% empty %}
-                        <div class="text-center py-8">
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">
-                                No collections available.
-                            </p>
-                        </div>
-                        {% endfor %}
+                                    <!-- Volume -->
+                                    <td class="py-3 px-2 text-right">
+                                        <div class="text-sm font-semibold text-text-light dark:text-text-dark">
+                                            {{ collection.volume|floatformat:1 }}
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 dark:text-gray-400">
+                                            SOL
+                                        </div>
+                                    </td>
+
+                                    <!-- Sales -->
+                                    <td class="py-3 px-2 text-right">
+                                        <div class="text-sm font-semibold text-text-light dark:text-text-dark">
+                                            {{ collection.sales_24h|default:0 }}
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 dark:text-gray-400">
+                                            24h
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center">
+                                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                                            No collections available.
+                                        </p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2338,12 +2362,12 @@
 
                 // Update active state
                 sortButtons.forEach(btn => {
-                    btn.classList.remove('active', 'border-primary', 'bg-primary/10', 'text-primary');
-                    btn.classList.add('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+                    btn.classList.remove('active', 'bg-primary', 'text-white', 'shadow-lg');
+                    btn.classList.add('text-gray-600', 'dark:text-gray-300');
                 });
 
-                this.classList.add('active', 'border-primary', 'bg-primary/10', 'text-primary');
-                this.classList.remove('border-primary/30', 'text-text-secondary-light', 'dark:text-text-secondary-dark');
+                this.classList.add('active', 'bg-primary', 'text-white', 'shadow-lg');
+                this.classList.remove('text-gray-600', 'dark:text-gray-300');
 
                 // Sort the table
                 sortCollections(sortType);
@@ -2385,13 +2409,33 @@
             // Clear table body
             tableBody.innerHTML = '';
 
-            // Re-append sorted rows with updated rank numbers
+            // Re-append sorted rows with updated rank numbers and badges
             rows.forEach((row, index) => {
-                // Update the rank number
-                const rankSpan = row.querySelector('td:first-child a span:first-child');
-                if (rankSpan) {
-                    rankSpan.textContent = index + 1;
+                // Update the rank number in the badge
+                const rankBadge = row.querySelector('.rank-badge');
+                if (rankBadge) {
+                    rankBadge.textContent = index + 1;
+
+                    // Update rank badge colors for top 3
+                    rankBadge.classList.remove(
+                        'from-yellow-400', 'to-orange-500',
+                        'from-gray-300', 'to-gray-400',
+                        'from-orange-400', 'to-orange-600',
+                        'from-gray-200', 'to-gray-300',
+                        'dark:from-gray-700', 'dark:to-gray-600'
+                    );
+
+                    if (index === 0) {
+                        rankBadge.classList.add('from-yellow-400', 'to-orange-500');
+                    } else if (index === 1) {
+                        rankBadge.classList.add('from-gray-300', 'to-gray-400');
+                    } else if (index === 2) {
+                        rankBadge.classList.add('from-orange-400', 'to-orange-600');
+                    } else {
+                        rankBadge.classList.add('from-gray-200', 'to-gray-300', 'dark:from-gray-700', 'dark:to-gray-600');
+                    }
                 }
+
                 tableBody.appendChild(row);
             });
 

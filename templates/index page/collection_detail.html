@@ -1971,6 +1971,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- Update Functions ---
     function updateCollectionStats(stats) {
+        // Helper function to format numbers with commas
+        const formatNumberWithCommas = (number) => {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        };
+
         const vitality = !isNaN(stats.vitality) ? parseFloat(stats.vitality).toFixed(1) : '--';
         const performance = !isNaN(stats.performance) ? parseFloat(stats.performance).toFixed(1) : '--';
         const floorPrice = !isNaN(stats.floor_price) ? parseFloat(stats.floor_price).toFixed(2) : '--';
@@ -1978,7 +1983,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const volume24h = !isNaN(stats.volume_24h) ? parseFloat(stats.volume_24h).toFixed(2) : '--';
         const volumeChange = !isNaN(stats.volume_change_24h) ? parseFloat(stats.volume_change_24h).toFixed(1) : '--';
         const totalVolume = !isNaN(stats.total_volume) ? parseFloat(stats.total_volume).toFixed(2) : '--';
-        const marketCap = !isNaN(stats.market_cap) ? parseFloat(stats.market_cap).toFixed(2) : '--';
+        const marketCap = !isNaN(stats.market_cap) ? formatNumberWithCommas(parseFloat(stats.market_cap).toFixed(2)) : '--';
         const bidsCount = !isNaN(stats.bids_count) ? parseInt(stats.bids_count) : '--';
 
         const statsHTML = `
