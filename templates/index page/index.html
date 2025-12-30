@@ -86,19 +86,23 @@
      * TABLE RESPONSIVE IMPROVEMENTS
      * ================================================== */
 
-    #top-collections-table {
+    #top-collections-table,
+    .traits-table-container {
         width: 100%;
         max-width: 100%;
         overflow-x: auto; /* Horizontal scroll on mobile */
+        -webkit-overflow-scrolling: touch;
     }
 
-    #top-collections-table tr {
+    #top-collections-table tr,
+    .traits-table tr {
         transition: all 0.2s ease;
     }
 
     /* Disable hover transform on mobile for better touch experience */
     @media (min-width: 768px) {
-        #top-collections-table tr:hover {
+        #top-collections-table tr:hover,
+        .traits-table tr:hover {
             transform: translateX(4px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
@@ -107,9 +111,65 @@
     /* Make table cells more compact on mobile */
     @media (max-width: 640px) {
         #top-collections-table td,
-        #top-collections-table th {
+        #top-collections-table th,
+        .traits-table td,
+        .traits-table th {
             padding: 0.5rem !important;
-            font-size: 0.875rem !important;
+            font-size: 0.75rem !important;
+        }
+    }
+
+    /* ==================================================
+     * TOP TRAITS SECTION MOBILE OPTIMIZATION
+     * ================================================== */
+
+    #top-traits {
+        overflow-x: hidden;
+    }
+
+    /* Mobile trait cards - Improved grid */
+    @media (max-width: 640px) {
+        .traits-card-container {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.5rem !important;
+            padding: 0 0.25rem;
+        }
+
+        .trait-card {
+            min-width: 0; /* Allow cards to shrink below content size */
+        }
+
+        .trait-card .trait-image {
+            height: 80px !important;
+        }
+
+        .trait-card h3,
+        .trait-card p {
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+        }
+    }
+
+    /* Very small screens (< 375px) */
+    @media (max-width: 374px) {
+        .traits-card-container {
+            grid-template-columns: 1fr !important;
+            gap: 0.5rem !important;
+        }
+
+        #top-traits h2 {
+            font-size: 1.25rem !important;
+        }
+
+        #top-traits .flex.gap-1 {
+            flex-wrap: wrap;
+            gap: 0.25rem !important;
+        }
+
+        #top-traits select,
+        #top-traits input {
+            font-size: 10px !important;
+            padding: 0.25rem 0.5rem !important;
         }
     }
 

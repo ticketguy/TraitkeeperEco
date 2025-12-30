@@ -287,38 +287,63 @@
     /* Sidebar toggle button */
     .sidebar-toggle {
         position: fixed;
-        top: 16px;
-        left: 16px;
+        top: 20px;
+        right: 20px; /* Position on the right to avoid dashboard text */
         z-index: 1001;
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         background: linear-gradient(135deg, #10b981, #059669);
-        border-radius: 12px;
+        border-radius: 14px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 5px;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        padding: 12px;
     }
 
     .sidebar-toggle:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
     }
 
-    .sidebar-toggle i {
-        color: white;
-        font-size: 18px;
+    .sidebar-toggle:active {
+        transform: translateY(0);
+    }
+
+    /* Modern hamburger icon */
+    .sidebar-toggle span {
+        display: block;
+        width: 24px;
+        height: 2.5px;
+        background: white;
+        border-radius: 2px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Animate hamburger to X when sidebar is open */
+    .sidebar-toggle.active span:nth-child(1) {
+        transform: translateY(7.5px) rotate(45deg);
+    }
+
+    .sidebar-toggle.active span:nth-child(2) {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    .sidebar-toggle.active span:nth-child(3) {
+        transform: translateY(-7.5px) rotate(-45deg);
     }
 
     @media (min-width: 1024px) {
         .sidebar-toggle {
-            left: 290px;
-        }
-
-        .sidebar-toggle.shifted {
-            left: 78px;
+            /* Keep on right side to avoid covering content */
+            right: 20px;
+            top: 20px;
         }
     }
 
@@ -785,7 +810,7 @@
                     sidebarCollapsed = !sidebarCollapsed;
                     sidebar.classList.toggle('collapsed', sidebarCollapsed);
                     mainWrapper.classList.toggle('expanded', sidebarCollapsed);
-                    sidebarToggle.classList.toggle('shifted', sidebarCollapsed);
+                    sidebarToggle.classList.toggle('active', sidebarCollapsed);
                     localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
                 } else {
                     // Mobile: Toggle open/close
@@ -793,6 +818,7 @@
                     sidebar.classList.toggle('open', sidebarOpen);
                     sidebarOverlay.classList.toggle('active', sidebarOpen);
                     body.classList.toggle('sidebar-open', sidebarOpen);
+                    sidebarToggle.classList.toggle('active', sidebarOpen);
                 }
             }
 
@@ -802,6 +828,7 @@
                     sidebar.classList.remove('open');
                     sidebarOverlay.classList.remove('active');
                     body.classList.remove('sidebar-open');
+                    sidebarToggle.classList.remove('active');
                 }
             }
 
@@ -996,7 +1023,9 @@
 
     <!-- Modern Sidebar Toggle Button -->
     <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-        <i class="fas fa-bars"></i>
+        <span></span>
+        <span></span>
+        <span></span>
     </button>
 
     <!-- Modern Sidebar -->
