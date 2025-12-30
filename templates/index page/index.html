@@ -739,45 +739,115 @@
 </section>
 
 
-<!-- Collection Sweeps Section -->
+<!-- Collection Sweeps Section - Enhanced -->
 {% if collection_sweeps %}
 <section id="collection-sweeps"
     class="py-8 xs:py-10 px-2 xs:px-4 bg-gradient-to-b from-accent-light to-background-light dark:from-accent-dark dark:to-background-dark">
     <div class="max-w-7xl mx-auto text-center">
-        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-4 xs:mb-6 animate__animated animate__pulse animate__infinite"
-            data-aos="fade-up">Sweep Contest</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4">
+        <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-2 animate__animated animate__pulse animate__infinite flex items-center justify-center"
+            data-aos="fade-up">
+            <svg class="w-6 h-6 xs:w-8 xs:h-8 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Sweep Contest
+        </h2>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm mb-6">🔥 Massive collections sweeps detected!</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6">
             {% for sweep in collection_sweeps %}
-            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg tilt-card cursor-pointer"
-                data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000" data-aos="fade-up"
-                data-aos-delay="{{ sweep.delay }}" data-nft-modal data-nft-name="Sweep: {{ sweep.collection }}"
+            <div class="group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 tilt-card cursor-pointer border-2 border-transparent hover:border-primary/50"
+                data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000"
+                data-aos="fade-up" data-aos-delay="{{ sweep.delay }}"
+                data-nft-modal
+                data-nft-name="Sweep: {{ sweep.collection }}"
                 data-nft-image="{{ sweep.image_url }}"
                 data-nft-description="Items: {{ sweep.num_items }} | Total Volume: {{ sweep.total_volume|floatformat:2 }} SOL">
-                <div class="p-2 xs:p-3 sm:p-4">
-                    <h3 class="text-sm xs:text-base sm:text-lg font-semibold text-text-light dark:text-text-dark mb-1">
-                        {{ sweep.collection }}</h3>
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
-                        Buyer: @{{ sweep.buyer_address|slice:":8" }}</p>
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
-                        Items: {{ sweep.num_items }} | Volume: {{ sweep.total_volume|floatformat:2 }} SOL</p>
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
-                        Price Movement: {{ sweep.price_movement|floatformat:2 }}%</p>
+
+                <!-- Sweep Badge -->
+                <div class="absolute top-3 right-3 z-20">
+                    <div class="px-3 py-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-full shadow-lg flex items-center space-x-1 animate-bounce">
+                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-xs font-bold text-white">SWEEP</span>
+                    </div>
+                </div>
+
+                <!-- Collection Image Background -->
+                <div class="relative h-40 xs:h-48 overflow-hidden">
+                    <img src="{{ sweep.image_url }}"
+                         alt="{{ sweep.collection }}"
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+
+                    <!-- Collection Name Overlay -->
+                    <div class="absolute bottom-3 left-3 right-3">
+                        <h3 class="text-lg xs:text-xl font-bold text-white drop-shadow-lg truncate">
+                            {{ sweep.collection }}
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Sweep Details -->
+                <div class="p-4 space-y-3">
+                    <!-- Buyer Info -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400">Buyer</p>
+                                <p class="text-xs font-semibold text-primary">@{{ sweep.buyer_address|slice:":8" }}</p>
+                            </div>
+                        </div>
+                        <div class="px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <p class="text-[10px] text-green-600 dark:text-green-400">Score</p>
+                            <p class="text-sm font-bold text-green-600 dark:text-green-400">{{ sweep.significance_score|floatformat:1 }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1">Items Swept</p>
+                            <p class="text-lg font-bold text-text-light dark:text-text-dark">{{ sweep.num_items }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1">Total Volume</p>
+                            <p class="text-lg font-bold text-primary">{{ sweep.total_volume|floatformat:1 }} SOL</p>
+                        </div>
+                    </div>
+
+                    <!-- Price Movement -->
+                    <div class="flex items-center justify-between p-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                        <span class="text-xs text-gray-600 dark:text-gray-300">Price Movement</span>
+                        <span class="text-sm font-bold {% if sweep.price_movement > 0 %}text-green-500{% elif sweep.price_movement < 0 %}text-red-500{% else %}text-gray-500{% endif %}">
+                            {% if sweep.price_movement > 0 %}↑{% elif sweep.price_movement < 0 %}↓{% else %}→{% endif %}
+                            {{ sweep.price_movement|floatformat:2 }}%
+                        </span>
+                    </div>
+
+                    <!-- Targeted Traits -->
                     {% if sweep.target_traits %}
-                    <p
-                        class="text-[10px] xs:text-xs sm:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1 xs:mb-2">
-                        Targeted Traits:
-                        {% for trait in sweep.target_traits %}
-                        {{ trait.trait_type }}: {{ trait.trait_value }} ({{ trait.frequency|floatformat:2 }}%)
-                        {% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
+                    <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2">🎯 Targeted Traits:</p>
+                        <div class="flex flex-wrap gap-1">
+                            {% for trait in sweep.target_traits %}
+                            <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded-full text-[10px] font-medium">
+                                {{ trait.trait_type }}: {{ trait.trait_value }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
                     {% endif %}
-                    <span
-                        class="block text-right text-green-400 font-bold text-[10px] xs:text-xs sm:text-sm mt-1">Score:
-                        {{ sweep.significance_score|floatformat:1 }}</span>
+                </div>
+
+                <!-- Animated glow border -->
+                <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div class="absolute inset-0 rounded-2xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)]"></div>
                 </div>
             </div>
             {% endfor %}
