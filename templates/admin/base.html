@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load admin_permissions %}
 
 <html lang="en" {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} class="light">
 
@@ -1040,6 +1041,7 @@
         <nav class="sidebar-menu">
             <div class="sidebar-section-title">Overview</div>
 
+            <!-- Dashboard - Always visible -->
             <div class="sidebar-menu-item">
                 <a href="{% url 'admin:index' %}" class="sidebar-menu-link" data-tooltip="Dashboard">
                     <i class="fas fa-home"></i>
@@ -1048,105 +1050,138 @@
             </div>
 
             {% if user.is_authenticated and user.is_staff %}
-            <div class="sidebar-menu-item">
-                <a href="{% url 'system_health:dashboard' %}" class="sidebar-menu-link" data-tooltip="System Health">
-                    <i class="fas fa-heartbeat"></i>
-                    <span>System Health</span>
-                </a>
-            </div>
+                <!-- System Health - Shareable, visible to all staff -->
+                <div class="sidebar-menu-item">
+                    <a href="{% url 'system_health:dashboard' %}" class="sidebar-menu-link" data-tooltip="System Health">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>System Health</span>
+                    </a>
+                </div>
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-menu-link" data-tooltip="Task Manager">
-                    <i class="fas fa-tasks"></i>
-                    <span>Task Manager</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_tasks" %}
+                    <!-- Task Manager - Requires can_view_tasks permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:task-dashboard' %}" class="sidebar-menu-link" data-tooltip="Task Manager">
+                            <i class="fas fa-tasks"></i>
+                            <span>Task Manager</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:statistics' %}" class="sidebar-menu-link" data-tooltip="Statistics">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Statistics</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_dashboard" %}
+                    <!-- Statistics - Requires can_view_dashboard permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:statistics' %}" class="sidebar-menu-link" data-tooltip="Statistics">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Statistics</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-section-title">Content</div>
+                <div class="sidebar-section-title">Content</div>
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:pending_collections' %}" class="sidebar-menu-link" data-tooltip="Pending Collections">
-                    <i class="fas fa-list-alt"></i>
-                    <span>Pending Collections</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_any_permission:"can_view_collections,can_create_collections" %}
+                    <!-- Pending Collections - Requires collection permissions -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:pending_collections' %}" class="sidebar-menu-link" data-tooltip="Pending Collections">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Pending Collections</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:nft_data_nftcollection_changelist' %}" class="sidebar-menu-link" data-tooltip="NFT Collections">
-                    <i class="fas fa-folder"></i>
-                    <span>NFT Collections</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_collections" %}
+                    <!-- NFT Collections - Requires can_view_collections permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin:nft_data_nftcollection_changelist' %}" class="sidebar-menu-link" data-tooltip="NFT Collections">
+                            <i class="fas fa-folder"></i>
+                            <span>NFT Collections</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:marketplace_nftlisting_changelist' %}" class="sidebar-menu-link" data-tooltip="Listings">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Listings</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_collections" %}
+                    <!-- Listings - Requires can_view_collections permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin:marketplace_nftlisting_changelist' %}" class="sidebar-menu-link" data-tooltip="Listings">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Listings</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:wallet_customuser_changelist' %}" class="sidebar-menu-link" data-tooltip="Users">
-                    <i class="fas fa-users"></i>
-                    <span>Users</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_users" %}
+                    <!-- Users - Requires can_view_users permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin:wallet_customuser_changelist' %}" class="sidebar-menu-link" data-tooltip="Users">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-section-title">Settings</div>
+                <div class="sidebar-section-title">Settings</div>
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:role-list' %}" class="sidebar-menu-link" data-tooltip="Role Management">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Role Management</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_manage_roles" %}
+                    <!-- Role Management - Requires can_manage_roles permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:role-list' %}" class="sidebar-menu-link" data-tooltip="Role Management">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Role Management</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:provider-management' %}" class="sidebar-menu-link" data-tooltip="RPC Providers">
-                    <i class="fas fa-server"></i>
-                    <span>RPC Providers</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_manage_providers" %}
+                    <!-- RPC Providers - Requires can_manage_providers permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:provider-management' %}" class="sidebar-menu-link" data-tooltip="RPC Providers">
+                            <i class="fas fa-server"></i>
+                            <span>RPC Providers</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin_panel:secrets-management' %}" class="sidebar-menu-link" data-tooltip="Secrets">
-                    <i class="fas fa-lock"></i>
-                    <span>Secrets</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_manage_secrets" %}
+                    <!-- Secrets - Requires can_manage_secrets permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin_panel:secrets-management' %}" class="sidebar-menu-link" data-tooltip="Secrets">
+                            <i class="fas fa-lock"></i>
+                            <span>Secrets</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-menu-item">
-                <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-menu-link" data-tooltip="Activity Logs">
-                    <i class="fas fa-history"></i>
-                    <span>Activity Logs</span>
-                </a>
-            </div>
+                {% if user.is_superuser or user|has_permission:"can_view_logs" %}
+                    <!-- Activity Logs - Requires can_view_logs permission -->
+                    <div class="sidebar-menu-item">
+                        <a href="{% url 'admin:admin_panel_adminlogentry_changelist' %}" class="sidebar-menu-link" data-tooltip="Activity Logs">
+                            <i class="fas fa-history"></i>
+                            <span>Activity Logs</span>
+                        </a>
+                    </div>
+                {% endif %}
 
-            <div class="sidebar-section-title">Account</div>
+                <div class="sidebar-section-title">Account</div>
 
-            <div class="sidebar-menu-item">
-                <button id="theme-toggle-sidebar" class="sidebar-menu-link" data-tooltip="Toggle Theme" style="width: 100%; border: none; background: none; cursor: pointer;">
-                    <i class="fas fa-moon"></i>
-                    <span>Toggle Theme</span>
-                </button>
-            </div>
-
-            <div class="sidebar-menu-item">
-                <form id="logout-form-sidebar" method="post" action="{% url 'admin_panel:logout' %}" style="margin: 0;">
-                    {% csrf_token %}
-                    <button type="button" onclick="confirmLogout()" class="sidebar-menu-link" data-tooltip="Logout" style="width: 100%; border: none; background: none; cursor: pointer;">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
+                <!-- Toggle Theme - Always visible -->
+                <div class="sidebar-menu-item">
+                    <button id="theme-toggle-sidebar" class="sidebar-menu-link" data-tooltip="Toggle Theme" style="width: 100%; border: none; background: none; cursor: pointer;">
+                        <i class="fas fa-moon"></i>
+                        <span>Toggle Theme</span>
                     </button>
-                </form>
-            </div>
+                </div>
+
+                <!-- Logout - Always visible -->
+                <div class="sidebar-menu-item">
+                    <form id="logout-form-sidebar" method="post" action="{% url 'admin_panel:logout' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="button" onclick="confirmLogout()" class="sidebar-menu-link" data-tooltip="Logout" style="width: 100%; border: none; background: none; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
             {% endif %}
         </nav>
     </aside>
