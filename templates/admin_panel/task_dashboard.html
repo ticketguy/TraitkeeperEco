@@ -44,7 +44,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Task Manager Dashboard</h1>
-                    <p class="mt-1 text-sm text-gray-500">Real-time monitoring of background tasks</p>
+                    <p class="mt-1 text-sm text-gray-500">Real-time monitoring of containerized task services</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <span id="connection-status" class="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
@@ -66,7 +66,7 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Manager Status</p>
+                        <p class="text-sm font-medium text-gray-500" id="status-label">System Health</p>
                         <p id="manager-status" class="mt-2 text-3xl font-bold text-gray-900">--</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-full">
@@ -80,7 +80,7 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Active Workers</p>
+                        <p class="text-sm font-medium text-gray-500" id="active-label">Running Containers</p>
                         <p id="active-tasks" class="mt-2 text-3xl font-bold text-gray-900">0</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-full">
@@ -94,7 +94,7 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Queued Tasks</p>
+                        <p class="text-sm font-medium text-gray-500" id="queued-label">Total Containers</p>
                         <p id="queued-tasks" class="mt-2 text-3xl font-bold text-gray-900">0</p>
                     </div>
                     <div class="p-3 bg-yellow-100 rounded-full">
@@ -108,22 +108,22 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Task History</p>
+                        <p class="text-sm font-medium text-gray-500" id="completed-label">Error Count</p>
                         <p id="completed-tasks" class="mt-2 text-3xl font-bold text-gray-900">0</p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-full">
                         <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Active Tasks Table -->
+        <!-- Container Status / Active Tasks Table -->
         <div class="bg-white rounded-lg shadow mb-6">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Active Tasks</h2>
+                <h2 class="text-lg font-semibold text-gray-900" id="tasks-title">Container Status</h2>
             </div>
             <div class="p-6">
                 <div id="active-tasks-list" class="space-y-3">
@@ -132,12 +132,12 @@
             </div>
         </div>
 
-        <!-- Task History -->
+        <!-- Task History / Error Logs -->
         <div class="bg-white rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Recent Task History</h2>
-                <button onclick="loadHistory()" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition">
-                    Refresh History
+                <h2 class="text-lg font-semibold text-gray-900" id="history-title">Container Error Logs</h2>
+                <button onclick="loadTaskStatus()" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition">
+                    Refresh
                 </button>
             </div>
             <div class="p-6">
@@ -180,10 +180,69 @@
         }
 
         function updateDashboard(status) {
-            // Update status cards
+            // Check if containerized deployment
+            if (status.deployment_type === 'containerized') {
+                updateContainerizedDashboard(status);
+            } else {
+                updateLocalDashboard(status);
+            }
+        }
+
+        function updateContainerizedDashboard(status) {
+            // Update status cards for containerized deployment
+            const isHealthy = status.is_healthy;
+            document.getElementById('manager-status').textContent = isHealthy ? 'Healthy' : 'Degraded';
+            document.getElementById('active-tasks').textContent = status.running_containers || 0;
+            document.getElementById('queued-tasks').textContent = status.total_containers || 0;
+            document.getElementById('completed-tasks').textContent = status.error_logs?.length || 0;
+
+            // Update active tasks list with container information
+            const activeTasksList = document.getElementById('active-tasks-list');
+            if (status.containers && status.containers.length > 0) {
+                let containersHtml = status.containers.map(container => {
+                    const statusColor = container.status === 'running' ? 'green' :
+                                      container.status === 'stopped' ? 'red' : 'yellow';
+                    const statusIcon = container.status === 'running' ? '✓' :
+                                     container.status === 'stopped' ? '✗' : '⚠';
+
+                    return `
+                        <div class="task-card priority-${statusColor === 'green' ? 'low' : statusColor === 'red' ? 'high' : 'medium'} bg-white p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <span class="status-dot status-${container.status}"></span>
+                                    <span class="font-semibold text-gray-900">${container.name}</span>
+                                </div>
+                                <span class="text-${statusColor}-600 font-bold text-xl">${statusIcon}</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p><strong>State:</strong> ${container.state}</p>
+                                <p><strong>Uptime:</strong> ${container.uptime}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                activeTasksList.innerHTML = containersHtml;
+            } else {
+                activeTasksList.innerHTML = '<p class="text-gray-500 text-center py-8">No containers found</p>';
+            }
+
+            // Display error logs
+            updateErrorLogs(status.error_logs || []);
+        }
+
+        function updateLocalDashboard(status) {
+            // Update labels for local mode
+            document.getElementById('status-label').textContent = 'Manager Status';
+            document.getElementById('active-label').textContent = 'Active Workers';
+            document.getElementById('queued-label').textContent = 'Queued Tasks';
+            document.getElementById('completed-label').textContent = 'Task History';
+            document.getElementById('tasks-title').textContent = 'Active Tasks';
+            document.getElementById('history-title').textContent = 'Recent Task History';
+
+            // Original local task manager dashboard
             document.getElementById('manager-status').textContent = status.is_running ? 'Running' : 'Stopped';
 
-            // Calculate total pending tasks from all queues
             let totalPending = status.total_pending_tasks || 0;
             let queuedHigh = status.task_queues?.HIGH || 0;
             let queuedMedium = status.task_queues?.MEDIUM || 0;
@@ -193,7 +252,6 @@
             document.getElementById('queued-tasks').textContent = totalPending;
             document.getElementById('completed-tasks').textContent = status.task_history_size || 0;
 
-            // Update active tasks list with queue information
             const activeTasksList = document.getElementById('active-tasks-list');
             if (status.is_running && totalPending > 0) {
                 let tasks = [];
@@ -297,6 +355,26 @@
             if (!timestamp) return 'N/A';
             const date = new Date(timestamp);
             return date.toLocaleTimeString();
+        }
+
+        // Display error logs from containers
+        function updateErrorLogs(errorLogs) {
+            const historyList = document.getElementById('task-history-list');
+            if (errorLogs && errorLogs.length > 0) {
+                historyList.innerHTML = errorLogs.map(log => {
+                    return `
+                        <div class="log-entry p-3 bg-red-50 text-red-700 rounded border-l-4 border-red-500">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-semibold">${log.container}</span>
+                                <span class="text-xs">${formatTimestamp(log.timestamp)}</span>
+                            </div>
+                            <p class="text-sm font-mono text-red-900 break-all">${log.message}</p>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                historyList.innerHTML = '<div class="text-center py-8"><p class="text-green-600 font-medium">No errors detected</p><p class="text-sm text-gray-500 mt-2">All containers running smoothly</p></div>';
+            }
         }
 
         // Auto-refresh status every 3 seconds

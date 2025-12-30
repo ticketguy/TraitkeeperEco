@@ -903,16 +903,123 @@ def user_stats_data(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def task_manager_status(request):
-    """Get current status of the background task manager."""
+    """
+    Get current status of containerized background task services.
+    Checks Docker container status for task manager services.
+    """
     try:
-        status_data = get_task_manager_status()
+        import subprocess
+        import json
+        from datetime import datetime
+
+        # Define expected task manager containers
+        task_containers = [
+            'traitkeeper-task-manager',
+            'traitkeeper-indexer',
+            'traitkeeper-worker-1',
+            'traitkeeper-worker-2',
+        ]
+
+        containers_status = []
+        total_running = 0
+        error_logs = []
+
+        for container_name in task_containers:
+            try:
+                # Check container status
+                result = subprocess.run(
+                    ['docker', 'ps', '--filter', f'name={container_name}', '--format', '{{json .}}'],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+
+                if result.returncode == 0 and result.stdout.strip():
+                    # Container is running
+                    container_info = json.loads(result.stdout.strip().split('\n')[0]) if result.stdout.strip() else {}
+                    containers_status.append({
+                        'name': container_name,
+                        'status': 'running',
+                        'state': container_info.get('State', 'running'),
+                        'uptime': container_info.get('Status', 'N/A')
+                    })
+                    total_running += 1
+
+                    # Check for recent errors in logs
+                    log_result = subprocess.run(
+                        ['docker', 'logs', '--tail', '50', container_name],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+
+                    if log_result.returncode == 0:
+                        logs = log_result.stderr + log_result.stdout
+                        # Look for error patterns
+                        for line in logs.split('\n')[-20:]:  # Last 20 lines
+                            if any(err in line.lower() for err in ['error', 'exception', 'failed', 'critical']):
+                                error_logs.append({
+                                    'container': container_name,
+                                    'message': line.strip(),
+                                    'timestamp': datetime.now().isoformat()
+                                })
+                else:
+                    # Container not running
+                    containers_status.append({
+                        'name': container_name,
+                        'status': 'stopped',
+                        'state': 'exited',
+                        'uptime': 'Not running'
+                    })
+
+            except subprocess.TimeoutExpired:
+                containers_status.append({
+                    'name': container_name,
+                    'status': 'timeout',
+                    'state': 'unknown',
+                    'uptime': 'Check timeout'
+                })
+            except Exception as e:
+                logger.error(f"Error checking container {container_name}: {e}")
+                containers_status.append({
+                    'name': container_name,
+                    'status': 'error',
+                    'state': 'unknown',
+                    'uptime': str(e)[:50]
+                })
+
+        # Fallback to local task manager if Docker commands not available
+        local_status = {}
+        try:
+            local_status = get_task_manager_status()
+        except:
+            pass
+
+        status_data = {
+            'deployment_type': 'containerized',
+            'containers': containers_status,
+            'total_containers': len(task_containers),
+            'running_containers': total_running,
+            'error_logs': error_logs[:10],  # Limit to 10 most recent errors
+            'is_healthy': total_running >= len(task_containers) // 2,  # At least half running
+            'local_fallback': local_status,  # Include local status as fallback
+        }
+
         return Response(status_data)
+
     except Exception as e:
         logger.error(f"Error getting task manager status: {e}", exc_info=True)
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        # Fallback to local task manager status
+        try:
+            status_data = get_task_manager_status()
+            status_data['deployment_type'] = 'local'
+            status_data['error'] = str(e)
+            return Response(status_data)
+        except:
+            return Response(
+                {'error': str(e), 'deployment_type': 'unknown'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 @api_view(['POST'])
