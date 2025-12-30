@@ -1004,7 +1004,8 @@ class CustomAdminSite(AdminSite):
     def app_index(self, request, app_label, extra_context=None):
         """
         Render the app-specific admin page (e.g., /admin/traitkeeper/) with app statistics.
-        Displays models, their counts, and recent actions for the specified app.
+        Displays models, their counts, and recent actions for the specified app with modern
+        features like filtering, search, pagination, and sorting.
 
         Args:
             request (HttpRequest): The HTTP request object.
@@ -1027,6 +1028,12 @@ class CustomAdminSite(AdminSite):
         if not app:
             raise Http404('The requested admin app does not exist.')
 
+        # Get query parameters for filtering and search
+        search_query = request.GET.get('q', '').strip()
+        sort_by = request.GET.get('sort', 'name')  # name, count, -count
+        view_mode = request.GET.get('view', 'grid')  # grid or table
+        per_page = int(request.GET.get('per_page', '12'))
+
         # Calculate total objects and model details for the app
         total_objects = 0
         detailed_models = []
@@ -1037,14 +1044,42 @@ class CustomAdminSite(AdminSite):
                 model_class = apps.get_model(app_label, model['object_name'])
                 model_count = model_class.objects.count()
                 total_objects += model_count
+
+                model_name = model_class._meta.verbose_name_plural.title()
+
                 detailed_models.append({
-                    'name': model_class._meta.verbose_name_plural.title(),
+                    'name': model_name,
                     'app_label': app_label,
                     'model': model['object_name'].lower(),
                     'count': model_count,
+                    'model_class_name': model['object_name'],
+                    'verbose_name': model_class._meta.verbose_name,
                 })
             except LookupError:
                 continue
+
+        # Apply search filter
+        if search_query:
+            detailed_models = [
+                m for m in detailed_models
+                if search_query.lower() in m['name'].lower() or
+                   search_query.lower() in m['model'].lower()
+            ]
+
+        # Apply sorting
+        if sort_by == 'name':
+            detailed_models.sort(key=lambda x: x['name'].lower())
+        elif sort_by == '-name':
+            detailed_models.sort(key=lambda x: x['name'].lower(), reverse=True)
+        elif sort_by == 'count':
+            detailed_models.sort(key=lambda x: x['count'])
+        elif sort_by == '-count':
+            detailed_models.sort(key=lambda x: x['count'], reverse=True)
+
+        # Pagination
+        paginator = Paginator(detailed_models, per_page)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
 
         # Fetch the 10 most recent admin log entries for this app
         admin_log = (
@@ -1056,16 +1091,23 @@ class CustomAdminSite(AdminSite):
         # Prepare context for the template
         context = {
             **self.each_context(request),
-            'title': f'{app["name"]} administration',
+            'title': f'{app["name"]} Administration',
             'subtitle': None,
             'app_list': app_list,
             'app_label': app_label,
+            'app_name': app["name"],
             'total_objects': total_objects,
+            'total_models': len(app['models']),
+            'filtered_count': len(detailed_models),
             'admin_log': admin_log,
-            'detailed_models': detailed_models,
+            'detailed_models': detailed_models,  # Keep all for stats
+            'page_obj': page_obj,
+            'search_query': search_query,
+            'sort_by': sort_by,
+            'view_mode': view_mode,
+            'per_page': per_page,
             **(extra_context or {}),
         }
-        print(f"Rendering app_index for {app_label} with template: admin/app_index.html")
         return self.template_response(request, 'admin/app_index.html', context)
 
     def token_list_view(self, request):
