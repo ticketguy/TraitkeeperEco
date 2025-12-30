@@ -1268,23 +1268,36 @@ def stream_highest_vitality_collections(request):
                 vitality_collections_qs = NFTCollection.objects.filter(
                     is_listed=True
                 ).select_related('vitality').order_by('-vitality__vitality_score')[:10]
-                
+
                 vitality_data = []
                 stats_dict = {s.collection_id: s for s in AggregatedCollectionStats.objects.filter(collection__in=vitality_collections_qs)}
 
+                # Get latest market stats for floor price and 24h volume
+                from indexer.models import CollectionMarketStats
+                market_stats_dict = {}
+                for coll in vitality_collections_qs:
+                    latest_market = CollectionMarketStats.objects.filter(
+                        collection=coll
+                    ).order_by('-timestamp').first()
+                    if latest_market:
+                        market_stats_dict[coll.pk] = latest_market
+
                 for coll in vitality_collections_qs:
                     stat = stats_dict.get(coll.pk)
+                    market_stat = market_stats_dict.get(coll.pk)
+
                     vitality_data.append({
                         'name': coll.display_name or coll.name,
                         'address': coll.address,
                         'image_url': coll.image_url,
-                        'number_of_holders': stat.number_of_holders if stat else 0,
-                        'total_supply': stat.total_supply if stat else 0,
-                        'listed_count': stat.listed_count if stat else 0,
-                        'total_volume': float(getattr(stat, 'total_volume', 0) or 0) if stat else 0,
-                        'market_cap': float(stat.market_cap or 0) if stat else 0,
-                        'price_change_24h': float(stat.price_change_24h or 0) if stat else 0,
-                        'performance_score': float(stat.performance_score or 50) if stat else 50,
+                        'number_of_holders': stat.number_of_holders if stat else (market_stat.num_holders if market_stat else 0),
+                        'total_supply': stat.total_supply if stat else coll.total_supply if hasattr(coll, 'total_supply') else 0,
+                        'listed_count': stat.listed_count if stat else (market_stat.num_listed if market_stat else 0),
+                        'volume_24h': float(market_stat.volume_24h) if market_stat and market_stat.volume_24h else 0.0,
+                        'floor_price': float(market_stat.floor_price) if market_stat and market_stat.floor_price else 0.0,
+                        'market_cap': float(market_stat.market_cap) if market_stat and market_stat.market_cap else (float(stat.market_cap) if stat and stat.market_cap else 0.0),
+                        'price_change_24h': float(market_stat.price_change_24h) if market_stat and market_stat.price_change_24h else (float(stat.price_change_24h) if stat and stat.price_change_24h else 0.0),
+                        'performance_score': float(coll.vitality.vitality_score) if hasattr(coll, 'vitality') and coll.vitality else (float(stat.performance_score) if stat and stat.performance_score else 50.0),
                     })
                 update_data['highest_vitality_collections'] = vitality_data
             
