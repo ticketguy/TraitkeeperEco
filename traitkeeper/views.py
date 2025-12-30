@@ -1298,14 +1298,14 @@ def stream_highest_vitality_collections(request):
                         'name': coll.display_name or coll.name,
                         'address': coll.address,
                         'image_url': coll.image_url,
-                        'number_of_holders': stat.number_of_holders if stat else (market_stat.num_holders if market_stat else 0),
+                        'number_of_holders': stat.number_of_holders if stat else (market_stat.num_holders if market_stat and hasattr(market_stat, 'num_holders') else 0),
                         'total_supply': total_supply,
-                        'listed_count': stat.listed_count if stat else (market_stat.num_listed if market_stat else 0),
+                        'listed_count': stat.listed_count if stat else (market_stat.num_listed if market_stat and hasattr(market_stat, 'num_listed') else 0),
                         'volume_24h': float(market_stat.volume_24h) if market_stat and market_stat.volume_24h else 0.0,
                         'floor_price': floor_price,
                         'market_cap': market_cap,
-                        'price_change_24h': float(market_stat.price_change_24h) if market_stat and market_stat.price_change_24h else (float(stat.price_change_24h) if stat and stat.price_change_24h else 0.0),
-                        'performance_score': float(coll.vitality.vitality_score) if hasattr(coll, 'vitality') and coll.vitality else (float(stat.performance_score) if stat and stat.performance_score else 50.0),
+                        'price_change_24h': float(stat.price_change_24h) if stat and hasattr(stat, 'price_change_24h') and stat.price_change_24h else 0.0,
+                        'performance_score': float(coll.vitality.vitality_score) if hasattr(coll, 'vitality') and coll.vitality else (float(stat.performance_score) if stat and hasattr(stat, 'performance_score') and stat.performance_score else 50.0),
                     })
                 update_data['highest_vitality_collections'] = vitality_data
             
