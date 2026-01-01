@@ -39,5 +39,6 @@ urlpatterns = [
 
     # --- Marketplace Configuration ---
     path('api/config/', views.api_get_marketplace_config, name='api_get_marketplace_config'),
+    path('api/priority-fees/', views.api_get_priority_fees, name='api_get_priority_fees'),
 
 ]

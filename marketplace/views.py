@@ -484,3 +484,99 @@ def api_get_marketplace_config(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_get_priority_fees(request):
+    """
+    Fetches real-time priority fees from Solana blockchain.
+    Returns low/medium/high priority fee options with estimated confirmation times.
+    """
+    try:
+        from core.api_provider.api_providers import APIProviderManager
+        import asyncio
+
+        async def fetch_priority_fees():
+            provider_manager = APIProviderManager()
+            rpc_provider = await provider_manager.get_rpc_provider()
+
+            if not rpc_provider:
+                raise Exception("No RPC provider available")
+
+            # Get recent prioritization fees
+            try:
+                fees_response = await rpc_provider.connection.get_recent_prioritization_fees()
+
+                # Calculate percentiles from recent fees
+                if fees_response and len(fees_response) > 0:
+                    fees = [f['prioritizationFee'] for f in fees_response]
+                    fees.sort()
+
+                    # Calculate low (25th), medium (50th), high (75th) percentiles
+                    low_fee = fees[len(fees) // 4] if fees else 0
+                    medium_fee = fees[len(fees) // 2] if fees else 5000
+                    high_fee = fees[len(fees) * 3 // 4] if fees else 50000
+                else:
+                    # Fallback defaults
+                    low_fee = 0
+                    medium_fee = 5000
+                    high_fee = 50000
+
+                return {
+                    'low': {
+                        'microLamports': low_fee,
+                        'sol': low_fee / 1_000_000_000,
+                        'label': 'Low',
+                        'time': '~60s'
+                    },
+                    'medium': {
+                        'microLamports': medium_fee,
+                        'sol': medium_fee / 1_000_000_000,
+                        'label': 'Medium (Recommended)',
+                        'time': '~30s'
+                    },
+                    'high': {
+                        'microLamports': high_fee,
+                        'sol': high_fee / 1_000_000_000,
+                        'label': 'High',
+                        'time': '~10s'
+                    }
+                }
+            except Exception as e:
+                logger.warning(f"Failed to fetch prioritization fees, using defaults: {e}")
+                # Return defaults on error
+                return {
+                    'low': {
+                        'microLamports': 0,
+                        'sol': 0,
+                        'label': 'Low',
+                        'time': '~60s'
+                    },
+                    'medium': {
+                        'microLamports': 5000,
+                        'sol': 0.000005,
+                        'label': 'Medium (Recommended)',
+                        'time': '~30s'
+                    },
+                    'high': {
+                        'microLamports': 50000,
+                        'sol': 0.00005,
+                        'label': 'High',
+                        'time': '~10s'
+                    }
+                }
+
+        priority_fees = asyncio.run(fetch_priority_fees())
+
+        return Response({
+            'success': True,
+            'data': priority_fees
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.exception(f"Failed to fetch priority fees: {e}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

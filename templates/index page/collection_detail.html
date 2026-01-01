@@ -1008,6 +1008,43 @@
     </div>
 
     <script>
+        // === Global marketplace configuration ===
+        window.marketplaceConfig = null;
+        window.currentPriorityFee = 0.000005; // Default estimate
+        window.priorityFeeOptions = {
+            low: { microLamports: 0, sol: 0, label: 'Low', time: '~60s' },
+            medium: { microLamports: 5000, sol: 0.000005, label: 'Medium', time: '~30s' },
+            high: { microLamports: 50000, sol: 0.00005, label: 'High', time: '~10s' }
+        };
+
+        // Fetch marketplace config and priority fees on page load
+        (async function initializeMarketplaceData() {
+            try {
+                // Fetch real marketplace config from blockchain
+                const configResponse = await fetch('/marketplace/api/config/');
+                if (configResponse.ok) {
+                    const configData = await configResponse.json();
+                    if (configData.success) {
+                        window.marketplaceConfig = configData.data;
+                        console.log('✅ Marketplace config loaded:', window.marketplaceConfig);
+                    }
+                }
+
+                // Fetch real-time priority fees from Solana
+                const priorityResponse = await fetch('/marketplace/api/priority-fees/');
+                if (priorityResponse.ok) {
+                    const priorityData = await priorityResponse.json();
+                    if (priorityData.success) {
+                        window.priorityFeeOptions = priorityData.data;
+                        window.currentPriorityFee = priorityData.data.medium.sol;
+                        console.log('✅ Priority fees loaded:', window.priorityFeeOptions);
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to load marketplace data, using defaults:', error);
+            }
+        })();
+
         // Trait type collapsible sections
         document.addEventListener('DOMContentLoaded', function() {
             const traitHeaders = document.querySelectorAll('.trait-type-header');
@@ -1392,6 +1429,38 @@
                             </svg>
                         </div>
                     </div>
+                </div>
+
+                <!-- Priority Fee Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2">Transaction Speed</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button"
+                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50"
+                                data-priority="low"
+                                onclick="selectPriorityFee('low')">
+                            <div class="font-bold text-text-light dark:text-text-dark">Low</div>
+                            <div id="priority-low-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~60s</div>
+                            <div id="priority-low-fee" class="text-[10px] text-primary">Free</div>
+                        </button>
+                        <button type="button"
+                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 border-primary bg-primary/10 rounded-lg transition-all duration-200"
+                                data-priority="medium"
+                                onclick="selectPriorityFee('medium')">
+                            <div class="font-bold text-text-light dark:text-text-dark">Medium</div>
+                            <div id="priority-medium-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~30s</div>
+                            <div id="priority-medium-fee" class="text-[10px] text-primary">0.000005 SOL</div>
+                        </button>
+                        <button type="button"
+                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50"
+                                data-priority="high"
+                                onclick="selectPriorityFee('high')">
+                            <div class="font-bold text-text-light dark:text-text-dark">High</div>
+                            <div id="priority-high-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~10s</div>
+                            <div id="priority-high-fee" class="text-[10px] text-primary">0.00005 SOL</div>
+                        </button>
+                    </div>
+                    <input type="hidden" id="selected-priority-fee" name="priority_fee" value="medium">
                 </div>
 
                 <!-- Fee Breakdown -->
@@ -2502,10 +2571,58 @@ function updateMakeOfferModalStats() {
     window.collectionData = {
         floorPrice: parseFloat(floorPrice) || 0,
         vitality: parseFloat(vitality) || 0,
-        creatorFeePercent: {{ collection.royalties_percentage|default:"5" }},  // Default 5% if not set
-        platformFeePercent: 2.5,  // Platform fee 2.5%
-        blockchainFeeEstimate: 0.000005  // ~0.000005 SOL per transaction
+        creatorFeePercent: {{ collection.royalties_percentage|default:"5" }},  // From collection metadata
+        platformFeePercent: window.marketplaceConfig?.platform_fee_percent || 2.5,  // From blockchain or fallback
+        blockchainFeeEstimate: window.currentPriorityFee || 0.000005  // Real-time or estimate
     };
+
+    // Update priority fee displays with real data
+    if (window.priorityFeeOptions) {
+        ['low', 'medium', 'high'].forEach(level => {
+            const feeElem = document.getElementById(`priority-${level}-fee`);
+            const timeElem = document.getElementById(`priority-${level}-time`);
+            if (feeElem && window.priorityFeeOptions[level]) {
+                const fee = window.priorityFeeOptions[level].sol;
+                feeElem.textContent = fee === 0 ? 'Free' : `${fee.toFixed(9)} SOL`;
+            }
+            if (timeElem && window.priorityFeeOptions[level]) {
+                timeElem.textContent = window.priorityFeeOptions[level].time;
+            }
+        });
+    }
+}
+
+// Priority fee selection
+function selectPriorityFee(level) {
+    // Update button styles
+    const buttons = document.querySelectorAll('.priority-fee-btn');
+    buttons.forEach(btn => {
+        if (btn.dataset.priority === level) {
+            btn.classList.add('border-primary', 'bg-primary/10');
+            btn.classList.remove('border-border-light', 'dark:border-border-dark');
+        } else {
+            btn.classList.remove('border-primary', 'bg-primary/10');
+            btn.classList.add('border-border-light', 'dark:border-border-dark');
+        }
+    });
+
+    // Update hidden input
+    const hiddenInput = document.getElementById('selected-priority-fee');
+    if (hiddenInput) hiddenInput.value = level;
+
+    // Update blockchain fee in collection data
+    if (window.priorityFeeOptions && window.priorityFeeOptions[level]) {
+        window.currentPriorityFee = window.priorityFeeOptions[level].sol;
+        if (window.collectionData) {
+            window.collectionData.blockchainFeeEstimate = window.currentPriorityFee;
+        }
+
+        // Recalculate fees with new priority fee
+        const amountInput = document.getElementById('make-offer-modal-amount');
+        if (amountInput && amountInput.value) {
+            amountInput.dispatchEvent(new Event('input'));
+        }
+    }
 }
 
 function openMakeOfferModalFromNFTModal() {
