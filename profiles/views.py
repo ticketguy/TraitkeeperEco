@@ -28,19 +28,31 @@ def profile_view(request, username):
     """
     Displays the user profile page with NFTs, marketplace data, watchlist, and achievements.
     """
-    # Import AdminUser
-    from admin_panel.models import AdminUser
+    import logging
+    logger = logging.getLogger(__name__)
 
     try:
+        logger.info(f"📝 Profile view requested for username: {username}")
+
+        # Import AdminUser
+        from admin_panel.models import AdminUser
+
         # Fetch the user whose profile is being viewed
         profile_user = User.objects.select_related('profile').get(username=username)
+        logger.info(f"✅ Found user: {profile_user.username}")
 
         # Block admin users from having public profiles
         if isinstance(profile_user, AdminUser):
+            logger.warning(f"❌ Admin user {username} tried to access public profile")
             raise Http404("Admin users do not have public profiles")
 
     except User.DoesNotExist:
+        logger.error(f"❌ User not found: {username}")
         raise Http404("User not found")
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in profile_view for {username}: {e}")
+        logger.exception(f"Error type: {type(e).__name__}")
+        raise
 
     # Determine if the logged-in user is viewing their own profile
     is_owner = request.user.is_authenticated and (request.user.pk == profile_user.pk)
@@ -173,48 +185,75 @@ def settings_profile_view(request):
     """
     Handles displaying and updating profile information.
     """
-    # Block admin users from accessing profile settings
-    from admin_panel.models import AdminUser
-    if isinstance(request.user, AdminUser):
-        messages.error(request, 'Admin users cannot access profile settings.')
-        return redirect('admin:index')
+    try:
+        logger.info(f"📝 Profile settings view requested by user: {request.user.username}")
 
-    # Get or create profile for this user (handles legacy users without profiles)
-    from profiles.models import Profile
-    profile, created = Profile.objects.get_or_create(user=request.user)
+        # Block admin users from accessing profile settings
+        from admin_panel.models import AdminUser
+        if isinstance(request.user, AdminUser):
+            logger.warning(f"❌ Admin user {request.user.username} tried to access profile settings")
+            messages.error(request, 'Admin users cannot access profile settings.')
+            return redirect('admin:index')
 
-    if request.method == 'POST':
-        # Pass request.POST and request.FILES (if using ImageField for avatar)
-        form = ProfileUpdateForm(request.POST, request.FILES or None, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('profiles:settings_profile') # Redirect back to profile settings
+        # Get or create profile for this user (handles legacy users without profiles)
+        from profiles.models import Profile
+        logger.info(f"🔍 Getting or creating profile for user: {request.user.username}")
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        logger.info(f"✅ Profile {'created' if created else 'found'} for user: {request.user.username}")
+
+        if request.method == 'POST':
+            logger.info(f"📤 POST request - updating profile for user: {request.user.username}")
+            # Pass request.POST and request.FILES (if using ImageField for avatar)
+            form = ProfileUpdateForm(request.POST, request.FILES or None, instance=profile)
+            if form.is_valid():
+                form.save()
+                logger.info(f"✅ Profile updated successfully for user: {request.user.username}")
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('profiles:settings_profile') # Redirect back to profile settings
+            else:
+                logger.warning(f"❌ Form validation failed for user {request.user.username}: {form.errors}")
+                messages.error(request, 'Please correct the errors below.')
         else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        # Create form instance for GET request, pre-filled with current profile data
-        form = ProfileUpdateForm(instance=profile)
+            logger.info(f"📥 GET request - displaying profile form for user: {request.user.username}")
+            # Create form instance for GET request, pre-filled with current profile data
+            form = ProfileUpdateForm(instance=profile)
 
-    context = {
-        'active_tab': 'profile',
-        'form': form, # Pass the form to the template
-    }
-    return render(request, 'profile/settings.html', context)
+        context = {
+            'active_tab': 'profile',
+            'form': form, # Pass the form to the template
+        }
+        logger.info(f"✅ Rendering settings template for user: {request.user.username}")
+        return render(request, 'profile/settings.html', context)
+
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in settings_profile_view for user {request.user.username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 @login_required
 def settings_wallets_view(request):
     """
     Handles displaying linked wallets (now supports multiple wallets).
     """
-    # Fetch all wallets linked to the user
-    user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+    try:
+        logger.info(f"📝 Wallets settings view requested by user: {request.user.username}")
 
-    context = {
-        'active_tab': 'wallets',
-        'user_wallets': user_wallets,
-    }
-    return render(request, 'profile/settings.html', context)
+        # Fetch all wallets linked to the user
+        logger.info(f"🔍 Fetching wallets for user: {request.user.username}")
+        user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+        logger.info(f"✅ Found {len(user_wallets)} wallets for user: {request.user.username}")
+
+        context = {
+            'active_tab': 'wallets',
+            'user_wallets': user_wallets,
+        }
+        logger.info(f"✅ Rendering settings template for user: {request.user.username}")
+        return render(request, 'profile/settings.html', context)
+
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in settings_wallets_view for user {request.user.username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 
 @login_required
@@ -283,76 +322,89 @@ def settings_notifications_view(request):
     Handles displaying and updating notification preferences.
     Uses direct POST data handling.
     """
-    if request.method == 'POST':
-        try:
-            with transaction.atomic(): # Ensure all updates succeed or fail together
-                for pref_type, _ in NotificationPreference.NOTIFICATION_TYPES:
-                    enabled = request.POST.get(f'{pref_type}_enabled') == 'on'
-                    notify_email = request.POST.get(f'{pref_type}_email') == 'on' if enabled else False
-                    notify_push = request.POST.get(f'{pref_type}_push') == 'on' if enabled else False
-                    min_value_str = request.POST.get(f'{pref_type}_min_value', '0')
-                    collections_str = request.POST.get(f'{pref_type}_collections', '')
-                    wallets_str = request.POST.get(f'{pref_type}_wallets', '')
+    try:
+        logger.info(f"📝 Notifications settings view requested by user: {request.user.username}")
 
-                    # Validate min_value
-                    min_value = None
-                    try:
-                        min_val_decimal = Decimal(min_value_str)
-                        if min_val_decimal >= 0:
-                            min_value = min_val_decimal
-                    except (ValueError, TypeError):
-                        pass # Keep min_value as None or 0
+        if request.method == 'POST':
+            logger.info(f"📤 POST request - updating notification preferences for user: {request.user.username}")
+            try:
+                with transaction.atomic(): # Ensure all updates succeed or fail together
+                    for pref_type, _ in NotificationPreference.NOTIFICATION_TYPES:
+                        enabled = request.POST.get(f'{pref_type}_enabled') == 'on'
+                        notify_email = request.POST.get(f'{pref_type}_email') == 'on' if enabled else False
+                        notify_push = request.POST.get(f'{pref_type}_push') == 'on' if enabled else False
+                        min_value_str = request.POST.get(f'{pref_type}_min_value', '0')
+                        collections_str = request.POST.get(f'{pref_type}_collections', '')
+                        wallets_str = request.POST.get(f'{pref_type}_wallets', '')
 
-                    # Process comma-separated strings into lists (simple split, no validation here)
-                    collections_list = [addr.strip() for addr in collections_str.split(',') if addr.strip()]
-                    wallets_list = [addr.strip() for addr in wallets_str.split(',') if addr.strip()]
+                        # Validate min_value
+                        min_value = None
+                        try:
+                            min_val_decimal = Decimal(min_value_str)
+                            if min_val_decimal >= 0:
+                                min_value = min_val_decimal
+                        except (ValueError, TypeError):
+                            pass # Keep min_value as None or 0
 
-                    # Get or create the preference object for the user and type
-                    preference, created = NotificationPreference.objects.update_or_create(
-                        user=request.user,
-                        notification_type=pref_type,
-                        defaults={
-                            'enabled': enabled,
-                            'notify_via_email': notify_email,
-                            'notify_via_push': notify_push,
-                            'transaction_min_value': min_value,
-                            'specific_collections': collections_list,
-                            'specific_wallets': wallets_list,
-                        }
-                    )
-            messages.success(request, 'Notification preferences saved successfully!')
-        except Exception as e:
-            logger.error(f"Error saving notification preferences for user {request.user.id}: {e}", exc_info=True)
-            messages.error(request, 'An error occurred while saving notification preferences.')
+                        # Process comma-separated strings into lists (simple split, no validation here)
+                        collections_list = [addr.strip() for addr in collections_str.split(',') if addr.strip()]
+                        wallets_list = [addr.strip() for addr in wallets_str.split(',') if addr.strip()]
 
-        return redirect('profiles:settings_notifications') # Redirect back
+                        # Get or create the preference object for the user and type
+                        preference, created = NotificationPreference.objects.update_or_create(
+                            user=request.user,
+                            notification_type=pref_type,
+                            defaults={
+                                'enabled': enabled,
+                                'notify_via_email': notify_email,
+                                'notify_via_push': notify_push,
+                                'transaction_min_value': min_value,
+                                'specific_collections': collections_list,
+                                'specific_wallets': wallets_list,
+                            }
+                        )
+                logger.info(f"✅ Notification preferences saved successfully for user: {request.user.username}")
+                messages.success(request, 'Notification preferences saved successfully!')
+            except Exception as e:
+                logger.exception(f"❌ Error saving notification preferences for user {request.user.id}: {e}")
+                messages.error(request, 'An error occurred while saving notification preferences.')
 
-    # --- GET Request ---
-    # Fetch existing preferences to display in the template
-    existing_prefs = NotificationPreference.objects.filter(user=request.user)
-    prefs_dict = {pref.notification_type: pref for pref in existing_prefs}
+            return redirect('profiles:settings_notifications') # Redirect back
 
-    # Prepare context data structured for the template loop
-    notification_prefs_context = {}
-    for pref_type, label in NotificationPreference.NOTIFICATION_TYPES:
-        pref = prefs_dict.get(pref_type)
-        notification_prefs_context[pref_type] = {
-            'label': label,
-            'enabled': getattr(pref, 'enabled', True), # Default to True if not set? Or False?
-            'notify_via_email': getattr(pref, 'notify_via_email', False),
-            'notify_via_push': getattr(pref, 'notify_via_push', False),
-            'transaction_min_value': getattr(pref, 'transaction_min_value', None),
-            'specific_collections': getattr(pref, 'specific_collections',),
-            'specific_wallets': getattr(pref, 'specific_wallets',),
+        # --- GET Request ---
+        logger.info(f"📥 GET request - displaying notification preferences for user: {request.user.username}")
+
+        # Fetch existing preferences to display in the template
+        existing_prefs = NotificationPreference.objects.filter(user=request.user)
+        prefs_dict = {pref.notification_type: pref for pref in existing_prefs}
+
+        # Prepare context data structured for the template loop
+        notification_prefs_context = {}
+        for pref_type, label in NotificationPreference.NOTIFICATION_TYPES:
+            pref = prefs_dict.get(pref_type)
+            notification_prefs_context[pref_type] = {
+                'label': label,
+                'enabled': getattr(pref, 'enabled', True), # Default to True if not set? Or False?
+                'notify_via_email': getattr(pref, 'notify_via_email', False),
+                'notify_via_push': getattr(pref, 'notify_via_push', False),
+                'transaction_min_value': getattr(pref, 'transaction_min_value', None),
+                'specific_collections': getattr(pref, 'specific_collections',),
+                'specific_wallets': getattr(pref, 'specific_wallets',),
+            }
+
+        context = {
+            'active_tab': 'notifications',
+            'notification_prefs_context': notification_prefs_context,
+            # Pass the choices for the loop in the template if not using the context dict approach
+            'NOTIFICATION_TYPES': NotificationPreference.NOTIFICATION_TYPES
         }
+        logger.info(f"✅ Rendering settings template for user: {request.user.username}")
+        return render(request, 'profile/settings.html', context)
 
-    context = {
-        'active_tab': 'notifications',
-        'notification_prefs_context': notification_prefs_context,
-        # Pass the choices for the loop in the template if not using the context dict approach
-        'NOTIFICATION_TYPES': NotificationPreference.NOTIFICATION_TYPES
-    }
-    return render(request, 'profile/settings.html', context)
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in settings_notifications_view for user {request.user.username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 
 @login_required
@@ -360,34 +412,58 @@ def settings_visibility_view(request):
     """
     Handles updating profile visibility.
     """
-    profile = request.user.profile
-    if request.method == 'POST':
-         is_public_value = request.POST.get('profile_public') == 'on' # Checkbox value
-         profile.is_public = is_public_value
-         profile.save(update_fields=['is_public'])
-         messages.success(request, f'Profile visibility updated to {"Public" if is_public_value else "Private"}.')
-         return redirect('profiles:settings_visibility') # Redirect back
+    try:
+        logger.info(f"📝 Visibility settings view requested by user: {request.user.username}")
 
-    context = {
-        'active_tab': 'visibility',
-        # Pass profile object to check current state in template
-        'profile': profile
-    }
-    return render(request, 'profile/settings.html', context)
+        logger.info(f"🔍 Getting profile for user: {request.user.username}")
+        profile = request.user.profile
+
+        if request.method == 'POST':
+            logger.info(f"📤 POST request - updating visibility for user: {request.user.username}")
+            is_public_value = request.POST.get('profile_public') == 'on' # Checkbox value
+            profile.is_public = is_public_value
+            profile.save(update_fields=['is_public'])
+            logger.info(f"✅ Profile visibility updated to {'Public' if is_public_value else 'Private'} for user: {request.user.username}")
+            messages.success(request, f'Profile visibility updated to {"Public" if is_public_value else "Private"}.')
+            return redirect('profiles:settings_visibility') # Redirect back
+
+        logger.info(f"📥 GET request - displaying visibility settings for user: {request.user.username}")
+        context = {
+            'active_tab': 'visibility',
+            # Pass profile object to check current state in template
+            'profile': profile
+        }
+        logger.info(f"✅ Rendering settings template for user: {request.user.username}")
+        return render(request, 'profile/settings.html', context)
+
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in settings_visibility_view for user {request.user.username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 @login_required
 def settings_account_view(request):
     """
     Displays account settings (placeholder for email/password, links to Danger Zone).
     """
-    # --- TODO: Add forms/logic for email/password change if you implement standard auth ---
-    account_management_enabled = False # Set to True if you have email/password forms
+    try:
+        logger.info(f"📝 Account settings view requested by user: {request.user.username}")
 
-    context = {
-        'active_tab': 'account',
-        'account_management_enabled': account_management_enabled,
-    }
-    return render(request, 'profile/settings.html', context)
+        # --- TODO: Add forms/logic for email/password change if you implement standard auth ---
+        account_management_enabled = False # Set to True if you have email/password forms
+
+        logger.info(f"📥 GET request - displaying account settings for user: {request.user.username}")
+        context = {
+            'active_tab': 'account',
+            'account_management_enabled': account_management_enabled,
+        }
+        logger.info(f"✅ Rendering settings template for user: {request.user.username}")
+        return render(request, 'profile/settings.html', context)
+
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in settings_account_view for user {request.user.username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 @login_required
 def delete_account_view(request):
