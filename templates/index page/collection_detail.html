@@ -871,14 +871,8 @@
                     <div>
                         <h3 class="font-semibold text-lg text-text-light dark:text-text-dark truncate">{{ nft.name|default:nft.mint_address|slice:":16" }}</h3>
                         <div class="relative mt-2 h-9">
-                            <p class="absolute inset-0 font-bold text-text-secondary-light dark:text-text-secondary-dark transition-opacity duration-300 group-hover:opacity-0">
+                            <p class="font-bold text-text-secondary-light dark:text-text-secondary-dark">
 {{ nft.buy_price|floatformat:2|default:"&nbsp;" }} {% if nft.buy_price %}SOL{% endif %}                            </p>
-                            <button class="make-offer-btn absolute inset-0 flex items-center justify-center bg-primary text-brand-white text-sm font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ring-2 ring-primary ring-offset-2 ring-offset-background-light dark:ring-offset-background-dark hover:ring-4"
-                                    data-nft-id="{{ nft.mint_address }}"
-                                    data-nft-name="{{ nft.name|default:nft.mint_address|slice:':16' }}"
-                                    data-nft-image="{{ nft.image_url }}">
-                                Make Offer
-                            </button>
                         </div>
                     </div>
                 </div>

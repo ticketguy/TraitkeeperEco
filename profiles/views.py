@@ -98,7 +98,7 @@ def profile_view(request, username):
         bids_received = Bid.objects.filter(
             nft__mint_address__in=user_nft_mints,
             status='ACTIVE'
-        ).select_related('nft', 'bidder').order_by('-bid_placed_at')[:20]
+        ).select_related('nft', 'bidder').order_by('-placed_at')[:20]
 
     # Fetch Watchlist Items
     from .models import WatchlistItem
