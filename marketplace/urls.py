@@ -37,4 +37,7 @@ urlpatterns = [
     # --- Parallel Lines Integration (World Perception Engine) ---
     path('api/perception/webhook', views.api_parallel_lines_webhook, name='api_parallel_lines_webhook'),
 
+    # --- Marketplace Configuration ---
+    path('api/config/', views.api_get_marketplace_config, name='api_get_marketplace_config'),
+
 ]

@@ -437,3 +437,50 @@ async def _process_parallel_lines_webhook_async(request):
             'success': False,
             'error': 'Internal server error'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_get_marketplace_config(request):
+    """
+    Fetches the marketplace configuration from the blockchain.
+    Returns fee percentages, rebate settings, and wallet addresses.
+    """
+    try:
+        from .solana_client import MarketplaceSolanaClient
+        import asyncio
+
+        async def fetch_config():
+            client = MarketplaceSolanaClient()
+            state = await client.get_state()
+            config_pda = state["config_pda"]
+            program = state["program"]
+
+            # Fetch config account
+            config_account = await program.account["config"].fetch(config_pda)
+
+            return {
+                'platform_fee_bps': config_account.platform_fee_bps,
+                'platform_fee_percent': config_account.platform_fee_bps / 100,
+                'max_royalty_subsidy_bps': config_account.max_royalty_subsidy_bps,
+                'max_royalty_subsidy_percent': config_account.max_royalty_subsidy_bps / 100,
+                'min_vitality_for_rebate': config_account.min_vitality_for_rebate,
+                'rebate_counter_min': config_account.rebate_counter_min,
+                'auction_loser_rebate_lamports': config_account.auction_loser_rebate_lamports,
+                'rejection_counter_min': config_account.rejection_counter_min,
+                'rejection_rebate_lamports': config_account.rejection_rebate_lamports,
+            }
+
+        config = asyncio.run(fetch_config())
+
+        return Response({
+            'success': True,
+            'data': config
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.exception(f"Failed to fetch marketplace config: {e}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
