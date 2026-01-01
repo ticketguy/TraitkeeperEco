@@ -1353,7 +1353,8 @@
                         </div>
                     </div>
                     <div class="mt-2 flex items-center justify-between text-xs">
-                        <span class="text-text-secondary-light dark:text-text-secondary-dark">Floor Price: <span id="make-offer-modal-floor-price" class="font-semibold text-text-light dark:text-text-dark">-- SOL</span></span>
+                        <span class="text-text-secondary-light dark:text-text-secondary-dark">Floor: <span id="make-offer-modal-floor-price" class="font-semibold text-text-light dark:text-text-dark">-- SOL</span></span>
+                        <span class="text-text-secondary-light dark:text-text-secondary-dark">Vitality: <span id="make-offer-modal-vitality" class="font-semibold text-primary">--</span></span>
                     </div>
                 </div>
 
@@ -1380,18 +1381,39 @@
 
                 <!-- Fee Breakdown -->
                 <div class="bg-white/50 dark:bg-black/20 rounded-xl p-3 space-y-2">
+                    <!-- Creator Royalty -->
                     <div class="flex items-center justify-between text-xs">
                         <div class="flex items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span>Creator royalty (0%)</span>
+                            <span>Creator royalty (<span id="offer-creator-fee-percent">--</span>%)</span>
                         </div>
-                        <span class="font-medium text-text-light dark:text-text-dark">-- SOL</span>
+                        <span id="offer-creator-fee" class="font-medium text-text-light dark:text-text-dark">-- SOL</span>
+                    </div>
+                    <!-- Platform Fee -->
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            <span>Platform fee (2.5%)</span>
+                        </div>
+                        <span id="offer-platform-fee" class="font-medium text-text-light dark:text-text-dark">-- SOL</span>
+                    </div>
+                    <!-- Blockchain Fee -->
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <span>Blockchain fee (est.)</span>
+                        </div>
+                        <span id="offer-blockchain-fee" class="font-medium text-text-light dark:text-text-dark">~0.000005 SOL</span>
                     </div>
                     <div class="pt-2 border-t border-border-light/50 dark:border-border-dark/50">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-bold text-text-light dark:text-text-dark">You Pay</span>
+                            <span class="text-sm font-bold text-text-light dark:text-text-dark">Total Cost</span>
                             <span id="make-offer-modal-total" class="text-sm font-bold text-primary">0.00 SOL</span>
                         </div>
                     </div>
@@ -2375,6 +2397,9 @@ function openMakeOfferModal(nftMint, nftName = '') {
     const form = document.getElementById('make-offer-modal-form');
     if (form) form.reset();
 
+    // Update collection stats in modal
+    updateMakeOfferModalStats();
+
     // Update total display
     const totalElem = document.getElementById('make-offer-modal-total');
     if (totalElem) totalElem.textContent = '0.00 SOL';
@@ -2388,6 +2413,48 @@ function openMakeOfferModal(nftMint, nftName = '') {
         const amountInput = document.getElementById('make-offer-modal-amount');
         if (amountInput) amountInput.focus();
     }, 100);
+}
+
+function updateMakeOfferModalStats() {
+    // Get collection stats from the page
+    const statsContainer = document.getElementById('collection-stats-flex');
+    if (!statsContainer) return;
+
+    // Extract floor price from stats
+    const statItems = statsContainer.querySelectorAll('.stat-item');
+    let floorPrice = '--';
+    let vitality = '--';
+
+    // Floor price is typically the 3rd stat item (index 2)
+    if (statItems.length >= 3) {
+        const floorText = statItems[2].querySelector('strong')?.textContent || '';
+        floorPrice = floorText.replace(/[^\d.]/g, '') || '--';
+    }
+
+    // Vitality is typically the 1st stat item (index 0)
+    if (statItems.length >= 1) {
+        vitality = statItems[0].querySelector('strong')?.textContent || '--';
+    }
+
+    // Update floor price and vitality in modal
+    const floorPriceElem = document.getElementById('make-offer-modal-floor-price');
+    if (floorPriceElem) {
+        floorPriceElem.textContent = floorPrice + ' SOL';
+    }
+
+    const vitalityElem = document.getElementById('make-offer-modal-vitality');
+    if (vitalityElem) {
+        vitalityElem.textContent = vitality;
+    }
+
+    // Store collection data for fee calculation
+    window.collectionData = {
+        floorPrice: parseFloat(floorPrice) || 0,
+        vitality: parseFloat(vitality) || 0,
+        creatorFeePercent: {{ collection.royalties_percentage|default:"5" }},  // Default 5% if not set
+        platformFeePercent: 2.5,  // Platform fee 2.5%
+        blockchainFeeEstimate: 0.000005  // ~0.000005 SOL per transaction
+    };
 }
 
 function openMakeOfferModalFromNFTModal() {
@@ -2484,15 +2551,50 @@ function handleMakeOfferModalSubmit(event) {
     return false;
 }
 
-// Update total when amount changes
+// Calculate and update all fees when amount changes
+function calculateOfferFees(offerAmount) {
+    if (!window.collectionData) {
+        // If collection data not loaded yet, just show the offer amount
+        return {
+            creatorFee: 0,
+            platformFee: 0,
+            blockchainFee: 0.000005,
+            total: offerAmount + 0.000005
+        };
+    }
+
+    const creatorFee = offerAmount * (window.collectionData.creatorFeePercent / 100);
+    const platformFee = offerAmount * (window.collectionData.platformFeePercent / 100);
+    const blockchainFee = window.collectionData.blockchainFeeEstimate;
+    const total = offerAmount + creatorFee + platformFee + blockchainFee;
+
+    return { creatorFee, platformFee, blockchainFee, total };
+}
+
+// Update total and fees when amount changes
 document.addEventListener('DOMContentLoaded', function() {
     const amountInput = document.getElementById('make-offer-modal-amount');
     const totalElem = document.getElementById('make-offer-modal-total');
+    const creatorFeeElem = document.getElementById('offer-creator-fee');
+    const creatorFeePercentElem = document.getElementById('offer-creator-fee-percent');
+    const platformFeeElem = document.getElementById('offer-platform-fee');
+    const blockchainFeeElem = document.getElementById('offer-blockchain-fee');
 
     if (amountInput && totalElem) {
         amountInput.addEventListener('input', function() {
             const amount = parseFloat(this.value) || 0;
-            totalElem.textContent = amount.toFixed(2) + ' SOL';
+            const fees = calculateOfferFees(amount);
+
+            // Update fee displays
+            if (creatorFeeElem) creatorFeeElem.textContent = fees.creatorFee.toFixed(6) + ' SOL';
+            if (platformFeeElem) platformFeeElem.textContent = fees.platformFee.toFixed(6) + ' SOL';
+            if (blockchainFeeElem) blockchainFeeElem.textContent = '~' + fees.blockchainFee.toFixed(6) + ' SOL';
+            if (totalElem) totalElem.textContent = fees.total.toFixed(6) + ' SOL';
+
+            // Update creator fee percentage display
+            if (creatorFeePercentElem && window.collectionData) {
+                creatorFeePercentElem.textContent = window.collectionData.creatorFeePercent.toFixed(1);
+            }
         });
     }
 

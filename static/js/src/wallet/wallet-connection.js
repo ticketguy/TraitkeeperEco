@@ -835,7 +835,8 @@ function initializeNotificationWebSocket() {
     };
 
     window.notificationSocket.onerror = function (error) {
-        console.error("Notification WebSocket error:", error);
+        // Silently handle WebSocket errors when server is unavailable
+        // console.error("Notification WebSocket error:", error);
     };
 }
 
