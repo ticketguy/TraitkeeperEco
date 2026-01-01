@@ -743,11 +743,13 @@ document.addEventListener("DOMContentLoaded", function () {
       ? modalActionButtons.querySelector(".bg-primary")
       : null;
 
-    if (modalMakeOfferBtn) {
-      modalMakeOfferBtn.addEventListener("click", handleMakeOfferClick);
-    } else {
-      console.warn("Make Offer button inside modal not found.");
-    }
+    // REMOVED: Old event listener that used prompt()
+    // The Make Offer button now uses openMakeOfferModalFromNFTModal() defined in collection_detail.html
+    // if (modalMakeOfferBtn) {
+    //   modalMakeOfferBtn.addEventListener("click", handleMakeOfferClick);
+    // } else {
+    //   console.warn("Make Offer button inside modal not found.");
+    // }
 
     if (modalBuyNowBtn) {
       modalBuyNowBtn.addEventListener("click", handleBuyNowClick);
