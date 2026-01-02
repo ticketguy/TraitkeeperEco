@@ -1294,6 +1294,12 @@ def stream_highest_vitality_collections(request):
                     if latest_market:
                         market_stats_dict[coll.pk] = latest_market
 
+                # Get SOL price for market cap conversion
+                from traitkeeper.network_services import NetworkService
+                network_service = NetworkService()
+                sol_price_data = network_service.get_solana_price()
+                sol_price_usd = sol_price_data.get('price_usd', 0)
+
                 for coll in vitality_collections_qs:
                     stat = stats_dict.get(coll.pk)
                     market_stat = market_stats_dict.get(coll.pk)
@@ -1301,10 +1307,13 @@ def stream_highest_vitality_collections(request):
                     # Calculate market cap from floor_price * total_supply
                     floor_price = float(market_stat.floor_price) if market_stat and market_stat.floor_price else (float(stat.floor_price) if stat and hasattr(stat, 'floor_price') and stat.floor_price else 0.0)
                     total_supply = stat.total_supply if stat else (market_stat.total_supply if market_stat and hasattr(market_stat, 'total_supply') else (coll.total_supply if hasattr(coll, 'total_supply') else 0))
-                    calculated_market_cap = floor_price * total_supply if floor_price and total_supply else 0.0
+                    market_cap_sol = floor_price * total_supply if floor_price and total_supply else 0.0
+
+                    # Convert to USD
+                    calculated_market_cap_usd = market_cap_sol * sol_price_usd if sol_price_usd > 0 else market_cap_sol
 
                     # Fallback to AggregatedCollectionStats market_cap if available
-                    market_cap = calculated_market_cap if calculated_market_cap > 0 else (float(stat.market_cap) if stat and hasattr(stat, 'market_cap') and stat.market_cap else 0.0)
+                    market_cap = calculated_market_cap_usd if calculated_market_cap_usd > 0 else (float(stat.market_cap) if stat and hasattr(stat, 'market_cap') and stat.market_cap else 0.0)
 
                     vitality_data.append({
                         'name': coll.display_name or coll.name,
