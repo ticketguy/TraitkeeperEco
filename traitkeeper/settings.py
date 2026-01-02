@@ -133,6 +133,7 @@ INSTALLED_APPS = [
 
     # Third-Party Apps
     'import_export',             # Data import/export functionality
+    'widget_tweaks',             # Form widget customization in templates
     'webpush',                   # Web push notifications
     'django_admin_listfilter_dropdown',  # Dropdown filters in admin
     'corsheaders',               # CORS headers support

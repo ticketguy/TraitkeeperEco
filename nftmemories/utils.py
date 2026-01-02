@@ -52,7 +52,7 @@ def get_user_memories_stats(user: User) -> Dict:
     # Get recent contributions (last 5)
     stats['recent_contributions'] = NFTBurn.objects.filter(
         added_by_user=user
-    ).select_related('burn_event__collection').order_by('-created_at')[:5]
+    ).select_related('burn_event').order_by('-created_at')[:5]
 
     # Count user's interactions across all events and burns
     # This is expensive but necessary since interactions are in JSON fields
@@ -125,7 +125,7 @@ def get_user_most_interacted_memories(user: User, limit: int = 5) -> List[Dict]:
             })
 
     # Check NFTBurns
-    for burn in NFTBurn.objects.select_related('burn_event__collection').iterator(chunk_size=100):
+    for burn in NFTBurn.objects.select_related('burn_event').iterator(chunk_size=100):
         interactions = burn.user_interactions
         comments = interactions.get('comments', [])
         tributes = interactions.get('tributes', [])
@@ -135,12 +135,16 @@ def get_user_most_interacted_memories(user: User, limit: int = 5) -> List[Dict]:
         total_count = user_comment_count + user_tribute_count
 
         if total_count > 0:
+            # Get collection object from collection_address
+            from nft_data.models import NFTCollection
+            collection = NFTCollection.objects.filter(address=burn.burn_event.collection_address).first()
+
             memories.append({
                 'type': 'burn',
                 'object': burn,
                 'interaction_count': total_count,
                 'nft_name': burn.name,
-                'collection': burn.burn_event.collection,
+                'collection': collection,
                 'timestamp': burn.burn_event.timestamp
             })
 
@@ -170,7 +174,7 @@ def get_collection_memory_summary(collection_address: str) -> Dict:
 
     # Count burns
     burns_count = NFTBurn.objects.filter(
-        burn_event__collection=collection
+        burn_event__collection_address=collection_address
     ).count()
 
     # Count total interactions
@@ -184,7 +188,7 @@ def get_collection_memory_summary(collection_address: str) -> Dict:
         total_comments += len(interactions.get('comments', []))
         total_tributes += len(interactions.get('tributes', []))
 
-    for burn in NFTBurn.objects.filter(burn_event__collection=collection):
+    for burn in NFTBurn.objects.filter(burn_event__collection_address=collection_address):
         interactions = burn.user_interactions
         total_likes += interactions.get('likes', 0)
         total_comments += len(interactions.get('comments', []))
