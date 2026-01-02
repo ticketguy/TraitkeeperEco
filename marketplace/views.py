@@ -39,8 +39,14 @@ def get_user_wallet(user):
     # Use standard Django user checks
     if not user or not user.is_authenticated:
          raise PermissionError("User is not authenticated.")
-    # Check for the related wallet profile safely
-    wallet_profile = getattr(user, 'wallet_profile', None)
+
+    # Check for the related wallet profiles (using 'wallets' related_name)
+    # Import WalletProfile to use get_primary_wallet method
+    from wallet.models import WalletProfile
+
+    # Get primary wallet for the user
+    wallet_profile = WalletProfile.get_primary_wallet(user)
+
     if not wallet_profile or not wallet_profile.public_key:
          raise PermissionError("User has no associated wallet profile or public key.")
     return wallet_profile.public_key
