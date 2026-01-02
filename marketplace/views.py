@@ -612,29 +612,8 @@ def api_get_priority_fees(request):
                 raise Exception("No valid fee data from blockchain")
 
             except Exception as e:
-                logger.warning(f"Blockchain priority fee fetch failed: {e}, using defaults")
-                # Return realistic defaults for current Solana network (devnet values are typically higher)
-                return {
-                    'low': {
-                        'microLamports': 5000,
-                        'sol': 0.000005,
-                        'label': 'Low',
-                        'time': '~60s'
-                    },
-                    'medium': {
-                        'microLamports': 50000,
-                        'sol': 0.00005,
-                        'label': 'Medium (Recommended)',
-                        'time': '~30s'
-                    },
-                    'high': {
-                        'microLamports': 500000,
-                        'sol': 0.0005,
-                        'label': 'High',
-                        'time': '~10s'
-                    },
-                    'from_blockchain': False
-                }
+                logger.error(f"❌ Failed to fetch priority fees from blockchain: {e}")
+                raise  # Don't guess - let it fail if blockchain isn't available
 
         priority_fees = asyncio.run(fetch_priority_fees())
 
@@ -644,29 +623,9 @@ def api_get_priority_fees(request):
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.exception(f"❌ CRITICAL: Failed to fetch priority fees: {e}")
-        # Return defaults even on total failure
+        logger.exception(f"❌ CRITICAL: Failed to fetch priority fees from blockchain: {e}")
         return Response({
-            'success': True,
-            'data': {
-                'low': {
-                    'microLamports': 1000,
-                    'sol': 0.000001,
-                    'label': 'Low',
-                    'time': '~60s'
-                },
-                'medium': {
-                    'microLamports': 10000,
-                    'sol': 0.00001,
-                    'label': 'Medium (Recommended)',
-                    'time': '~30s'
-                },
-                'high': {
-                    'microLamports': 100000,
-                    'sol': 0.0001,
-                    'label': 'High',
-                    'time': '~10s'
-                },
-                'from_blockchain': False
-            }
-        }, status=status.HTTP_200_OK)
+            'success': False,
+            'error': 'Failed to fetch priority fees from blockchain',
+            'message': str(e)
+        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
