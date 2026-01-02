@@ -1475,7 +1475,7 @@
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Market Cap</span>
-                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">-- SOL</span>
+                <span id="collection-modal-market-cap" class="block text-base font-semibold text-text-light dark:text-text-dark">--</span>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <span class="block text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Holders</span>
@@ -1630,8 +1630,8 @@
                     priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-text-light dark:text-text-dark'
                 }`;
 
-                // Market cap display (in SOL with comma formatting)
-                collectionModalMarketCap.textContent = `${marketCap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} SOL`;
+                // Market cap display (in USD with comma formatting)
+                collectionModalMarketCap.textContent = `$${marketCap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
                 // Price change with color
                 collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;
