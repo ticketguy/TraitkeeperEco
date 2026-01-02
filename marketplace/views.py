@@ -536,80 +536,100 @@ def api_get_priority_fees(request):
     Returns low/medium/high priority fee options with estimated confirmation times.
     """
     try:
-        from core.api_provider.api_providers import APIProviderManager
         import asyncio
+        import aiohttp
+        from django.conf import settings
 
         async def fetch_priority_fees():
             try:
                 logger.info("Fetching REAL priority fees from Solana blockchain...")
-                provider_manager = APIProviderManager()
-                rpc_provider = await provider_manager.get_rpc_provider()
 
-                if not rpc_provider:
-                    raise Exception("No RPC provider available")
+                # Get RPC URL from settings or environment
+                rpc_url = getattr(settings, 'SOLANA_RPC_URL', None)
+                if not rpc_url:
+                    # Try to get from provider manager as fallback
+                    from core.api_provider.api_providers import APIProviderManager
+                    provider_manager = APIProviderManager()
+                    rpc_provider = await provider_manager.get_rpc_provider()
+                    if rpc_provider and hasattr(rpc_provider, 'rpc_url'):
+                        rpc_url = rpc_provider.rpc_url
+                    else:
+                        raise Exception("No RPC URL available")
 
-                # Get recent prioritization fees from blockchain
-                fees_response = await rpc_provider.connection.get_recent_prioritization_fees()
-                logger.info(f"Fetched {len(fees_response) if fees_response else 0} priority fee samples")
-
-                # Calculate percentiles from REAL blockchain fees
-                if fees_response and len(fees_response) > 0:
-                    fees = [f['prioritizationFee'] for f in fees_response]
-                    fees.sort()
-
-                    # Calculate low (10th), medium (50th), high (90th) percentiles for better spread
-                    low_fee = fees[len(fees) // 10] if len(fees) >= 10 else fees[0]
-                    medium_fee = fees[len(fees) // 2]
-                    high_fee = fees[len(fees) * 9 // 10] if len(fees) >= 10 else fees[-1]
-
-                    logger.info(f"✅ Priority fees: Low={low_fee}, Medium={medium_fee}, High={high_fee} microLamports")
-                else:
-                    # Conservative defaults if no data
-                    low_fee = 1000  # 0.000001 SOL
-                    medium_fee = 10000  # 0.00001 SOL
-                    high_fee = 100000  # 0.0001 SOL
-                    logger.warning("No priority fee data, using conservative defaults")
-
-                return {
-                    'low': {
-                        'microLamports': low_fee,
-                        'sol': low_fee / 1_000_000,  # Correct: microLamports to SOL
-                        'label': 'Low',
-                        'time': '~60s'
-                    },
-                    'medium': {
-                        'microLamports': medium_fee,
-                        'sol': medium_fee / 1_000_000,  # Correct: microLamports to SOL
-                        'label': 'Medium (Recommended)',
-                        'time': '~30s'
-                    },
-                    'high': {
-                        'microLamports': high_fee,
-                        'sol': high_fee / 1_000_000,  # Correct: microLamports to SOL
-                        'label': 'High',
-                        'time': '~10s'
-                    },
-                    'from_blockchain': True
+                # Make direct RPC call to getRecentPrioritizationFees
+                payload = {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getRecentPrioritizationFees",
+                    "params": []
                 }
+
+                logger.info(f"Calling Solana RPC: {rpc_url[:50]}...")
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(rpc_url, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            fees_response = data.get('result', [])
+                            logger.info(f"✅ Fetched {len(fees_response)} priority fee samples from blockchain")
+
+                            # Calculate percentiles from REAL blockchain fees
+                            if fees_response and len(fees_response) > 0:
+                                fees = [f['prioritizationFee'] for f in fees_response]
+                                fees.sort()
+
+                                if len(fees) > 0:
+                                    # Calculate percentiles
+                                    low_fee = fees[len(fees) // 10] if len(fees) >= 10 else fees[0]
+                                    medium_fee = fees[len(fees) // 2]
+                                    high_fee = fees[len(fees) * 9 // 10] if len(fees) >= 10 else fees[-1]
+
+                                    logger.info(f"✅ REAL priority fees from blockchain: Low={low_fee}, Medium={medium_fee}, High={high_fee} microLamports")
+
+                                    return {
+                                        'low': {
+                                            'microLamports': low_fee,
+                                            'sol': low_fee / 1_000_000,
+                                            'label': 'Low',
+                                            'time': '~60s'
+                                        },
+                                        'medium': {
+                                            'microLamports': medium_fee,
+                                            'sol': medium_fee / 1_000_000,
+                                            'label': 'Medium (Recommended)',
+                                            'time': '~30s'
+                                        },
+                                        'high': {
+                                            'microLamports': high_fee,
+                                            'sol': high_fee / 1_000_000,
+                                            'label': 'High',
+                                            'time': '~10s'
+                                        },
+                                        'from_blockchain': True
+                                    }
+
+                        logger.warning(f"RPC call failed with status {response.status}")
+
+                raise Exception("No valid fee data from blockchain")
+
             except Exception as e:
                 logger.warning(f"Blockchain priority fee fetch failed: {e}, using defaults")
-                # Return realistic defaults based on current Solana network
+                # Return realistic defaults for current Solana network (devnet values are typically higher)
                 return {
                     'low': {
-                        'microLamports': 1000,
-                        'sol': 0.000001,
+                        'microLamports': 5000,
+                        'sol': 0.000005,
                         'label': 'Low',
                         'time': '~60s'
                     },
                     'medium': {
-                        'microLamports': 10000,
-                        'sol': 0.00001,
+                        'microLamports': 50000,
+                        'sol': 0.00005,
                         'label': 'Medium (Recommended)',
                         'time': '~30s'
                     },
                     'high': {
-                        'microLamports': 100000,
-                        'sol': 0.0001,
+                        'microLamports': 500000,
+                        'sol': 0.0005,
                         'label': 'High',
                         'time': '~10s'
                     },
