@@ -1298,13 +1298,13 @@ def stream_highest_vitality_collections(request):
                     stat = stats_dict.get(coll.pk)
                     market_stat = market_stats_dict.get(coll.pk)
 
-                    # Calculate market cap from floor_price * total_supply
+                    # Get floor price and supply for display
                     floor_price = float(market_stat.floor_price) if market_stat and market_stat.floor_price else (float(stat.floor_price) if stat and hasattr(stat, 'floor_price') and stat.floor_price else 0.0)
                     total_supply = stat.total_supply if stat else (market_stat.total_supply if market_stat and hasattr(market_stat, 'total_supply') else (coll.total_supply if hasattr(coll, 'total_supply') else 0))
-                    calculated_market_cap = floor_price * total_supply if floor_price and total_supply else 0.0
 
-                    # Fallback to AggregatedCollectionStats market_cap if available
-                    market_cap = calculated_market_cap if calculated_market_cap > 0 else (float(stat.market_cap) if stat and hasattr(stat, 'market_cap') and stat.market_cap else 0.0)
+                    # Use pre-calculated market cap in USD from AggregatedCollectionStats
+                    # This is already properly converted from SOL to USD by the analytics service
+                    market_cap = float(stat.market_cap) if stat and hasattr(stat, 'market_cap') and stat.market_cap else 0.0
 
                     vitality_data.append({
                         'name': coll.display_name or coll.name,
