@@ -1630,8 +1630,8 @@
                     priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-text-light dark:text-text-dark'
                 }`;
 
-                // Market cap display (in USD with comma formatting)
-                collectionModalMarketCap.textContent = `$${marketCap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                // Market cap display (in SOL with comma formatting)
+                collectionModalMarketCap.textContent = `${marketCap.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} SOL`;
 
                 // Price change with color
                 collectionModalPriceChange.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`;

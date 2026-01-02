@@ -578,31 +578,50 @@ def api_get_priority_fees(request):
                                 fees.sort()
 
                                 if len(fees) > 0:
-                                    # Calculate percentiles
-                                    low_fee = fees[len(fees) // 10] if len(fees) >= 10 else fees[0]
-                                    medium_fee = fees[len(fees) // 2]
-                                    high_fee = fees[len(fees) * 9 // 10] if len(fees) >= 10 else fees[-1]
+                                    # Calculate industry-standard percentiles (aligned with Helius Priority Fee API)
+                                    min_fee = fees[0]  # Minimum
+                                    low_fee = fees[len(fees) // 4]  # 25th percentile
+                                    medium_fee = fees[len(fees) // 2]  # 50th percentile (median)
+                                    high_fee = fees[len(fees) * 3 // 4]  # 75th percentile
+                                    very_high_fee = fees[len(fees) * 95 // 100] if len(fees) >= 20 else fees[-1]  # 95th percentile
 
-                                    logger.info(f"✅ REAL priority fees from blockchain: Low={low_fee}, Medium={medium_fee}, High={high_fee} microLamports")
+                                    logger.info(f"✅ REAL priority fees from blockchain: Min={min_fee}, Low={low_fee}, Medium={medium_fee}, High={high_fee}, VeryHigh={very_high_fee} microLamports")
 
                                     return {
+                                        'min': {
+                                            'microLamports': min_fee,
+                                            'sol': min_fee / 1_000_000,
+                                            'label': 'Min',
+                                            'time': '~90s',
+                                            'description': 'Lowest fee - may be slower'
+                                        },
                                         'low': {
                                             'microLamports': low_fee,
                                             'sol': low_fee / 1_000_000,
                                             'label': 'Low',
-                                            'time': '~60s'
+                                            'time': '~60s',
+                                            'description': 'Budget-friendly option'
                                         },
                                         'medium': {
                                             'microLamports': medium_fee,
                                             'sol': medium_fee / 1_000_000,
                                             'label': 'Medium (Recommended)',
-                                            'time': '~30s'
+                                            'time': '~30s',
+                                            'description': 'Reliable confirmation time'
                                         },
                                         'high': {
                                             'microLamports': high_fee,
                                             'sol': high_fee / 1_000_000,
                                             'label': 'High',
-                                            'time': '~10s'
+                                            'time': '~15s',
+                                            'description': 'Faster processing'
+                                        },
+                                        'veryHigh': {
+                                            'microLamports': very_high_fee,
+                                            'sol': very_high_fee / 1_000_000,
+                                            'label': 'Very High',
+                                            'time': '~5s',
+                                            'description': 'Maximum speed for urgent transactions'
                                         },
                                         'from_blockchain': True
                                     }
