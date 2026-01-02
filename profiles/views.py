@@ -51,120 +51,127 @@ def profile_view(request, username):
         raise Http404("User not found")
     except Exception as e:
         logger.exception(f"❌ CRITICAL ERROR in profile_view for {username}: {e}")
-        logger.exception(f"Error type: {type(e).__name__}")
+        logger.error(f"Error type: {type(e).__name__}")
         raise
 
-    # Determine if the logged-in user is viewing their own profile
-    is_owner = request.user.is_authenticated and (request.user.pk == profile_user.pk)
+    try:
+        # Determine if the logged-in user is viewing their own profile
+        is_owner = request.user.is_authenticated and (request.user.pk == profile_user.pk)
 
-    # Get user's wallets (now supports multiple)
-    user_wallets = profile_user.wallets.all() if hasattr(profile_user, 'wallets') else []
-    primary_wallet = WalletProfile.get_primary_wallet(profile_user) if user_wallets.exists() else None
+        # Get user's wallets (now supports multiple)
+        user_wallets = profile_user.wallets.all() if hasattr(profile_user, 'wallets') else []
+        primary_wallet = WalletProfile.get_primary_wallet(profile_user) if user_wallets.exists() else None
 
-    # Get wallet addresses for querying
-    wallet_addresses = list(user_wallets.values_list('public_key', flat=True)) if user_wallets.exists() else []
+        # Get wallet addresses for querying
+        wallet_addresses = list(user_wallets.values_list('public_key', flat=True)) if user_wallets.exists() else []
 
-    # Fetch NFTs owned by all user's wallets with pagination
-    from django.core.paginator import Paginator
-    user_nfts = []
-    nfts_page = None
-    if wallet_addresses:
-        all_nfts = NFT.objects.filter(
-            owner__in=wallet_addresses
-        ).select_related('collection').order_by('-collection__created_at')
+        # Fetch NFTs owned by all user's wallets with pagination
+        from django.core.paginator import Paginator
+        user_nfts = []
+        nfts_page = None
+        if wallet_addresses:
+            all_nfts = NFT.objects.filter(
+                owner__in=wallet_addresses
+            ).select_related('collection').order_by('-collection__created_at')
 
-        # Paginate NFTs (24 per page)
-        paginator = Paginator(all_nfts, 24)
-        page_number = request.GET.get('page', 1)
-        nfts_page = paginator.get_page(page_number)
-        user_nfts = nfts_page.object_list
+            # Paginate NFTs (24 per page)
+            paginator = Paginator(all_nfts, 24)
+            page_number = request.GET.get('page', 1)
+            nfts_page = paginator.get_page(page_number)
+            user_nfts = nfts_page.object_list
 
-    # Group NFTs by collection for better display
-    from collections import defaultdict
-    nfts_by_collection = defaultdict(list)
-    for nft in user_nfts:
-        collection_name = nft.collection.name if nft.collection else 'Uncategorized'
-        nfts_by_collection[collection_name].append(nft)
+        # Group NFTs by collection for better display
+        from collections import defaultdict
+        nfts_by_collection = defaultdict(list)
+        for nft in user_nfts:
+            collection_name = nft.collection.name if nft.collection else 'Uncategorized'
+            nfts_by_collection[collection_name].append(nft)
 
-    # Fetch marketplace data - Active Listings
-    from marketplace.models import NFTListing, Bid
-    active_listings = []
-    if wallet_addresses:
-        active_listings = NFTListing.objects.filter(
-            seller__in=wallet_addresses,
-            is_active=True
-        ).select_related('nft', 'nft__collection').order_by('-listed_at')[:20]
+        # Fetch marketplace data - Active Listings
+        from marketplace.models import NFTListing, Bid
+        active_listings = []
+        if wallet_addresses:
+            active_listings = NFTListing.objects.filter(
+                seller__in=wallet_addresses,
+                is_active=True
+            ).select_related('nft', 'nft__collection').order_by('-listed_at')[:20]
 
-    # Fetch marketplace data - Active Bids (Bids user placed)
-    bids_placed = []
-    if wallet_addresses:
-        bids_placed = Bid.objects.filter(
-            bidder__in=wallet_addresses,
-            status='ACTIVE'
-        ).select_related('nft', 'nft__collection').order_by('-placed_at')[:20]
+        # Fetch marketplace data - Active Bids (Bids user placed)
+        bids_placed = []
+        if wallet_addresses:
+            bids_placed = Bid.objects.filter(
+                bidder__in=wallet_addresses,
+                status='ACTIVE'
+            ).select_related('nft', 'nft__collection').order_by('-placed_at')[:20]
 
-    # Fetch marketplace data - Bids Received (on user's NFTs)
-    bids_received = []
-    if wallet_addresses:
-        user_nft_mints = NFT.objects.filter(owner__in=wallet_addresses).values_list('mint_address', flat=True)
-        bids_received = Bid.objects.filter(
-            nft__mint_address__in=user_nft_mints,
-            status='ACTIVE'
-        ).select_related('nft').order_by('-placed_at')[:20]  # bidder is CharField, not ForeignKey
+        # Fetch marketplace data - Bids Received (on user's NFTs)
+        bids_received = []
+        if wallet_addresses:
+            user_nft_mints = NFT.objects.filter(owner__in=wallet_addresses).values_list('mint_address', flat=True)
+            bids_received = Bid.objects.filter(
+                nft__mint_address__in=user_nft_mints,
+                status='ACTIVE'
+            ).select_related('nft').order_by('-placed_at')[:20]  # bidder is CharField, not ForeignKey
 
-    # Fetch Watchlist Items
-    from .models import WatchlistItem
-    watchlist_items = []
-    if is_owner:  # Only show watchlist to profile owner
-        watchlist_items = WatchlistItem.objects.filter(
+        # Fetch Watchlist Items
+        from .models import WatchlistItem
+        watchlist_items = []
+        if is_owner:  # Only show watchlist to profile owner
+            watchlist_items = WatchlistItem.objects.filter(
+                user=profile_user
+            ).select_related('nft', 'collection').order_by('-added_at')[:20]
+
+        # Fetch Achievements
+        from .models import UserAchievement
+        from .utils import get_user_achievement_stats, get_next_achievements
+
+        user_achievements = UserAchievement.objects.filter(
             user=profile_user
-        ).select_related('nft', 'collection').order_by('-added_at')[:20]
+        ).select_related('achievement', 'achievement__category').order_by('-earned_at')[:10]
 
-    # Fetch Achievements
-    from .models import UserAchievement
-    from .utils import get_user_achievement_stats, get_next_achievements
+        achievement_stats = get_user_achievement_stats(profile_user)
+        next_achievements = get_next_achievements(profile_user, limit=3)
 
-    user_achievements = UserAchievement.objects.filter(
-        user=profile_user
-    ).select_related('achievement', 'achievement__category').order_by('-earned_at')[:10]
+        # Fetch NFT Memories Stats
+        from nftmemories.utils import get_user_memories_stats, get_user_most_interacted_memories
 
-    achievement_stats = get_user_achievement_stats(profile_user)
-    next_achievements = get_next_achievements(profile_user, limit=3)
+        memories_stats = get_user_memories_stats(profile_user)
+        most_interacted_memories = get_user_most_interacted_memories(profile_user, limit=5)
 
-    # Fetch NFT Memories Stats
-    from nftmemories.utils import get_user_memories_stats, get_user_most_interacted_memories
+        # Calculate basic stats
+        stats = {
+            'total_nfts': len(user_nfts) if not nfts_page else nfts_page.paginator.count,
+            'unique_collections': len(nfts_by_collection),
+            'active_listings_count': len(active_listings),
+            'active_bids_count': len(bids_placed),
+        }
 
-    memories_stats = get_user_memories_stats(profile_user)
-    most_interacted_memories = get_user_most_interacted_memories(profile_user, limit=5)
+        context = {
+            'profile_user': profile_user,
+            'is_owner': is_owner,
+            'user_wallets': user_wallets,
+            'primary_wallet': primary_wallet,
+            'user_nfts': user_nfts,
+            'nfts_page': nfts_page,
+            'nfts_by_collection': dict(nfts_by_collection),
+            'active_listings': active_listings,
+            'bids_placed': bids_placed,
+            'bids_received': bids_received,
+            'watchlist_items': watchlist_items,
+            'user_achievements': user_achievements,
+            'achievement_stats': achievement_stats,
+            'next_achievements': next_achievements,
+            'memories_stats': memories_stats,
+            'most_interacted_memories': most_interacted_memories,
+            'stats': stats,
+        }
+        logger.info(f"✅ Profile view rendering for {username}")
+        return render(request, 'profile/user_profile.html', context)
 
-    # Calculate basic stats
-    stats = {
-        'total_nfts': len(user_nfts) if not nfts_page else nfts_page.paginator.count,
-        'unique_collections': len(nfts_by_collection),
-        'active_listings_count': len(active_listings),
-        'active_bids_count': len(bids_placed),
-    }
-
-    context = {
-        'profile_user': profile_user,
-        'is_owner': is_owner,
-        'user_wallets': user_wallets,
-        'primary_wallet': primary_wallet,
-        'user_nfts': user_nfts,
-        'nfts_page': nfts_page,
-        'nfts_by_collection': dict(nfts_by_collection),
-        'active_listings': active_listings,
-        'bids_placed': bids_placed,
-        'bids_received': bids_received,
-        'watchlist_items': watchlist_items,
-        'user_achievements': user_achievements,
-        'achievement_stats': achievement_stats,
-        'next_achievements': next_achievements,
-        'memories_stats': memories_stats,
-        'most_interacted_memories': most_interacted_memories,
-        'stats': stats,
-    }
-    return render(request, 'profile/user_profile.html', context)
+    except Exception as e:
+        logger.exception(f"❌ CRITICAL ERROR in profile_view data fetching for {username}: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        raise
 
 # --- Settings Views ---
 
