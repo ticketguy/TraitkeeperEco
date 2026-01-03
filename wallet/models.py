@@ -118,6 +118,14 @@ class WalletProfile(models.Model):
             return f"{self.public_key[:6]}...{self.public_key[-6:]}"
         return ""
 
+    @property
+    def is_custodial(self):
+        """Check if this wallet is a custodial wallet (has encrypted private key)"""
+        try:
+            return hasattr(self, 'custodial_data') and self.custodial_data is not None
+        except:
+            return False
+
     @classmethod
     def get_or_create_profile_and_user(cls, public_key):
         try:

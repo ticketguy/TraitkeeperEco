@@ -631,4 +631,97 @@ def get_unread_notifications_count(request):
         return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
 
 
+@login_required
+def export_wallet_view(request, wallet_id):
+    """
+    View for exporting custodial wallet seed phrase and private key.
+    Requires password confirmation (acts as 2FA).
+    """
+    try:
+        # Get the wallet and verify ownership
+        wallet = WalletProfile.objects.select_related('user').get(id=wallet_id, user=request.user)
+
+        # Check if this is a custodial wallet
+        if not wallet.is_custodial:
+            from django.contrib import messages
+            messages.error(request, 'This is not a custodial wallet. External wallets cannot be exported.')
+            return redirect('profiles:settings_wallets')
+
+        custodial_wallet = wallet.custodial_data
+
+        # Handle POST - password confirmation
+        if request.method == 'POST':
+            password = request.POST.get('password')
+
+            if not password:
+                from django.contrib import messages
+                messages.error(request, 'Password is required to export wallet')
+                return render(request, 'wallet/export_wallet.html', {
+                    'wallet': wallet,
+                    'custodial_wallet': custodial_wallet
+                })
+
+            # Verify password
+            if not request.user.check_password(password):
+                from django.contrib import messages
+                messages.error(request, 'Incorrect password. Please try again.')
+                return render(request, 'wallet/export_wallet.html', {
+                    'wallet': wallet,
+                    'custodial_wallet': custodial_wallet
+                })
+
+            # Decrypt private key
+            try:
+                from wallet.services.solana_wallet import SolanaWalletService
+
+                private_key_b58 = custodial_wallet.decrypt_private_key(password)
+
+                # Derive seed phrase from private key if available
+                # Note: We can't reverse engineer seed phrase from private key
+                # So we'll check if seed phrase is in session (one-time view after signup)
+                seed_phrase = request.session.get('new_wallet_seed_phrase', '')
+
+                # Mark wallet as exported
+                custodial_wallet.mark_exported()
+
+                # Clear session seed phrase after first view
+                if 'new_wallet_seed_phrase' in request.session:
+                    del request.session['new_wallet_seed_phrase']
+                if 'new_wallet_public_key' in request.session:
+                    del request.session['new_wallet_public_key']
+
+                return render(request, 'wallet/export_wallet.html', {
+                    'wallet': wallet,
+                    'custodial_wallet': custodial_wallet,
+                    'private_key': private_key_b58,
+                    'seed_phrase': seed_phrase,
+                    'authenticated': True
+                })
+
+            except Exception as e:
+                from django.contrib import messages
+                print(f"Error decrypting wallet: {str(e)}")
+                messages.error(request, 'Failed to decrypt wallet. Please check your password.')
+                return render(request, 'wallet/export_wallet.html', {
+                    'wallet': wallet,
+                    'custodial_wallet': custodial_wallet
+                })
+
+        # GET request - show password confirmation form
+        return render(request, 'wallet/export_wallet.html', {
+            'wallet': wallet,
+            'custodial_wallet': custodial_wallet
+        })
+
+    except WalletProfile.DoesNotExist:
+        from django.contrib import messages
+        messages.error(request, 'Wallet not found or you do not have permission to access it.')
+        return redirect('profiles:settings_wallets')
+    except Exception as e:
+        from django.contrib import messages
+        print(f"Error in export_wallet_view: {str(e)}")
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('profiles:settings_wallets')
+
+
 

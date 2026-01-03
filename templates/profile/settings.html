@@ -193,8 +193,18 @@ input[type="file"]::file-selector-button {
           {% if wallet.is_primary %}
             <span class="text-xs bg-primary text-white px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Primary</span>
           {% endif %}
+          {% if wallet.is_custodial %}
+            <span class="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-semibold flex-shrink-0" title="Wallet managed by TraitKeeper">
+              <i class="fas fa-shield-alt"></i> Custodial
+            </span>
+          {% endif %}
         </div>
-        <div class="flex gap-2 w-full sm:w-auto">
+        <div class="flex gap-2 w-full sm:w-auto flex-wrap">
+          {% if wallet.is_custodial %}
+          <a href="{% url 'wallet:export_wallet' wallet.id %}" class="text-xs text-green-600 dark:text-green-400 hover:underline font-semibold px-3 py-1.5 bg-green-600/10 rounded hover:bg-green-600/20 transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 dark:focus:ring-offset-gray-800">
+            <i class="fas fa-download"></i> Export Keys
+          </a>
+          {% endif %}
           {% if not wallet.is_primary %}
           <form method="post" action="{% url 'profiles:set_primary_wallet' wallet.id %}" class="inline-block">
             {% csrf_token %}

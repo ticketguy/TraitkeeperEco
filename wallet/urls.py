@@ -24,4 +24,6 @@ urlpatterns = [
 
     path('get-unread-notifications-count/', views.get_unread_notifications_count, name='get_unread_notifications_count'),
 
+    # Custodial wallet export
+    path('export/<int:wallet_id>/', views.export_wallet_view, name='export_wallet'),
 ]
