@@ -150,3 +150,136 @@ class PasswordResetCode(models.Model):
 
     def is_valid(self):
         return not self.used and timezone.now() < self.expires_at
+
+
+class CustodialWallet(models.Model):
+    """
+    Custodial wallet for users who sign up with email/password.
+    Stores encrypted private keys - CRITICAL SECURITY.
+    """
+    wallet_profile = models.OneToOneField(
+        WalletProfile,
+        on_delete=models.CASCADE,
+        related_name='custodial_data',
+        help_text="Link to the WalletProfile"
+    )
+
+    # Encrypted private key (base58 encoded, then encrypted)
+    encrypted_private_key = models.TextField(
+        help_text="AES-256 encrypted private key"
+    )
+
+    # Encryption metadata
+    encryption_version = models.CharField(
+        max_length=10,
+        default='v1',
+        help_text="Encryption scheme version for future upgrades"
+    )
+
+    # Salt for key derivation (stored separately from encrypted data)
+    salt = models.CharField(
+        max_length=64,
+        help_text="Salt for PBKDF2 key derivation"
+    )
+
+    # Wallet metadata
+    is_exported = models.BooleanField(
+        default=False,
+        help_text="Has the user exported the private key/seed phrase?"
+    )
+    exported_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When was the private key first exported"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Custodial Wallet"
+        verbose_name_plural = "Custodial Wallets"
+        indexes = [
+            models.Index(fields=['wallet_profile']),
+        ]
+
+    def __str__(self):
+        return f"Custodial Wallet for {self.wallet_profile.user.username} ({self.wallet_profile.short_public_key})"
+
+    def mark_exported(self):
+        """Mark wallet as exported and record timestamp"""
+        if not self.is_exported:
+            self.is_exported = True
+            self.exported_at = timezone.now()
+            self.save(update_fields=['is_exported', 'exported_at'])
+
+    @property
+    def can_be_deleted(self):
+        """Can only delete custodial wallet if user has other non-custodial wallets"""
+        user = self.wallet_profile.user
+        total_wallets = WalletProfile.objects.filter(user=user).count()
+        return total_wallets > 1
+
+    @classmethod
+    def create_for_user(cls, user, password):
+        """
+        Create a new custodial wallet for a user.
+
+        Args:
+            user: CustomUser instance
+            password: User's password (for encryption)
+
+        Returns:
+            (CustodialWallet, seed_phrase): Tuple of wallet and mnemonic seed phrase
+        """
+        from wallet.services.encryption import WalletEncryptionService
+        from wallet.services.solana_wallet import SolanaWalletService
+
+        # Generate new Solana keypair
+        keypair, seed_phrase = SolanaWalletService.generate_keypair()
+        public_key = str(keypair.pubkey())
+        private_key_b58 = SolanaWalletService.keypair_to_base58(keypair)
+
+        # Encrypt private key with user's password
+        encrypted_key, salt = WalletEncryptionService.encrypt_private_key(
+            private_key_b58,
+            password
+        )
+
+        # Create WalletProfile
+        wallet_profile = WalletProfile.objects.create(
+            user=user,
+            public_key=public_key,
+            is_primary=True  # First wallet is always primary
+        )
+
+        # Create CustodialWallet
+        custodial_wallet = cls.objects.create(
+            wallet_profile=wallet_profile,
+            encrypted_private_key=encrypted_key,
+            salt=salt,
+            encryption_version='v1'
+        )
+
+        return custodial_wallet, seed_phrase
+
+    def decrypt_private_key(self, password):
+        """
+        Decrypt and return the private key (requires user's password).
+
+        Args:
+            password: User's password
+
+        Returns:
+            str: Decrypted private key in base58 format
+
+        Raises:
+            ValueError: If password is incorrect or decryption fails
+        """
+        from wallet.services.encryption import WalletEncryptionService
+
+        return WalletEncryptionService.decrypt_private_key(
+            self.encrypted_private_key,
+            self.salt,
+            password
+        )
