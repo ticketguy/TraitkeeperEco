@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import models
 from django.conf import settings
-from .models import WalletProfile, PasswordResetCode
+from .models import WalletProfile, PasswordResetCode, CustodialWallet
 from notifications.models import Notification
 from django.core.mail import send_mail
 from datetime import timedelta
@@ -171,6 +171,20 @@ def verify_email_code(request):
         )
         print(f"User created: {user.username}")
 
+        # Auto-create custodial wallet for email/password signups
+        try:
+            custodial_wallet, seed_phrase = CustodialWallet.create_for_user(user, password)
+            print(f"✅ Custodial wallet created for {user.username}: {custodial_wallet.wallet_profile.public_key}")
+
+            # Store seed phrase temporarily in session (user can view once)
+            request.session['new_wallet_seed_phrase'] = seed_phrase
+            request.session['new_wallet_public_key'] = custodial_wallet.wallet_profile.public_key
+            print(f"Seed phrase stored in session for {user.username}")
+        except Exception as e:
+            print(f"❌ Failed to create custodial wallet for {user.username}: {str(e)}")
+            # Continue with login even if wallet creation fails
+            # User can create wallet later
+
         # Log the user in
         login(request, user, backend='wallet.auth_backends.CustomAuthBackend')
 
@@ -180,7 +194,8 @@ def verify_email_code(request):
         return JsonResponse({
             'status': 'success',
             'username': user.username,
-            'profile_picture': user.profile_picture if user.profile_picture else ''
+            'profile_picture': user.profile_picture if user.profile_picture else '',
+            'has_new_wallet': 'new_wallet_seed_phrase' in request.session
         })
     except Exception as e:
         print(f"Error in verify_email_code: {str(e)}")
