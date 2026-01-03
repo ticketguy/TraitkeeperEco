@@ -146,6 +146,17 @@ def profile_view(request, username):
             'active_bids_count': len(bids_placed),
         }
 
+        # Fetch wallet balances
+        wallet_balances = None
+        if wallet_addresses:
+            try:
+                from wallet.services.balance_service import WalletBalanceService
+                balance_service = WalletBalanceService()
+                wallet_balances = balance_service.get_multiple_wallets_summary(wallet_addresses)
+            except Exception as e:
+                logger.warning(f"Error fetching wallet balances for {username}: {e}")
+                # Continue without balances - non-critical feature
+
         context = {
             'profile_user': profile_user,
             'is_owner': is_owner,
@@ -164,6 +175,7 @@ def profile_view(request, username):
             'memories_stats': memories_stats,
             'most_interacted_memories': most_interacted_memories,
             'stats': stats,
+            'wallet_balances': wallet_balances,  # Add wallet balances
         }
         logger.info(f"✅ Profile view rendering for {username}")
         return render(request, 'profile/user_profile.html', context)

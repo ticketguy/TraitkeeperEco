@@ -246,6 +246,40 @@ html.dark .profile-card::before {
          <a href="{% url 'profiles:settings_wallets' %}" class="text-xs text-primary hover:underline mt-2 inline-block">Manage Wallets</a>
          {% endif %}
       </div>
+
+      {# Wallet Assets Summary #}
+      {% if wallet_balances %}
+      <div class="mt-4 border-t border-accent-light dark:border-accent-dark pt-4">
+        <h3 class="text-sm font-semibold text-text-light dark:text-text-dark mb-3 flex items-center gap-2">
+          <i class="fas fa-coins text-primary"></i>Wallet Assets
+        </h3>
+
+        {# SOL Balance #}
+        <div class="bg-gradient-to-r from-primary/10 to-purple-600/10 dark:from-primary/20 dark:to-purple-600/20 rounded-lg p-3 mb-2 border border-primary/20">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">SOL Balance</span>
+            <span class="text-sm font-bold text-primary">{{ wallet_balances.total_sol|floatformat:4 }} SOL</span>
+          </div>
+        </div>
+
+        {# Token Balances #}
+        {% if wallet_balances.tokens %}
+        <div class="space-y-1.5">
+          {% for token in wallet_balances.tokens|slice:":5" %}
+          <div class="flex items-center justify-between text-xs bg-accent-light dark:bg-accent-dark px-2 py-1.5 rounded">
+            <span class="font-mono text-text-secondary-light dark:text-text-secondary-dark">{{ token.symbol }}</span>
+            <span class="font-semibold text-text-light dark:text-text-dark">{{ token.balance|floatformat:2 }}</span>
+          </div>
+          {% endfor %}
+          {% if wallet_balances.tokens|length > 5 %}
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark text-center pt-1">+{{ wallet_balances.tokens|length|add:"-5" }} more tokens</p>
+          {% endif %}
+        </div>
+        {% else %}
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">No tokens found</p>
+        {% endif %}
+      </div>
+      {% endif %}
       {% endif %}
     </div>
   </div>
