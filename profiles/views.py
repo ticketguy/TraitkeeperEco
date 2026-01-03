@@ -225,9 +225,13 @@ def settings_profile_view(request):
             # Create form instance for GET request, pre-filled with current profile data
             form = ProfileUpdateForm(instance=profile)
 
+        # Fetch user wallets for the wallet section
+        user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+
         context = {
             'active_tab': 'profile',
             'form': form, # Pass the form to the template
+            'user_wallets': user_wallets,  # Always pass wallets since template shows all sections
         }
         logger.info(f"✅ Rendering settings template for user: {request.user.username}")
         return render(request, 'profile/settings.html', context)
@@ -399,11 +403,15 @@ def settings_notifications_view(request):
                 'specific_wallets': getattr(pref, 'specific_wallets',),
             }
 
+        # Fetch user wallets for the wallet section
+        user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+
         context = {
             'active_tab': 'notifications',
             'notification_prefs_context': notification_prefs_context,
             # Pass the choices for the loop in the template if not using the context dict approach
-            'NOTIFICATION_TYPES': NotificationPreference.NOTIFICATION_TYPES
+            'NOTIFICATION_TYPES': NotificationPreference.NOTIFICATION_TYPES,
+            'user_wallets': user_wallets,  # Always pass wallets since template shows all sections
         }
         logger.info(f"✅ Rendering settings template for user: {request.user.username}")
         return render(request, 'profile/settings.html', context)
@@ -435,10 +443,15 @@ def settings_visibility_view(request):
             return redirect('profiles:settings_visibility') # Redirect back
 
         logger.info(f"📥 GET request - displaying visibility settings for user: {request.user.username}")
+
+        # Fetch user wallets for the wallet section
+        user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+
         context = {
             'active_tab': 'visibility',
             # Pass profile object to check current state in template
-            'profile': profile
+            'profile': profile,
+            'user_wallets': user_wallets,  # Always pass wallets since template shows all sections
         }
         logger.info(f"✅ Rendering settings template for user: {request.user.username}")
         return render(request, 'profile/settings.html', context)
@@ -460,9 +473,14 @@ def settings_account_view(request):
         account_management_enabled = False # Set to True if you have email/password forms
 
         logger.info(f"📥 GET request - displaying account settings for user: {request.user.username}")
+
+        # Fetch user wallets for the wallet section
+        user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
+
         context = {
             'active_tab': 'account',
             'account_management_enabled': account_management_enabled,
+            'user_wallets': user_wallets,  # Always pass wallets since template shows all sections
         }
         logger.info(f"✅ Rendering settings template for user: {request.user.username}")
         return render(request, 'profile/settings.html', context)
