@@ -5,9 +5,6 @@ from . import views
 app_name = 'profiles'  # Namespace for URLs
 
 urlpatterns = [
-    # Profile view
-    path('<str:username>/', views.profile_view, name='profile'),
-
     # Settings router (redirects to profile settings by default)
     path('settings/', views.settings_view_router, name='settings'),
 
@@ -33,11 +30,6 @@ urlpatterns = [
     # Username change
     path('settings/account/change-username/', views.change_username_view, name='change_username'),
 
-    # Watchlist actions
-    path('watchlist/add/', views.add_to_watchlist, name='add_to_watchlist'),
-    path('watchlist/remove/<int:watchlist_id>/', views.remove_from_watchlist, name='remove_from_watchlist'),
-    path('watchlist/update-notes/<int:watchlist_id>/', views.update_watchlist_notes, name='update_watchlist_notes'),
-
     # Quest pages and actions
     path('quests/', views.quests_page_view, name='quests'),
     path('quests/<int:quest_id>/claim/', views.quest_claim_view, name='quest_claim'),
@@ -48,4 +40,12 @@ urlpatterns = [
     path('api/quests/<int:quest_id>/progress/', views.api_quest_progress, name='api_quest_progress'),
     path('api/achievements/', views.api_achievements_list, name='api_achievements_list'),
     path('api/achievements/<str:username>/', views.api_achievements_list, name='api_achievements_user'),
+
+    # Watchlist actions
+    path('watchlist/add/', views.add_to_watchlist, name='add_to_watchlist'),
+    path('watchlist/remove/<int:watchlist_id>/', views.remove_from_watchlist, name='remove_from_watchlist'),
+    path('watchlist/update-notes/<int:watchlist_id>/', views.update_watchlist_notes, name='update_watchlist_notes'),
+
+    # Profile view - MUST BE LAST (catch-all pattern)
+    path('<str:username>/', views.profile_view, name='profile'),
 ]
