@@ -118,23 +118,32 @@
       </div>
       <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3 break-words">{{ profile_user.profile.bio|default:'No bio yet.'|linebreaksbr }}</p>
 
-      <div class="flex items-center justify-center sm:justify-start flex-wrap gap-x-4 gap-y-1 mb-4 text-text-secondary-light dark:text-text-secondary-dark text-sm">
+      <div class="flex items-center justify-center sm:justify-start flex-wrap gap-3 mb-4">
         {% if profile_user.profile.social_x %}
-        <a href="https://x.com/{{ profile_user.profile.social_x }}" target="_blank" rel="noopener noreferrer" class="hover:text-primary flex items-center gap-1">
-            <i class="fab fa-twitter fa-fw"></i> <span class="hidden sm:inline">{{ profile_user.profile.social_x }}</span>
+        <a href="https://x.com/{{ profile_user.profile.social_x }}" target="_blank" rel="noopener noreferrer"
+           class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
+           title="X/Twitter: @{{ profile_user.profile.social_x }}">
+            <i class="fab fa-twitter"></i>
         </a>
         {% endif %}
          {% if profile_user.profile.social_discord %}
-        <a href="#" target="_blank" rel="noopener noreferrer" class="hover:text-primary flex items-center gap-1" title="Click to copy Discord Username">
-             <i class="fab fa-discord fa-fw"></i> <span class="hidden sm:inline">{{ profile_user.profile.social_discord }}</span>
+        <a href="#" target="_blank" rel="noopener noreferrer"
+           class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-[#5865F2] hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
+           title="Discord: {{ profile_user.profile.social_discord }} (Click to copy)"
+           onclick="event.preventDefault(); navigator.clipboard.writeText('{{ profile_user.profile.social_discord }}'); alert('Discord username copied!');">
+             <i class="fab fa-discord"></i>
         </a>
          {% endif %}
          {% if profile_user.profile.website_url %}
-         <a href="{{ profile_user.profile.website_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-primary flex items-center gap-1">
-             <i class="fas fa-link fa-fw"></i> <span class="hidden sm:inline">Website</span>
+         <a href="{{ profile_user.profile.website_url }}" target="_blank" rel="noopener noreferrer"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
+            title="Website: {{ profile_user.profile.website_url }}">
+             <i class="fas fa-link"></i>
          </a>
          {% endif %}
-        <span class="text-xs flex items-center gap-1 whitespace-nowrap"><i class="fas fa-calendar-alt fa-fw"></i> Joined {{ profile_user.date_joined|naturalday }}</span>
+        <span class="text-xs flex items-center gap-1.5 whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">
+          <i class="fas fa-calendar-alt"></i> Joined {{ profile_user.date_joined|naturalday }}
+        </span>
       </div>
 
       {# Wallet Display - Conditionally visible & Detailed #}
