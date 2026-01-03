@@ -8,7 +8,7 @@
 <style>
  /* Use CSS variables from base.html */
 .tab-button.active {
-    border-color: var(--primary-color); 
+    border-color: var(--primary-color);
     color: var(--primary-color);
     font-weight: 600;
   }
@@ -18,6 +18,78 @@
  }
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+/* Profile Card Animations */
+.profile-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(128,0,128,0.03) 0%, transparent 70%);
+  animation: subtleFloat 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+html.dark .profile-card::before {
+  background: radial-gradient(circle, rgba(128,0,128,0.08) 0%, transparent 70%);
+}
+
+.profile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(128, 0, 128, 0.15);
+}
+
+@keyframes subtleFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(5%, 5%) rotate(1deg); }
+  50% { transform: translate(-5%, 5%) rotate(-1deg); }
+  75% { transform: translate(-5%, -5%) rotate(1deg); }
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  animation: fadeInScale 0.6s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.profile-avatar-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(128,0,128,0.4), rgba(255,105,180,0.4));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar-wrapper:hover::after {
+  opacity: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
 
  /* Portfolio Grid (Art View) - Reusing styles from base.html examples */
 .portfolio-grid {
@@ -93,9 +165,11 @@
 <div class="max-w-7xl mx-auto px-2 xs:px-4 py-8 xs:py-10">
 
   {# Profile Header #}
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6" data-aos="fade-up">
+  <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6" data-aos="fade-up">
     <div class="flex-shrink-0 text-center sm:text-left">
-      <img src="{{ profile_user.profile.get_avatar_url }}" alt="{{ profile_user.profile.get_display_name }} Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-primary object-cover shadow-md mx-auto sm:mx-0">
+      <div class="profile-avatar-wrapper inline-block relative">
+        <img src="{{ profile_user.profile.get_avatar_url }}" alt="{{ profile_user.profile.get_display_name }} Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-primary object-cover shadow-md mx-auto sm:mx-0">
+      </div>
        {% if is_owner %}
        <a href="{% url 'profiles:settings_profile' %}#profile" class="mt-2 text-xs text-primary hover:underline block">Change Avatar</a>
        {% endif %}
