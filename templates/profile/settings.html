@@ -1,8 +1,8 @@
 {% extends 'index page/base.html' %} 
 {% load static %} 
 {% load humanize %}
-{% load widget_tweaks %} {/* Ensure widget_tweaks is installed and loaded */}
-{% load notification_tags %} {/* Load your custom notification tags */}
+{% load widget_tweaks %} {# Ensure widget_tweaks is installed and loaded #}
+{% load notification_tags %} {# Load your custom notification tags #}
 
 {% block title %}Settings - TraitKeeper{% endblock %}
 
@@ -80,7 +80,7 @@ input[type="file"]::file-selector-button {
 <div class="max-w-4xl mx-auto px-2 xs:px-4 py-8 xs:py-10">
   <h1 class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-6 sm:mb-8" data-aos="fade-up">Settings</h1>
 
-  {/* Display Django Messages */}
+  {# Display Django Messages #}
   {% if messages %}
     <div class="mb-6 space-y-3" data-aos="fade-up" data-aos-delay="50">
       {% for message in messages %}
@@ -91,13 +91,13 @@ input[type="file"]::file-selector-button {
     </div>
   {% endif %}
 
-  {/* Profile Section */}
+  {# Profile Section #}
   <section id="profile" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="100">
     <h2 class="text-lg sm:text-xl font-semibold mb-5 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Profile Information</h2>
     <form method="post" action="{% url 'profiles:update_profile' %}" enctype="multipart/form-data"> 
       {% csrf_token %}
       
-      {/* Avatar */}
+      {# Avatar #}
       <div class="mb-6">
         <div class="flex flex-col sm:flex-row items-center gap-4 mb-4">
           <img src="{{ user.profile.get_avatar_url }}" alt="Current Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-primary flex-shrink-0 shadow" onerror="this.src='https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=9333ea&color=fff'">
@@ -108,7 +108,7 @@ input[type="file"]::file-selector-button {
           </div>
         </div>
 
-        {/* Upload Image Option */}
+        {# Upload Image Option #}
         <div id="avatar-upload-section" class="avatar-option {% if form.instance.avatar_type != 'upload' %}hidden{% endif %}">
           <label for="{{ form.avatar_image.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Upload Avatar Image</label>
           {% render_field form.avatar_image %}
@@ -116,7 +116,7 @@ input[type="file"]::file-selector-button {
           <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">PNG, JPG, GIF, WebP up to 2MB recommended.</p>
         </div>
 
-        {/* NFT Profile Picture Option */}
+        {# NFT Profile Picture Option #}
         <div id="avatar-nft-section" class="avatar-option {% if form.instance.avatar_type != 'nft' %}hidden{% endif %}">
           <label for="{{ form.avatar_nft_mint.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">NFT Mint Address</label>
           {% render_field form.avatar_nft_mint %}
@@ -124,7 +124,7 @@ input[type="file"]::file-selector-button {
           <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Enter the mint address of an NFT you own to use as your profile picture.</p>
         </div>
 
-        {/* External URL Option */}
+        {# External URL Option #}
         <div id="avatar-url-section" class="avatar-option {% if form.instance.avatar_type != 'url' %}hidden{% endif %}">
           <label for="{{ form.avatar_url.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Avatar URL</label>
           {% render_field form.avatar_url %}
@@ -133,14 +133,14 @@ input[type="file"]::file-selector-button {
         </div>
       </div>
       
-      {/* Display Name */}
+      {# Display Name #}
       <div class="mb-4">
         <label for="{{ form.display_name.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Display Name <span class="text-red-500">*</span></label>
         {% render_field form.display_name required="required" %}
         {% if form.display_name.errors %}<p class="text-xs text-red-500 mt-1">{{ form.display_name.errors|first }}</p>{% endif %}
       </div>
       
-      {/* Bio */}
+      {# Bio #}
        <div class="mb-6">
         <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">Bio</label>
         {% render_field form.bio %}
@@ -150,7 +150,7 @@ input[type="file"]::file-selector-button {
         </div>
       </div>
       
-      {/* Social Links */}
+      {# Social Links #}
        <h3 class="text-md font-semibold mb-3 text-text-light dark:text-text-dark pt-3 border-t border-border-light dark:border-border-dark">Social Links</h3>
        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
@@ -179,7 +179,7 @@ input[type="file"]::file-selector-button {
     </form>
   </section>
 
-  {/* Wallet Management Section */}
+  {# Wallet Management Section #}
   <section id="wallets" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="200">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Wallet Management</h2>
     <p class="text-sm mb-5 text-text-secondary-light dark:text-text-secondary-dark">Manage the Solana wallets connected to your profile. Your portfolio aggregates NFTs from all connected wallets. One wallet is designated as primary.</p>
@@ -221,7 +221,7 @@ input[type="file"]::file-selector-button {
     </button>
   </section>
 
-  {/**/}
+  {#  #}
   <section id="notifications" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="300">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Notifications</h2>
     <form id="notification-settings-form" method="post" action="{% url 'profiles:update_notifications' %}">
@@ -239,7 +239,7 @@ input[type="file"]::file-selector-button {
                  </label>
              </div>
              
-             {/* Sub-settings */}
+             {# Sub-settings #}
              <div id="{{ pref_type }}-settings" class="ml-4 mt-3 space-y-4 notification-sub-settings {% if not pref_data.enabled %}hidden{% endif %}">
                 <div>
                     <p class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">Delivery Methods:</p>
@@ -284,7 +284,7 @@ input[type="file"]::file-selector-button {
     </form>
   </section>
 
-  {/**/}
+  {#  #}
   <section id="visibility" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="400">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Profile Visibility</h2>
     <form method="post" action="{% url 'profiles:update_visibility' %}">
@@ -303,7 +303,7 @@ input[type="file"]::file-selector-button {
     </form>
   </section>
 
-  {/**/}
+  {#  #}
   <section id="account" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="500">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Account</h2>
     
@@ -311,7 +311,7 @@ input[type="file"]::file-selector-button {
      <div class="mb-6">
          <h3 class="text-md font-medium text-text-light dark:text-text-dark mb-3">Login Credentials</h3>
          <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">Manage your login email and password.</p>
-         {/* Placeholder for forms - Implement if using Django's standard auth or allauth */}
+         {# Placeholder for forms - Implement if using Django's standard auth or allauth #}
          <div class="space-y-2">
              <a href="#" class="text-sm text-primary hover:underline block">Change Email Address</a>
              <a href="#" class="text-sm text-primary hover:underline block">Change Password</a>
@@ -324,7 +324,7 @@ input[type="file"]::file-selector-button {
     <div class="mt-6 border-t border-red-500/30 pt-4">
       <h3 class="text-md font-semibold text-red-600 dark:text-red-400 mb-2">Danger Zone</h3>
       <p class="text-sm text-red-600/80 dark:text-red-400/80 mb-4">Deleting your account is permanent. All your profile data, settings, and linked wallets (on TraitKeeper) will be removed and cannot be recovered.</p>
-      {/* Hidden form for deletion */}
+      {# Hidden form for deletion #}
       <form id="delete-account-form" method="post" action="{% url 'profiles:delete_account' %}" style="display: none;">{% csrf_token %}</form>
       <button id="delete-account-btn" class="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition text-sm font-semibold shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800">
           <i class="fas fa-exclamation-triangle mr-1"></i> Delete My Account
