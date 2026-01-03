@@ -510,12 +510,27 @@ html.dark .wallet-card:hover {
      {% if account_management_enabled %}
      <div class="mb-6">
          <h3 class="text-md font-medium text-text-light dark:text-text-dark mb-3">Login Credentials</h3>
-         <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">Manage your login email and password.</p>
-         {# Placeholder for forms - Implement if using Django's standard auth or allauth #}
-         <div class="space-y-2">
-             <a href="#" class="text-sm text-primary hover:underline block">Change Email Address</a>
-             <a href="#" class="text-sm text-primary hover:underline block">Change Password</a>
-         </div>
+         {% if has_password %}
+             <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">Manage your account password for username/password login.</p>
+             <div class="space-y-2">
+                 <a href="{% url 'profiles:change_password' %}" class="text-sm text-primary hover:underline block flex items-center gap-2">
+                     <i class="fas fa-key"></i> Change Password
+                 </a>
+             </div>
+         {% else %}
+             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                 <p class="text-sm text-blue-900 dark:text-blue-100 mb-2">
+                     <i class="fas fa-info-circle mr-2"></i>
+                     <strong>Wallet-Only Account</strong>
+                 </p>
+                 <p class="text-xs text-blue-800 dark:text-blue-200">
+                     You currently log in via wallet connection. Set a password to enable traditional username/password login as an alternative.
+                 </p>
+             </div>
+             <a href="{% url 'profiles:set_password' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-purple-600 text-white rounded-full hover:from-purple-700 hover:to-primary transition text-sm font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800">
+                 <i class="fas fa-lock"></i> Set Password
+             </a>
+         {% endif %}
      </div>
      {% else %}
       <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">Account login is handled via your connected wallet or social provider (e.g., Google). To change login method, disconnect and reconnect using the desired option.</p>
@@ -621,16 +636,35 @@ document.addEventListener('DOMContentLoaded', function() {
      // Assumes wallet-connection.js exposes window.WalletConnection.openWalletModal
      const connectWalletBtn = document.getElementById('connect-wallet-button');
      if (connectWalletBtn) {
-         if (typeof window.WalletConnection!== 'undefined' && typeof window.WalletConnection.openWalletModal === 'function') {
-             connectWalletBtn.addEventListener('click', (e) => {
-                 e.preventDefault(); // Prevent potential form submission if nested
-                 window.WalletConnection.openWalletModal(); 
-             });
-         } else {
-             connectWalletBtn.textContent = 'Wallet Connection Unavailable';
-             connectWalletBtn.disabled = true;
-             connectWalletBtn.classList.add('opacity-50', 'cursor-not-allowed');
-             console.warn("Connect wallet button found, but 'window.WalletConnection.openWalletModal' function is not available.");
+         // Function to initialize wallet connection button
+         function initWalletButton() {
+             if (typeof window.WalletConnection!== 'undefined' && typeof window.WalletConnection.openWalletModal === 'function') {
+                 connectWalletBtn.addEventListener('click', (e) => {
+                     e.preventDefault();
+                     window.WalletConnection.openWalletModal();
+                 });
+                 return true;
+             }
+             return false;
+         }
+
+         // Try to initialize immediately
+         if (!initWalletButton()) {
+             // If not available, retry a few times (wallet-connection.js might still be loading)
+             let retries = 0;
+             const maxRetries = 10;
+             const retryInterval = setInterval(() => {
+                 retries++;
+                 if (initWalletButton()) {
+                     clearInterval(retryInterval);
+                 } else if (retries >= maxRetries) {
+                     clearInterval(retryInterval);
+                     connectWalletBtn.textContent = 'Wallet Connection Unavailable';
+                     connectWalletBtn.disabled = true;
+                     connectWalletBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                     console.warn("Connect wallet button found, but 'window.WalletConnection.openWalletModal' function is not available after retries.");
+                 }
+             }, 100); // Retry every 100ms
          }
      }
 

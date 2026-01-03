@@ -88,8 +88,8 @@ class WalletBalanceService:
         try:
             pubkey = Pubkey.from_string(wallet_address)
 
-            # Get token accounts owned by this wallet
-            response = self.client.get_token_accounts_by_owner(
+            # Get token accounts owned by this wallet with parsed format
+            response = self.client.get_token_accounts_by_owner_json_parsed(
                 pubkey,
                 {"programId": Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")}
             )
@@ -99,28 +99,25 @@ class WalletBalanceService:
             if response.value:
                 for account in response.value:
                     try:
-                        # Parse account data
-                        account_data = account.account.data
+                        # Using json_parsed, the data is already parsed
+                        parsed_data = account.account.data.parsed
 
-                        # Token account structure: mint(32 bytes), owner(32 bytes), amount(8 bytes), ...
-                        if len(account_data) >= 72:
-                            # Extract mint address (first 32 bytes)
-                            mint_bytes = account_data[:32]
-                            mint_pubkey = Pubkey(mint_bytes)
+                        if parsed_data and 'info' in parsed_data:
+                            info = parsed_data['info']
+                            token_amount = info.get('tokenAmount', {})
 
-                            # Extract amount (bytes 64-72, little-endian u64)
-                            amount_bytes = account_data[64:72]
-                            amount = int.from_bytes(amount_bytes, 'little')
+                            mint = info.get('mint')
+                            amount = int(token_amount.get('amount', 0))
+                            decimals = int(token_amount.get('decimals', 9))
+                            ui_amount = float(token_amount.get('uiAmountString', 0))
 
-                            # Extract decimals (byte 44)
-                            decimals = account_data[44] if len(account_data) > 44 else 9
-
-                            token_accounts.append({
-                                'mint': str(mint_pubkey),
-                                'amount': amount,
-                                'decimals': decimals,
-                                'ui_amount': amount / (10 ** decimals),
-                            })
+                            if mint and amount > 0:
+                                token_accounts.append({
+                                    'mint': mint,
+                                    'amount': amount,
+                                    'decimals': decimals,
+                                    'ui_amount': ui_amount,
+                                })
 
                     except Exception as e:
                         logger.warning(f"Error parsing token account: {e}")

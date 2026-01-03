@@ -30,6 +30,10 @@ urlpatterns = [
     # Username change
     path('settings/account/change-username/', views.change_username_view, name='change_username'),
 
+    # Password management
+    path('settings/account/set-password/', views.set_password_view, name='set_password'),
+    path('settings/account/change-password/', views.change_password_view, name='change_password'),
+
     # Quest pages and actions
     path('quests/', views.quests_page_view, name='quests'),
     path('quests/<int:quest_id>/claim/', views.quest_claim_view, name='quest_claim'),

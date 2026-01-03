@@ -125,8 +125,18 @@ class UsernameChangeForm(forms.Form):
             raise forms.ValidationError("Username is required")
 
         # Check if username already exists
-        if User.objects.filter(username=new_username).exclude(pk=self.user.pk).exists():
+        existing_user = User.objects.filter(username=new_username).exclude(pk=self.user.pk).first()
+        if existing_user:
+            # Check if the existing user is an admin (staff or superuser)
+            if existing_user.is_staff or existing_user.is_superuser:
+                raise forms.ValidationError("This username is reserved and cannot be used")
             raise forms.ValidationError("This username is already taken")
+
+        # Check if username matches any admin username (case-insensitive)
+        admin_users = User.objects.filter(is_staff=True).exclude(pk=self.user.pk) | User.objects.filter(is_superuser=True).exclude(pk=self.user.pk)
+        for admin in admin_users.distinct():
+            if admin.username.lower() == new_username.lower():
+                raise forms.ValidationError("This username is reserved and cannot be used")
 
         # Validate username format (Django's default validator)
         from django.core.validators import validate_slug
@@ -172,6 +182,145 @@ class UsernameChangeForm(forms.Form):
                     f"Please wait {days_remaining} more day{'s' if days_remaining != 1 else ''} "
                     f"(last changed on {last_change.changed_at.strftime('%B %d, %Y')})"
                 )
+
+        return cleaned_data
+
+
+class SetPasswordForm(forms.Form):
+    """
+    Form for wallet-only users to set their first password.
+    """
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password',
+        }),
+        help_text='Password must be at least 8 characters long'
+    )
+    new_password2 = forms.CharField(
+        label="Confirm password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password',
+        }),
+        help_text='Enter the same password again for verification'
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_new_password2(self):
+        """Ensure both passwords match"""
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("The two password fields didn't match.")
+
+        return password2
+
+    def clean_new_password1(self):
+        """Validate password strength"""
+        password = self.cleaned_data.get('new_password1')
+
+        if len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
+
+        return password
+
+    def clean(self):
+        """Check that user doesn't already have a password"""
+        cleaned_data = super().clean()
+
+        if self.user and self.user.has_usable_password():
+            raise forms.ValidationError("You already have a password set. Use the change password form instead.")
+
+        return cleaned_data
+
+
+class ChangePasswordForm(forms.Form):
+    """
+    Form for users to change their existing password.
+    """
+    old_password = forms.CharField(
+        label="Current password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Enter current password',
+            'autocomplete': 'current-password',
+        }),
+        help_text='Confirm your identity with your current password'
+    )
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password',
+        }),
+        help_text='Password must be at least 8 characters long'
+    )
+    new_password2 = forms.CharField(
+        label="Confirm new password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password',
+        }),
+        help_text='Enter the same password again for verification'
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_old_password(self):
+        """Verify the old password is correct"""
+        old_password = self.cleaned_data.get('old_password')
+
+        if not old_password:
+            raise forms.ValidationError("Current password is required")
+
+        if self.user and not self.user.check_password(old_password):
+            raise forms.ValidationError("Your current password is incorrect")
+
+        return old_password
+
+    def clean_new_password2(self):
+        """Ensure both new passwords match"""
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("The two password fields didn't match.")
+
+        return password2
+
+    def clean_new_password1(self):
+        """Validate password strength"""
+        password = self.cleaned_data.get('new_password1')
+
+        if len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
+
+        return password
+
+    def clean(self):
+        """Additional validation"""
+        cleaned_data = super().clean()
+
+        old_password = cleaned_data.get('old_password')
+        new_password1 = cleaned_data.get('new_password1')
+
+        # Check that new password is different from old password
+        if old_password and new_password1 and old_password == new_password1:
+            raise forms.ValidationError("New password must be different from your current password.")
 
         return cleaned_data
 

@@ -476,23 +476,24 @@ def settings_visibility_view(request):
 @login_required
 def settings_account_view(request):
     """
-    Displays account settings (placeholder for email/password, links to Danger Zone).
+    Displays account settings with password management for wallet and standard users.
     """
     try:
         logger.info(f"📝 Account settings view requested by user: {request.user.username}")
 
-        # --- TODO: Add forms/logic for email/password change if you implement standard auth ---
-        account_management_enabled = False # Set to True if you have email/password forms
+        # Check if user has a usable password
+        has_password = request.user.has_usable_password()
 
-        logger.info(f"📥 GET request - displaying account settings for user: {request.user.username}")
+        logger.info(f"📥 GET request - displaying account settings for user: {request.user.username}, has_password: {has_password}")
 
         # Fetch user wallets for the wallet section
         user_wallets = request.user.wallets.all() if hasattr(request.user, 'wallets') else []
 
         context = {
             'active_tab': 'account',
-            'account_management_enabled': account_management_enabled,
-            'user_wallets': user_wallets,  # Always pass wallets since template shows all sections
+            'account_management_enabled': True,  # Now enabled with password forms
+            'has_password': has_password,
+            'user_wallets': user_wallets,
         }
         logger.info(f"✅ Rendering settings template for user: {request.user.username}")
         return render(request, 'profile/settings.html', context)
@@ -614,6 +615,112 @@ def delete_account_view(request):
         return redirect('profiles:settings_account')
 
 
+@login_required
+def set_password_view(request):
+    """
+    Allow wallet-only users to set their first password.
+    """
+    from .forms import SetPasswordForm
+
+    # Check if user already has a password
+    if request.user.has_usable_password():
+        messages.error(request, "You already have a password set. Use the change password form instead.")
+        return redirect('profiles:settings_account')
+
+    if request.method == 'POST':
+        form = SetPasswordForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            new_password = form.cleaned_data['new_password1']
+
+            try:
+                # Set the password
+                request.user.set_password(new_password)
+                request.user.password_changed_at = timezone.now()
+                request.user.save(update_fields=['password', 'password_changed_at'])
+
+                logger.info(f"✅ Password set for wallet user: {request.user.username} (ID: {request.user.id})")
+                messages.success(request, 'Password successfully set! You can now log in with your username and password.')
+
+                # Update session to prevent logout
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, request.user)
+
+                return redirect('profiles:settings_account')
+
+            except Exception as e:
+                logger.error(f"❌ Error setting password for user {request.user.username}: {e}")
+                messages.error(request, f'An error occurred: {str(e)}')
+        else:
+            # Form has errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+
+    else:
+        form = SetPasswordForm(user=request.user)
+
+    context = {
+        'form': form,
+        'action': 'set',
+    }
+
+    return render(request, 'profile/password_form.html', context)
+
+
+@login_required
+def change_password_view(request):
+    """
+    Allow users to change their existing password.
+    """
+    from .forms import ChangePasswordForm
+
+    # Check if user has a password to change
+    if not request.user.has_usable_password():
+        messages.error(request, "You don't have a password set yet. Use the set password form instead.")
+        return redirect('profiles:settings_account')
+
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            new_password = form.cleaned_data['new_password1']
+
+            try:
+                # Change the password
+                request.user.set_password(new_password)
+                request.user.password_changed_at = timezone.now()
+                request.user.save(update_fields=['password', 'password_changed_at'])
+
+                logger.info(f"✅ Password changed for user: {request.user.username} (ID: {request.user.id})")
+                messages.success(request, 'Password successfully changed!')
+
+                # Update session to prevent logout
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, request.user)
+
+                return redirect('profiles:settings_account')
+
+            except Exception as e:
+                logger.error(f"❌ Error changing password for user {request.user.username}: {e}")
+                messages.error(request, f'An error occurred: {str(e)}')
+        else:
+            # Form has errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+
+    else:
+        form = ChangePasswordForm(user=request.user)
+
+    context = {
+        'form': form,
+        'action': 'change',
+    }
+
+    return render(request, 'profile/password_form.html', context)
+
+
 # --- Watchlist Management Views ---
 
 @login_required
@@ -729,60 +836,73 @@ def quests_page_view(request):
     """
     Display all available quests with user progress.
     """
-    from .models import Quest, QuestUserProgress
     from django.db.models import Q
     from django.utils import timezone
+    from django.db import ProgrammingError, OperationalError
 
-    # Get all active quests
-    now = timezone.now()
-    active_quests = Quest.objects.filter(
-        is_active=True,
-        status='active'
-    ).filter(
-        Q(start_date__isnull=True) | Q(start_date__lte=now),
-        Q(end_date__isnull=True) | Q(end_date__gte=now)
-    ).order_by('display_order', '-created_at')
+    try:
+        from .models import Quest, QuestUserProgress, QuestClaim
+    except ImportError:
+        # Models not yet available
+        messages.error(request, "Quest system is not yet configured. Please contact an administrator.")
+        return redirect('profiles:profile_view', username=request.user.username if request.user.is_authenticated else 'home')
 
-    # Get user progress if authenticated
-    user_progress = None
-    quest_progress_dict = {}
-    claimed_quest_ids = set()
+    try:
+        # Get all active quests
+        now = timezone.now()
+        active_quests = Quest.objects.filter(
+            is_active=True,
+            status='active'
+        ).filter(
+            Q(start_date__isnull=True) | Q(start_date__lte=now),
+            Q(end_date__isnull=True) | Q(end_date__gte=now)
+        ).order_by('display_order', '-created_at')
 
-    if request.user.is_authenticated:
-        user_progress, created = QuestUserProgress.objects.get_or_create(
-            user=request.user
-        )
+        # Get user progress if authenticated
+        user_progress = None
+        quest_progress_dict = {}
+        claimed_quest_ids = set()
 
-        # Get claimed quest IDs
-        from .models import QuestClaim
-        claimed_quest_ids = set(
-            QuestClaim.objects.filter(user=request.user).values_list('quest_id', flat=True)
-        )
+        if request.user.is_authenticated:
+            user_progress, created = QuestUserProgress.objects.get_or_create(
+                user=request.user
+            )
 
-        # Calculate progress for each quest
-        for quest in active_quests:
-            if quest.action_type == 'buy':
-                current = user_progress.nfts_bought
-            elif quest.action_type == 'bid':
-                current = user_progress.bids_placed
-            else:  # list
-                current = user_progress.nfts_listed
+            # Get claimed quest IDs
+            claimed_quest_ids = set(
+                QuestClaim.objects.filter(user=request.user).values_list('quest_id', flat=True)
+            )
 
-            quest_progress_dict[quest.id] = {
-                'current': current,
-                'target': quest.target_count,
-                'percentage': min(100, int((current / quest.target_count) * 100)),
-                'completed': current >= quest.target_count,
-                'claimed': quest.id in claimed_quest_ids
-            }
+            # Calculate progress for each quest
+            for quest in active_quests:
+                if quest.action_type == 'buy':
+                    current = user_progress.nfts_bought
+                elif quest.action_type == 'bid':
+                    current = user_progress.bids_placed
+                else:  # list
+                    current = user_progress.nfts_listed
 
-    context = {
-        'quests': active_quests,
-        'user_progress': user_progress,
-        'quest_progress_dict': quest_progress_dict,
-        'claimed_quest_ids': claimed_quest_ids,
-    }
-    return render(request, 'profile/quests.html', context)
+                quest_progress_dict[quest.id] = {
+                    'current': current,
+                    'target': quest.target_count,
+                    'percentage': min(100, int((current / quest.target_count) * 100)),
+                    'completed': current >= quest.target_count,
+                    'claimed': quest.id in claimed_quest_ids
+                }
+
+        context = {
+            'quests': active_quests,
+            'user_progress': user_progress,
+            'quest_progress_dict': quest_progress_dict,
+            'claimed_quest_ids': claimed_quest_ids,
+        }
+        return render(request, 'profile/quests.html', context)
+
+    except (ProgrammingError, OperationalError) as e:
+        # Database tables don't exist yet (migrations not run)
+        logger.error(f"Quest tables not available: {e}")
+        messages.error(request, "Quest system is not yet initialized. Migrations may need to be run.")
+        return redirect('profiles:profile_view', username=request.user.username if request.user.is_authenticated else 'home')
 
 
 @login_required
