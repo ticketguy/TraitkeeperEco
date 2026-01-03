@@ -110,9 +110,9 @@ class SecurityHeadersMiddleware:
         if 'Content-Security-Policy' not in response:
             response['Content-Security-Policy'] = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "font-src 'self' https://fonts.gstatic.com; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdn.tailwindcss.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
                 "img-src 'self' data: https: blob:; "
                 "connect-src 'self' https:; "
                 "frame-ancestors 'none';"
