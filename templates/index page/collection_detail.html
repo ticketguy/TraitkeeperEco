@@ -1038,10 +1038,17 @@
                         window.priorityFeeOptions = priorityData.data;
                         window.currentPriorityFee = priorityData.data.medium.sol;
                         console.log('✅ Priority fees loaded:', window.priorityFeeOptions);
+
+                        // Update UI with fetched priority fees
+                        updatePriorityFeeDisplay();
                     }
+                } else {
+                    console.warn('Priority fees API returned non-OK response');
+                    updatePriorityFeeDisplay(); // Show defaults
                 }
             } catch (error) {
                 console.warn('Failed to load marketplace data, using defaults:', error);
+                updatePriorityFeeDisplay(); // Show defaults
             }
         })();
 
@@ -1436,28 +1443,28 @@
                     <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2">Transaction Speed</label>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button"
-                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50"
+                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50 bg-white dark:bg-gray-800"
                                 data-priority="low"
                                 onclick="selectPriorityFee('low')">
                             <div class="font-bold text-text-light dark:text-text-dark">Low</div>
-                            <div id="priority-low-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~60s</div>
-                            <div id="priority-low-fee" class="text-[10px] text-primary">Free</div>
+                            <div id="priority-low-time" class="text-[10px] text-gray-600 dark:text-gray-400">~60s</div>
+                            <div id="priority-low-fee" class="text-[10px] font-semibold text-green-600 dark:text-green-400">Loading...</div>
                         </button>
                         <button type="button"
                                 class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 border-primary bg-primary/10 rounded-lg transition-all duration-200"
                                 data-priority="medium"
                                 onclick="selectPriorityFee('medium')">
                             <div class="font-bold text-text-light dark:text-text-dark">Medium</div>
-                            <div id="priority-medium-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~30s</div>
-                            <div id="priority-medium-fee" class="text-[10px] text-primary">0.000005 SOL</div>
+                            <div id="priority-medium-time" class="text-[10px] text-gray-600 dark:text-gray-400">~30s</div>
+                            <div id="priority-medium-fee" class="text-[10px] font-semibold text-primary">Loading...</div>
                         </button>
                         <button type="button"
-                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50"
+                                class="priority-fee-btn px-3 py-2.5 text-xs font-medium border-2 rounded-lg transition-all duration-200 hover:border-primary/50 bg-white dark:bg-gray-800"
                                 data-priority="high"
                                 onclick="selectPriorityFee('high')">
                             <div class="font-bold text-text-light dark:text-text-dark">High</div>
-                            <div id="priority-high-time" class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">~10s</div>
-                            <div id="priority-high-fee" class="text-[10px] text-primary">0.00005 SOL</div>
+                            <div id="priority-high-time" class="text-[10px] text-gray-600 dark:text-gray-400">~10s</div>
+                            <div id="priority-high-fee" class="text-[10px] font-semibold text-red-600 dark:text-red-400">Loading...</div>
                         </button>
                     </div>
                     <input type="hidden" id="selected-priority-fee" name="priority_fee" value="medium">
@@ -2567,6 +2574,24 @@ function updateMakeOfferModalStats() {
         vitalityElem.textContent = vitality;
     }
 
+    // Function to update priority fee display in UI
+    window.updatePriorityFeeDisplay = function() {
+        if (window.priorityFeeOptions) {
+            ['low', 'medium', 'high'].forEach(level => {
+                const feeElem = document.getElementById(`priority-${level}-fee`);
+                const timeElem = document.getElementById(`priority-${level}-time`);
+                if (feeElem && window.priorityFeeOptions[level]) {
+                    const fee = window.priorityFeeOptions[level].sol;
+                    feeElem.textContent = fee === 0 ? 'Free' : `${fee.toFixed(6)} SOL`;
+                }
+                if (timeElem && window.priorityFeeOptions[level]) {
+                    timeElem.textContent = window.priorityFeeOptions[level].time;
+                }
+            });
+            console.log('✅ Priority fee display updated');
+        }
+    };
+
     // Store collection data for fee calculation
     window.collectionData = {
         floorPrice: parseFloat(floorPrice) || 0,
@@ -2576,20 +2601,8 @@ function updateMakeOfferModalStats() {
         blockchainFeeEstimate: window.currentPriorityFee || 0.000005  // Real-time or estimate
     };
 
-    // Update priority fee displays with real data
-    if (window.priorityFeeOptions) {
-        ['low', 'medium', 'high'].forEach(level => {
-            const feeElem = document.getElementById(`priority-${level}-fee`);
-            const timeElem = document.getElementById(`priority-${level}-time`);
-            if (feeElem && window.priorityFeeOptions[level]) {
-                const fee = window.priorityFeeOptions[level].sol;
-                feeElem.textContent = fee === 0 ? 'Free' : `${fee.toFixed(9)} SOL`;
-            }
-            if (timeElem && window.priorityFeeOptions[level]) {
-                timeElem.textContent = window.priorityFeeOptions[level].time;
-            }
-        });
-    }
+    // Initial update of priority fee displays
+    updatePriorityFeeDisplay();
 }
 
 // Priority fee selection
