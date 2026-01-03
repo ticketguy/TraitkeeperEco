@@ -92,6 +92,17 @@ class UsernameChangeForm(forms.Form):
         help_text='3-150 characters. Letters, digits, and @/./+/-/_ only.'
     )
 
+    password = forms.CharField(
+        max_length=128,
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full p-2 border rounded bg-background-light dark:bg-gray-700 border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm',
+            'placeholder': 'Enter your current password',
+            'autocomplete': 'current-password',
+        }),
+        help_text='Confirm your identity by entering your current password'
+    )
+
     reason = forms.CharField(
         max_length=200,
         required=False,
@@ -135,6 +146,18 @@ class UsernameChangeForm(forms.Form):
             raise forms.ValidationError("This is already your username")
 
         return new_username
+
+    def clean_password(self):
+        """Verify the password"""
+        password = self.cleaned_data.get('password')
+
+        if not password:
+            raise forms.ValidationError("Password is required")
+
+        if self.user and not self.user.check_password(password):
+            raise forms.ValidationError("Incorrect password. Please try again.")
+
+        return password
 
     def clean(self):
         """Check if user can change username (60-day cooldown)"""

@@ -76,6 +76,19 @@
         {% endif %}
       </div>
 
+      {# Password Confirmation Field #}
+      <div class="mb-4">
+        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+          Current Password <span class="text-red-500">*</span>
+        </label>
+        {% render_field form.password %}
+        {% if form.password.errors %}
+          <p class="text-xs text-red-500 mt-1">{{ form.password.errors|first }}</p>
+        {% else %}
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">{{ form.password.help_text }}</p>
+        {% endif %}
+      </div>
+
       {# Reason Field #}
       <div class="mb-6">
         <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
