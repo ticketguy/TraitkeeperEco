@@ -43,6 +43,7 @@ dependencies = [
     "construct-typing (==0.5.6)",
     "cron-descriptor (==1.4.5)",
     "cryptography (>=44.0.0,<46.0.0)",
+    "mnemonic (==0.21)",
     "daphne (==4.1.2)",
     "diff-match-patch (==20230430)",
     "docker (>=7.0.0,<8.0.0)",
