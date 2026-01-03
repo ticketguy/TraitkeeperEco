@@ -306,7 +306,24 @@ input[type="file"]::file-selector-button {
   {#  #}
   <section id="account" class="settings-section bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6" data-aos="fade-up" data-aos-delay="500">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-text-light dark:text-text-dark border-b border-border-light dark:border-border-dark pb-3">Account</h2>
-    
+
+    {# Username Section #}
+    <div class="mb-6">
+      <h3 class="text-md font-medium text-text-light dark:text-text-dark mb-3">Username</h3>
+      <div class="flex items-center justify-between p-3 bg-accent-light dark:bg-accent-dark rounded-lg border border-border-light dark:border-border-dark">
+        <div>
+          <p class="text-sm font-semibold text-text-light dark:text-text-dark">{{ user.username }}</p>
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Your unique identifier on TraitKeeper</p>
+        </div>
+        <a href="{% url 'profiles:change_username' %}" class="text-sm text-primary hover:underline font-semibold px-3 py-1.5">
+          Change Username
+        </a>
+      </div>
+      <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">
+        <i class="fas fa-info-circle mr-1"></i>You can change your username once every 60 days
+      </p>
+    </div>
+
      {% if account_management_enabled %}
      <div class="mb-6">
          <h3 class="text-md font-medium text-text-light dark:text-text-dark mb-3">Login Credentials</h3>

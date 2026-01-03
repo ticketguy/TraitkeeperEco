@@ -473,6 +473,81 @@ def settings_account_view(request):
         raise
 
 @login_required
+def change_username_view(request):
+    """
+    Handle username changes with 60-day rate limit and history tracking.
+    """
+    from .forms import UsernameChangeForm
+    from .models import UsernameChangeHistory
+
+    # Check if user can change username
+    can_change, days_remaining, last_change = UsernameChangeHistory.can_change_username(request.user)
+
+    if request.method == 'POST':
+        form = UsernameChangeForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            old_username = request.user.username
+            new_username = form.cleaned_data['new_username']
+            reason = form.cleaned_data.get('reason', '')
+
+            # Get user's IP address
+            def get_client_ip(request):
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    ip = x_forwarded_for.split(',')[0]
+                else:
+                    ip = request.META.get('REMOTE_ADDR')
+                return ip
+
+            ip_address = get_client_ip(request)
+
+            try:
+                # Update username
+                request.user.username = new_username
+                request.user.save(update_fields=['username'])
+
+                # Record the change
+                UsernameChangeHistory.record_change(
+                    user=request.user,
+                    old_username=old_username,
+                    new_username=new_username,
+                    ip_address=ip_address,
+                    reason=reason
+                )
+
+                logger.info(f"✅ Username changed: {old_username} → {new_username} (User ID: {request.user.id})")
+                messages.success(
+                    request,
+                    f'Username successfully changed from "{old_username}" to "{new_username}". '
+                    f'You can change it again in 60 days.'
+                )
+                return redirect('profiles:settings_account')
+
+            except Exception as e:
+                logger.error(f"❌ Error changing username: {e}")
+                messages.error(request, f'An error occurred: {str(e)}')
+        else:
+            # Form has errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+
+    else:
+        form = UsernameChangeForm(user=request.user)
+
+    context = {
+        'form': form,
+        'can_change': can_change,
+        'days_remaining': days_remaining,
+        'last_change': last_change,
+        'current_username': request.user.username,
+    }
+
+    return render(request, 'profile/change_username.html', context)
+
+
+@login_required
 def delete_account_view(request):
     """
     Handles the actual account deletion after confirmation.

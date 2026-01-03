@@ -30,6 +30,9 @@ urlpatterns = [
     # Account deletion
     path('settings/account/delete/', views.delete_account_view, name='delete_account'),
 
+    # Username change
+    path('settings/account/change-username/', views.change_username_view, name='change_username'),
+
     # Watchlist actions
     path('watchlist/add/', views.add_to_watchlist, name='add_to_watchlist'),
     path('watchlist/remove/<int:watchlist_id>/', views.remove_from_watchlist, name='remove_from_watchlist'),
