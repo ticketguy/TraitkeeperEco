@@ -16,13 +16,13 @@ def search_collections(request):
             return JsonResponse({'results': []})
 
         # Search collections by name or display name
+        # Show both active and inactive collections, prioritize active ones
         collections = NFTCollection.objects.filter(
-            Q(name__icontains=query) | Q(display_name__icontains=query),
-            is_active=True
+            Q(name__icontains=query) | Q(display_name__icontains=query)
         ).only(
             'address', 'name', 'display_name', 'slug', 'image_url',
-            'verified', 'total_supply'
-        )[:10]  # Limit to 10 results
+            'verified', 'total_supply', 'is_active'
+        ).order_by('-is_active', '-verified', 'name')[:10]  # Limit to 10 results
 
         results = []
         for collection in collections:
