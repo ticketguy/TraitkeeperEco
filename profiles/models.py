@@ -368,5 +368,70 @@ class UserAchievement(models.Model):
         return f"{self.user} earned {self.achievement.name}"
 
 
+class UsernameChangeHistory(models.Model):
+    """
+    Track username changes for fraud prevention and security.
+    Users can change username once every 60 days.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='username_history'
+    )
+    old_username = models.CharField(max_length=150)
+    new_username = models.CharField(max_length=150)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address of change request")
+    reason = models.CharField(max_length=200, blank=True, help_text="Optional reason for change")
+
+    class Meta:
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['user', '-changed_at']),
+            models.Index(fields=['old_username']),
+            models.Index(fields=['new_username']),
+        ]
+        verbose_name = "Username Change History"
+        verbose_name_plural = "Username Change Histories"
+
+    def __str__(self):
+        return f"{self.old_username} → {self.new_username} ({self.changed_at.strftime('%Y-%m-%d')})"
+
+    @classmethod
+    def can_change_username(cls, user):
+        """
+        Check if user is allowed to change username (60-day cooldown).
+        Returns (can_change: bool, days_remaining: int|None, last_change: UsernameChangeHistory|None)
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+
+        last_change = cls.objects.filter(user=user).first()
+
+        if not last_change:
+            # Never changed before, can change
+            return (True, None, None)
+
+        days_since_last_change = (timezone.now() - last_change.changed_at).days
+        cooldown_period = 60  # days
+
+        if days_since_last_change >= cooldown_period:
+            return (True, None, last_change)
+        else:
+            days_remaining = cooldown_period - days_since_last_change
+            return (False, days_remaining, last_change)
+
+    @classmethod
+    def record_change(cls, user, old_username, new_username, ip_address=None, reason=""):
+        """Record a username change"""
+        return cls.objects.create(
+            user=user,
+            old_username=old_username,
+            new_username=new_username,
+            ip_address=ip_address,
+            reason=reason
+        )
+
+
 # Import Quest models
 from .quest_models import Quest, QuestUserProgress, QuestClaim
