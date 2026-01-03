@@ -7,11 +7,16 @@ Allow: /
 # Sitemap location
 Sitemap: https://traitkeeper.xyz/sitemap.xml
 
-# Disallow admin and private areas
+# Disallow admin and private areas (CRITICAL SECURITY)
 Disallow: /admin/
+Disallow: /admin
+Disallow: /admin_panel/
+Disallow: /admin_panel
 Disallow: /accounts/
 Disallow: /api/internal/
 Disallow: /_
+Disallow: /settings/
+Disallow: /dashboard/
 
 # Crawl delay (be nice to our servers)
 Crawl-delay: 1

@@ -209,6 +209,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware', # Messaging framework
     'django.middleware.clickjacking.XFrameOptionsMiddleware',  # Clickjacking protection
     'allauth.account.middleware.AccountMiddleware',         # Django-allauth middleware
+    'core.middleware.AdminNoIndexMiddleware',               # CRITICAL: Prevent search engine indexing of admin pages
+    'core.middleware.SecurityHeadersMiddleware',            # Additional security headers
 ]
 
 # -----------------------------------------------------------------------------
