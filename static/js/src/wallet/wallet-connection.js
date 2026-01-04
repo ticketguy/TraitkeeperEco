@@ -293,8 +293,18 @@ async function connectWalletAndSignMessage(wallet, isLinking = false) {
             isWalletConnected = true;
             updateHeaderWalletState(true, data.username, data.profile_picture);
             startPollingWalletState();
+
+            // Reload page after short delay to show authenticated state
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         } else {
             updateHeaderWalletState(true, data.username, data.profile_picture);
+
+            // Reload page after linking to show updated wallet list
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         }
 
         return publicKey;
