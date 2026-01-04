@@ -1,59 +1,48 @@
-{% extends 'index page/base.html' %} 
-{% load static %} 
-{% load humanize %} 
+{% extends 'index page/base.html' %}
+{% load static %}
+{% load humanize %}
 
 {% block title %}Profile - {{ profile_user.display_name|default:profile_user.username }}{% endblock %}
 
 {% block extra_style %}
 <style>
- /* Use CSS variables from base.html */
-.tab-button.active {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    font-weight: 600;
-  }
- html.dark.tab-button.active {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
- }
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+/* Modern Profile Redesign Styles */
 
-/* Profile Card Animations */
-.profile-card {
+/* Stat Cards */
+.stat-card {
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.profile-card::before {
+.stat-card::before {
   content: '';
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(128,0,128,0.03) 0%, transparent 70%);
-  animation: subtleFloat 20s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(128,0,128,0.05) 0%, transparent 70%);
+  animation: subtleFloat 15s ease-in-out infinite;
   pointer-events: none;
 }
 
-html.dark .profile-card::before {
-  background: radial-gradient(circle, rgba(128,0,128,0.08) 0%, transparent 70%);
+html.dark .stat-card::before {
+  background: radial-gradient(circle, rgba(128,0,128,0.1) 0%, transparent 70%);
 }
 
-.profile-card:hover {
-  transform: translateY(-2px);
+.stat-card:hover {
+  transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(128, 0, 128, 0.15);
 }
 
 @keyframes subtleFloat {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(5%, 5%) rotate(1deg); }
-  50% { transform: translate(-5%, 5%) rotate(-1deg); }
-  75% { transform: translate(-5%, -5%) rotate(1deg); }
+  33% { transform: translate(3%, 3%) rotate(0.5deg); }
+  66% { transform: translate(-3%, 3%) rotate(-0.5deg); }
 }
 
+/* Profile Avatar */
 .profile-avatar-wrapper {
   position: relative;
   animation: fadeInScale 0.6s ease-out;
@@ -91,362 +80,625 @@ html.dark .profile-card::before {
   50% { transform: scale(1.1); opacity: 0.6; }
 }
 
- /* Portfolio Grid (Art View) - Reusing styles from base.html examples */
+/* Wallet Address Styles */
+.wallet-address {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: var(--text-secondary-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--accent-color-light);
+  border-radius: 9999px;
+  border: 1px solid rgba(128, 0, 128, 0.1);
+}
+
+html.dark .wallet-address {
+  color: var(--text-secondary-dark);
+  background: var(--accent-color-dark);
+  border-color: rgba(128, 0, 128, 0.2);
+}
+
+.wallet-address-copy {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.wallet-address-copy:hover {
+  opacity: 1;
+}
+
+/* Token Cards */
+.token-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(128,0,128,0.05), rgba(255,105,180,0.05));
+  transition: all 0.3s ease;
+}
+
+html.dark .token-card {
+  background: linear-gradient(135deg, rgba(128,0,128,0.1), rgba(255,105,180,0.1));
+}
+
+.token-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(128, 0, 128, 0.15);
+}
+
+/* Pill Tabs */
+.pill-tab {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.pill-tab.active {
+  background: linear-gradient(135deg, var(--primary-color), rgba(255,105,180,0.8));
+  color: white;
+  box-shadow: 0 4px 12px rgba(128, 0, 128, 0.3);
+}
+
+.pill-tab:not(.active) {
+  background: var(--accent-color-light);
+  color: var(--text-secondary-light);
+  border-color: var(--border-light);
+}
+
+html.dark .pill-tab:not(.active) {
+  background: var(--accent-color-dark);
+  color: var(--text-secondary-dark);
+  border-color: var(--border-dark);
+}
+
+.pill-tab:not(.active):hover {
+  background: rgba(128, 0, 128, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Portfolio Grid */
 .portfolio-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Mobile first */
-    gap: 0.75rem; /* gap-3 */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
   }
-  @media (min-width: 640px) { /* sm */
- .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; /* gap-4 */ }
+}
+
+@media (min-width: 768px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  @media (min-width: 768px) { /* md */
- .portfolio-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-  @media (min-width: 1024px) { /* lg */
- .portfolio-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
-   @media (min-width: 1280px) { /* xl */
- .portfolio-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  }
-  /* Style for individual grid items */
+}
+
 .portfolio-grid-item {
-     aspect-ratio: 1 / 1; /* Make items square */
-     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
- }
+  aspect-ratio: 1 / 1;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
 .portfolio-grid-item:hover {
-     transform: translateY(-4px);
-     box-shadow: 0 8px 15px rgba(0,0,0,0.1);
- }
- html.dark.portfolio-grid-item:hover {
-      box-shadow: 0 8px 15px rgba(128,0,128,0.2); /* Subtle purple glow */
- }
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(128,0,128,0.2);
+}
 
-
- /* Portfolio List View */
+/* Portfolio List View */
 .portfolio-list-item {
-     transition: background-color 0.2s ease-out;
- }
-.portfolio-list-item:hover {
-    background-color: var(--accent-color-light);
- }
- html.dark.portfolio-list-item:hover {
-    background-color: var(--accent-color-dark);
- }
- 
- /* View Toggle Buttons */
-.view-toggle-btn.active {
-    background-color: var(--primary-color);
-    color: white;
- }
- html.dark.view-toggle-btn.active {
-     background-color: var(--primary-color);
-    color: white;
- }
-.view-toggle-btn:not(.active) {
-    background-color: var(--accent-color-light);
-    color: var(--text-secondary-light);
- }
- html.dark.view-toggle-btn:not(.active) {
-     background-color: var(--accent-color-dark);
-     color: var(--text-secondary-dark);
- }
-.view-toggle-btn:hover:not(.active) {
-     background-color: #e5e7eb; /* Slightly darker light accent */
- }
-  html.dark.view-toggle-btn:hover:not(.active) {
-     background-color: #2a2a2a; /* Slightly lighter dark accent */
- }
+  transition: background-color 0.2s ease-out;
+}
 
+.portfolio-list-item:hover {
+  background-color: var(--accent-color-light);
+}
+
+html.dark .portfolio-list-item:hover {
+  background-color: var(--accent-color-dark);
+}
+
+/* View Toggle Buttons */
+.view-toggle-btn {
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px rgba(128, 0, 128, 0.3);
+}
+
+.view-toggle-btn:not(.active) {
+  background-color: var(--accent-color-light);
+  color: var(--text-secondary-light);
+}
+
+html.dark .view-toggle-btn:not(.active) {
+  background-color: var(--accent-color-dark);
+  color: var(--text-secondary-dark);
+}
+
+.view-toggle-btn:hover:not(.active) {
+  background-color: rgba(128, 0, 128, 0.1);
+  color: var(--primary-color);
+}
+
+/* Copy Animation */
+@keyframes copySuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.copy-success {
+  animation: copySuccess 0.3s ease;
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-color), rgba(255,105,180,1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Loading Animation */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-up {
+  animation: slideInUp 0.5s ease-out forwards;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-2 xs:px-4 py-8 xs:py-10">
+<div class="max-w-7xl mx-auto px-2 xs:px-4 py-6 xs:py-8">
 
-  {# Profile Header #}
-  <div class="profile-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6" data-aos="fade-up">
-    <div class="flex-shrink-0 text-center sm:text-left">
-      <div class="profile-avatar-wrapper inline-block relative">
-        <img src="{{ profile_user.profile.get_avatar_url }}" alt="{{ profile_user.profile.get_display_name }} Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-primary object-cover shadow-md mx-auto sm:mx-0">
-      </div>
-       {% if is_owner %}
-       <a href="{% url 'profiles:settings_profile' %}#profile" class="mt-2 text-xs text-primary hover:underline block">Change Avatar</a>
-       {% endif %}
-    </div>
-
-    <div class="flex-1 min-w-0 w-full text-center sm:text-left">
-      <div class="flex flex-col sm:flex-row justify-between items-center sm:items-start mb-2 gap-2">
-        <h1 class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark truncate">{{ profile_user.profile.get_display_name }}</h1>
-        {% if is_owner %}
-        <a href="{% url 'profiles:settings_profile' %}" class="flex-shrink-0 text-sm text-primary hover:underline mt-1 sm:mt-0 ml-0 sm:ml-4 bg-accent-light dark:bg-accent-dark px-3 py-1 rounded-full border border-primary/30 hover:bg-primary/10 transition">
-            <i class="fas fa-cog mr-1 text-xs"></i>Edit Profile & Settings
-        </a>
-        {% else %}
-         {# Placeholder for Follow/Share buttons #}
-         <div class="flex gap-2 mt-1 sm:mt-0 ml-0 sm:ml-4 flex-shrink-0">
-             <button class="text-xs px-3 py-1 bg-primary text-white rounded-full hover:bg-primary-dark">Follow</button>
-             <button class="text-xs px-3 py-1 bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark"><i class="fas fa-share-alt"></i></button>
-         </div>
-        {% endif %}
-      </div>
-      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3 break-words">{{ profile_user.profile.bio|default:'No bio yet.'|linebreaksbr }}</p>
-
-      <div class="flex items-center justify-center sm:justify-start flex-wrap gap-3 mb-4">
-        {% if profile_user.profile.social_x %}
-        <a href="https://x.com/{{ profile_user.profile.social_x }}" target="_blank" rel="noopener noreferrer"
-           class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
-           title="X/Twitter: @{{ profile_user.profile.social_x }}">
-            <i class="fab fa-twitter"></i>
-        </a>
-        {% endif %}
-         {% if profile_user.profile.social_discord %}
-        <a href="#" target="_blank" rel="noopener noreferrer"
-           class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-[#5865F2] hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
-           title="Discord: {{ profile_user.profile.social_discord }} (Click to copy)"
-           onclick="event.preventDefault(); navigator.clipboard.writeText('{{ profile_user.profile.social_discord }}'); alert('Discord username copied!');">
-             <i class="fab fa-discord"></i>
-        </a>
-         {% endif %}
-         {% if profile_user.profile.website_url %}
-         <a href="{{ profile_user.profile.website_url }}" target="_blank" rel="noopener noreferrer"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200 text-text-secondary-light dark:text-text-secondary-dark"
-            title="Website: {{ profile_user.profile.website_url }}">
-             <i class="fas fa-link"></i>
-         </a>
-         {% endif %}
-        <span class="text-xs flex items-center gap-1.5 whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">
-          <i class="fas fa-calendar-alt"></i> Joined {{ profile_user.date_joined|naturalday }}
-        </span>
-      </div>
-
-      {# Wallet Display - Conditionally visible & Detailed #}
-      {% if is_owner or profile_user.profile.is_public %}
-      <div class="mt-4 border-t border-accent-light dark:border-accent-dark pt-4">
-        <h3 class="text-sm font-semibold text-text-light dark:text-text-dark mb-2">Connected Wallet(s) <span class="text-xs font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ user_wallets.count }})</span></h3>
-        {% if user_wallets %}
-        <ul class="space-y-1 max-h-20 overflow-y-auto pr-2"> {# Added padding-right for scrollbar #}
-          {% for wallet in user_wallets %}
-          <li class="text-xs text-text-secondary-light dark:text-text-secondary-dark flex items-center gap-2 font-mono bg-accent-light dark:bg-accent-dark px-2 py-1 rounded border border-border-light dark:border-border-dark">
-             <i class="fas fa-wallet text-primary text-[10px]"></i>
-             <span class="truncate flex-1">{{ wallet.public_key }}</span>
-             {% if wallet.is_primary %}
-               <span class="text-[10px] bg-primary text-white px-1.5 py-0.5 rounded">Primary</span>
-             {% endif %}
-             <a href="https://solscan.io/account/{{ wallet.public_key }}" target="_blank" rel="noopener noreferrer" title="View on Solscan" class="ml-auto flex-shrink-0 hover:text-primary">
-                 <i class="fas fa-external-link-alt text-[10px]"></i>
-             </a>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-         <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">No wallets connected.</p>
-        {% endif %}
-         {% if is_owner %}
-         <a href="{% url 'profiles:settings_wallets' %}" class="text-xs text-primary hover:underline mt-2 inline-block">Manage Wallets</a>
-         {% endif %}
-      </div>
-
-      {# Wallet Assets Summary #}
-      {% if wallet_balances %}
-      <div class="mt-4 border-t border-accent-light dark:border-accent-dark pt-4">
-        <h3 class="text-sm font-semibold text-text-light dark:text-text-dark mb-3 flex items-center gap-2">
-          <i class="fas fa-coins text-primary"></i>Wallet Assets
-        </h3>
-
-        {# SOL Balance #}
-        <div class="bg-gradient-to-r from-primary/10 to-purple-600/10 dark:from-primary/20 dark:to-purple-600/20 rounded-lg p-3 mb-2 border border-primary/20">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">SOL Balance</span>
-            <span class="text-sm font-bold text-primary">{{ wallet_balances.total_sol|floatformat:4 }} SOL</span>
-          </div>
+  {# Profile Identity Section #}
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-6 sm:p-8 mb-6" data-aos="fade-up">
+    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      {# Avatar #}
+      <div class="flex-shrink-0">
+        <div class="profile-avatar-wrapper inline-block relative">
+          <img src="{{ profile_user.profile.get_avatar_url }}"
+               alt="{{ profile_user.profile.get_display_name }} Avatar"
+               class="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-primary object-cover shadow-lg">
         </div>
+        {% if is_owner %}
+        <a href="{% url 'profiles:settings_profile' %}#profile"
+           class="mt-3 text-xs text-primary hover:underline block text-center">
+          Change Avatar
+        </a>
+        {% endif %}
+      </div>
 
-        {# Token Balances #}
-        {% if wallet_balances.tokens %}
-        <div class="space-y-1.5">
-          {% for token in wallet_balances.tokens|slice:":5" %}
-          <div class="flex items-center justify-between text-xs bg-accent-light dark:bg-accent-dark px-2 py-1.5 rounded">
-            <span class="font-mono text-text-secondary-light dark:text-text-secondary-dark">{{ token.symbol }}</span>
-            <span class="font-semibold text-text-light dark:text-text-dark">{{ token.balance|floatformat:2 }}</span>
+      {# Profile Info #}
+      <div class="flex-1 min-w-0 text-center sm:text-left w-full">
+        {# Username & Actions #}
+        <div class="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-3 mb-3">
+          <div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-text-light dark:text-text-dark mb-2">
+              {{ profile_user.profile.get_display_name }}
+            </h1>
+
+            {# Primary Wallet Address #}
+            {% if primary_wallet %}
+            <div class="wallet-address mb-3">
+              <span id="wallet-address-text">{{ primary_wallet.public_key|slice:":6" }}...{{ primary_wallet.public_key|slice:"-4:" }}</span>
+              <button onclick="copyWalletAddress('{{ primary_wallet.public_key }}')"
+                      class="wallet-address-copy"
+                      title="Copy wallet address"
+                      id="copy-btn">
+                <i class="fas fa-copy text-xs"></i>
+              </button>
+            </div>
+            {% endif %}
           </div>
-          {% endfor %}
-          {% if wallet_balances.tokens|length > 5 %}
-          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark text-center pt-1">+{{ wallet_balances.tokens|length|add:"-5" }} more tokens</p>
+
+          {% if is_owner %}
+          <a href="{% url 'profiles:settings_profile' %}"
+             class="flex-shrink-0 px-4 py-2 text-sm bg-gradient-to-r from-primary to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+            <i class="fas fa-cog text-xs"></i>
+            Edit Profile
+          </a>
+          {% else %}
+          <div class="flex gap-2 flex-shrink-0">
+            <button class="px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary-dark transition">
+              Follow
+            </button>
+            <button class="px-3 py-2 text-sm bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark hover:border-primary transition">
+              <i class="fas fa-share-alt"></i>
+            </button>
+          </div>
           {% endif %}
         </div>
+
+        {# Bio #}
+        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4 break-words max-w-2xl">
+          {{ profile_user.profile.bio|default:'No bio yet.'|linebreaksbr }}
+        </p>
+
+        {# Social Links & Join Date #}
+        <div class="flex items-center justify-center sm:justify-start flex-wrap gap-3">
+          {% if profile_user.profile.social_x %}
+          <a href="https://x.com/{{ profile_user.profile.social_x }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200"
+             title="X/Twitter: @{{ profile_user.profile.social_x }}">
+            <i class="fab fa-twitter"></i>
+          </a>
+          {% endif %}
+
+          {% if profile_user.profile.social_discord %}
+          <a href="#"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-[#5865F2] hover:text-white transition-all duration-200"
+             title="Discord: {{ profile_user.profile.social_discord }}"
+             onclick="event.preventDefault(); navigator.clipboard.writeText('{{ profile_user.profile.social_discord }}'); alert('Discord username copied!');">
+            <i class="fab fa-discord"></i>
+          </a>
+          {% endif %}
+
+          {% if profile_user.profile.website_url %}
+          <a href="{{ profile_user.profile.website_url }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="w-9 h-9 flex items-center justify-center rounded-full bg-accent-light dark:bg-accent-dark hover:bg-primary hover:text-white transition-all duration-200"
+             title="Website: {{ profile_user.profile.website_url }}">
+            <i class="fas fa-link"></i>
+          </a>
+          {% endif %}
+
+          <span class="text-xs flex items-center gap-1.5 whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">
+            <i class="fas fa-calendar-alt"></i>
+            Joined {{ profile_user.date_joined|naturalday }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Stats Cards Row #}
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6" data-aos="fade-up" data-aos-delay="100">
+    {# SOL Balance Card #}
+    <div class="stat-card col-span-2 sm:col-span-1 bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 rounded-xl p-4 border border-primary/20">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">SOL Balance</span>
+        <i class="fas fa-coins text-primary text-lg"></i>
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold gradient-text">
+        {% if wallet_balances %}
+          {{ wallet_balances.total_sol|floatformat:2 }}
         {% else %}
-        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">No tokens found</p>
+          0.00
         {% endif %}
       </div>
+      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+        SOL
+      </div>
+    </div>
+
+    {# NFTs Card #}
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">NFTs</span>
+        <i class="fas fa-image text-primary text-lg"></i>
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+        {{ stats.total_nfts|default:0 }}
+      </div>
+      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+        Total Owned
+      </div>
+    </div>
+
+    {# Collections Card #}
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Collections</span>
+        <i class="fas fa-layer-group text-primary text-lg"></i>
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+        {{ stats.unique_collections|default:0 }}
+      </div>
+      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+        Unique
+      </div>
+    </div>
+
+    {# Listings Card #}
+    {% if is_owner %}
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Listings</span>
+        <i class="fas fa-tags text-primary text-lg"></i>
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+        {{ stats.active_listings_count|default:0 }}
+      </div>
+      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+        Active
+      </div>
+    </div>
+
+    {# Bids Card #}
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Bids</span>
+        <i class="fas fa-gavel text-primary text-lg"></i>
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+        {{ stats.active_bids_count|default:0 }}
+      </div>
+      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+        Placed
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Wallet Assets Section #}
+  {% if wallet_balances and wallet_balances.tokens %}
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-accent-light dark:border-accent-dark p-6 mb-6" data-aos="fade-up" data-aos-delay="200">
+    <h3 class="text-lg font-bold text-text-light dark:text-text-dark mb-4 flex items-center gap-2">
+      <i class="fas fa-wallet text-primary"></i>
+      Token Holdings
+      <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+        ({{ wallet_balances.tokens|length }} token{{ wallet_balances.tokens|length|pluralize }})
+      </span>
+    </h3>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+      {% for token in wallet_balances.tokens|slice:":6" %}
+      <div class="token-card rounded-lg p-3 border border-accent-light dark:border-accent-dark">
+        <div class="text-xs font-mono text-text-secondary-light dark:text-text-secondary-dark mb-1 truncate">
+          {{ token.symbol|default:"TOKEN" }}
+        </div>
+        <div class="text-lg font-bold text-text-light dark:text-text-dark">
+          {{ token.balance|floatformat:2 }}
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if wallet_balances.tokens|length > 6 %}
+      <div class="token-card rounded-lg p-3 border border-accent-light dark:border-accent-dark flex items-center justify-center cursor-pointer hover:border-primary">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-primary">+{{ wallet_balances.tokens|length|add:"-6" }}</div>
+          <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark">More</div>
+        </div>
+      </div>
       {% endif %}
+    </div>
+
+    {# Connected Wallets #}
+    {% if user_wallets.count > 1 %}
+    <div class="mt-6 pt-6 border-t border-accent-light dark:border-accent-dark">
+      <h4 class="text-sm font-semibold text-text-light dark:text-text-dark mb-3">
+        All Connected Wallets ({{ user_wallets.count }})
+      </h4>
+      <div class="space-y-2 max-h-32 overflow-y-auto">
+        {% for wallet in user_wallets %}
+        <div class="flex items-center gap-2 text-xs bg-accent-light dark:bg-accent-dark px-3 py-2 rounded-lg border border-border-light dark:border-border-dark">
+          <i class="fas fa-wallet text-primary text-[10px]"></i>
+          <span class="font-mono truncate flex-1">{{ wallet.public_key }}</span>
+          {% if wallet.is_primary %}
+          <span class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full">Primary</span>
+          {% endif %}
+          <a href="https://solscan.io/account/{{ wallet.public_key }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             title="View on Solscan"
+             class="hover:text-primary transition">
+            <i class="fas fa-external-link-alt text-[10px]"></i>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+      {% if is_owner %}
+      <a href="{% url 'profiles:settings_wallets' %}"
+         class="text-xs text-primary hover:underline mt-3 inline-block">
+        Manage Wallets
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Tabs Navigation #}
+  <div class="mb-6 sticky top-[80px] bg-background-light dark:bg-background-dark z-30 py-3" data-aos="fade-up" data-aos-delay="300">
+    <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+      <button class="pill-tab active" data-target="tab-portfolio">
+        <i class="fas fa-th mr-1"></i>Portfolio
+      </button>
+      <button class="pill-tab" data-target="tab-achievements">
+        <i class="fas fa-trophy mr-1"></i>Achievements
+      </button>
+      {% if is_owner %}
+      <a href="{% url 'profiles:quests' %}" class="pill-tab">
+        <i class="fas fa-star mr-1"></i>Quests
+      </a>
+      {% endif %}
+      {% if is_owner or profile_user.profile.is_public %}
+      <button class="pill-tab" data-target="tab-watchlist">
+        <i class="fas fa-bookmark mr-1"></i>Watchlist
+      </button>
+      {% endif %}
+      {% if is_owner %}
+      <button class="pill-tab" data-target="tab-listings">
+        <i class="fas fa-tags mr-1"></i>Listings
+      </button>
+      <button class="pill-tab" data-target="tab-auctions">
+        <i class="fas fa-gavel mr-1"></i>Auctions
+      </button>
+      <button class="pill-tab" data-target="tab-bids">
+        <i class="fas fa-hand-paper mr-1"></i>Bids
+      </button>
+      <button class="pill-tab" data-target="tab-activity">
+        <i class="fas fa-chart-line mr-1"></i>Activity
+      </button>
+      <button class="pill-tab" data-target="tab-pnl">
+        <i class="fas fa-dollar-sign mr-1"></i>PnL
+      </button>
       {% endif %}
     </div>
   </div>
 
-
-  <div class="mb-6 border-b border-accent-light dark:border-accent-dark sticky top-[80px] bg-background-light dark:bg-background-dark z-30 py-2" data-aos="fade-up" data-aos-delay="100"> {# Sticky tabs #}
-    <nav class="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto max-w-full" aria-label="Tabs">
-      <button class="tab-button active whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-portfolio">Portfolio</button>
-
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-achievements">Achievements</button>
-
-      {% if is_owner %}
-      <a href="{% url 'profiles:quests' %}" class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark flex items-center gap-1">
-        <i class="fas fa-trophy text-xs"></i>Quests
-      </a>
-      {% endif %}
-
-      {% if is_owner or profile_user.profile.is_public %}
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-watchlist">Watchlist</button>
-      {% endif %}
-
-       {% if is_owner %}
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-listings">Listings</button>
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-auctions">Auctions</button>
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-bids">Bids</button>
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-activity">Activity</button>
-      <button class="tab-button whitespace-nowrap pb-3 px-1 border-b-2 border-transparent text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:border-gray-300 dark:hover:border-gray-600 hover:text-text-light dark:hover:text-text-dark" data-target="tab-pnl">PnL</button>
-      {% endif %}
-    </nav>
-  </div>
-
-
-  <div id="tab-content-area" data-aos="fade-up" data-aos-delay="200">
+  {# Tab Contents #}
+  <div id="tab-content-area" data-aos="fade-up" data-aos-delay="400">
 
     {# Portfolio Tab #}
     <div id="tab-portfolio" class="tab-content active">
-      <div id="portfolio-controls" class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-        {# Filters/Sorting - Placeholder for more complex UI (e.g., dropdowns, sidebar) #}
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
         <div class="flex flex-wrap gap-2">
-          <button id="filter-button" class="text-xs px-3 py-1.5 bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark hover:border-primary flex items-center gap-1 transition">
+          <button class="text-xs px-3 py-1.5 bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark hover:border-primary transition flex items-center gap-1">
             <i class="fas fa-filter text-xs"></i>Filters
-            <span class="bg-primary text-white text-[10px] px-1.5 rounded-full ml-1">3</span> {# Example filter count #}
           </button>
-          <div class="relative"> {# Dropdown container #}
-             <button id="sort-button" class="text-xs px-3 py-1.5 bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark hover:border-primary flex items-center gap-1 transition">
-               Sort By: Vitality <i class="fas fa-chevron-down text-xs ml-1"></i>
-             </button>
-             {# Dropdown menu (hidden by default, shown via JS) #}
-             <div id="sort-menu" class="hidden absolute left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-border-light dark:border-border-dark z-10">
-                 {# Sort options #}
-             </div>
-          </div>
+          <button class="text-xs px-3 py-1.5 bg-accent-light dark:bg-accent-dark rounded-full border border-border-light dark:border-border-dark hover:border-primary transition flex items-center gap-1">
+            <i class="fas fa-sort text-xs"></i>Sort
+          </button>
         </div>
         <div class="flex gap-2">
-           <button id="art-view-btn" class="view-toggle-btn active p-1.5 rounded-full text-sm" aria-label="Art View" title="Art View">
-             <svg class="w-5 h-5 fill-current"><use xlink:href="#card-view-icon"></use></svg>
-           </button>
-           <button id="list-view-btn" class="view-toggle-btn p-1.5 rounded-full text-sm" aria-label="List View" title="List View">
-             <svg class="w-5 h-5 fill-current"><use xlink:href="#table-view-icon"></use></svg>
-           </button>
+          <button id="art-view-btn" class="view-toggle-btn active p-2 rounded-lg" title="Grid View">
+            <i class="fas fa-th text-sm"></i>
+          </button>
+          <button id="list-view-btn" class="view-toggle-btn p-2 rounded-lg" title="List View">
+            <i class="fas fa-list text-sm"></i>
+          </button>
         </div>
       </div>
 
-      {# Loading State Placeholder - Show this via JS while fetching/rendering #}
+      {# Loading State #}
       <div id="portfolio-loading" class="hidden text-center py-10">
-          <div class="spinner w-6 h-6 border-3 border-t-transparent border-primary rounded-full animate-spin mx-auto mb-2"></div>
-          <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Loading Portfolio...</p>
+        <div class="w-8 h-8 border-3 border-t-transparent border-primary rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Loading Portfolio...</p>
       </div>
 
-      {# Empty State Placeholder - Show if no NFTs #}
-       <div id="portfolio-empty" class="hidden text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-          <i class="fas fa-image text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark">This portfolio is empty.</p>
-       </div>
+      {# Empty State #}
+      <div id="portfolio-empty" class="hidden text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-image text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">This portfolio is empty.</p>
+      </div>
 
-      {# Art View (Grid) Container #}
+      {# Art View (Grid) #}
       <div id="portfolio-art-view" class="portfolio-grid">
-         {# JS will populate this section #}
-         {# Example Item Structure (repeated in JS loop):
-         <div class="portfolio-grid-item bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark overflow-hidden group relative">
-           <img src="..." alt="..." class="w-full h-full object-cover">
-           <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-           <div class="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p class="text-white text-xs font-semibold truncate drop-shadow">NFT Name</p>
-              <p class="text-gray-300 text-[10px] truncate drop-shadow">Collection Name</p>
-           </div>
-            <a href="..." class="absolute inset-0"></a>
-         </div> #}
+        {# NFTs will be populated by JavaScript or Django template #}
       </div>
 
-       {# List View Container - Initially hidden #}
+      {# List View #}
       <div id="portfolio-list-view" class="hidden space-y-2">
-         {# JS will populate this section #}
-         {# Example Item Structure (repeated in JS loop):
-         <div class="portfolio-list-item bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-accent-light dark:border-accent-dark p-2 flex items-center gap-3">
-           <img src="..." alt="..." class="w-10 h-10 rounded object-cover flex-shrink-0">
-           <div class="flex-1 min-w-0">
-              <a href="..." class="text-sm font-semibold truncate text-text-light dark:text-text-dark hover:text-primary hover:underline">NFT Name</a>
-              <p class="text-xs truncate text-text-secondary-light dark:text-text-secondary-dark">Collection Name</p>
-           </div>
-           <div class="text-right text-xs w-20 flex-shrink-0">
-              <p class="text-text-light dark:text-text-dark font-medium">95.2 Vitality</p>
-              <p class="text-text-secondary-light dark:text-text-secondary-dark">12.50 SOL Floor</p>
-           </div>
-            
-         </div> #}
+        {# List items will be populated by JavaScript or Django template #}
       </div>
-      
-      {# Pagination Container - JS can update this #}
-      <nav id="portfolio-pagination" class="mt-6 flex justify-center" aria-label="Portfolio pagination">
-         {# Pagination links will be generated by JS or Django pagination tags #}
+
+      {# Pagination #}
+      <nav id="portfolio-pagination" class="mt-6 flex justify-center">
+        {# Pagination will be added here #}
       </nav>
     </div>
 
     {# Achievements Tab #}
     <div id="tab-achievements" class="tab-content">
-      {# Achievement Stats Overview #}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark p-4">
-          <div class="flex items-center justify-between">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+          <div class="flex items-center justify-between mb-3">
             <div>
               <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Achievements</p>
-              <p class="text-2xl font-bold text-text-light dark:text-text-dark">{{ achievement_stats.total_earned }}/{{ achievement_stats.total_available }}</p>
+              <p class="text-2xl font-bold text-text-light dark:text-text-dark">
+                {{ achievement_stats.total_earned }}/{{ achievement_stats.total_available }}
+              </p>
             </div>
             <i class="fas fa-trophy text-3xl text-yellow-500"></i>
           </div>
           <div class="mt-2">
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div class="bg-primary h-2 rounded-full" style="width: {{ achievement_stats.completion_percentage }}%"></div>
+              <div class="bg-gradient-to-r from-primary to-pink-500 h-2 rounded-full transition-all duration-500"
+                   style="width: {{ achievement_stats.completion_percentage }}%"></div>
             </div>
-            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">{{ achievement_stats.completion_percentage }}% Complete</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+              {{ achievement_stats.completion_percentage }}% Complete
+            </p>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark p-4">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Total Points</p>
-              <p class="text-2xl font-bold text-primary">{{ achievement_stats.total_points }}</p>
+              <p class="text-2xl font-bold gradient-text">{{ achievement_stats.total_points }}</p>
             </div>
             <i class="fas fa-star text-3xl text-primary"></i>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark p-4">
-          <div>
-            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">Rarity Breakdown</p>
-            <div class="space-y-1">
-              <div class="flex justify-between text-xs">
-                <span class="text-yellow-600 dark:text-yellow-400">⭐ Legendary</span>
-                <span class="font-semibold">{{ achievement_stats.rarity_breakdown.legendary|default:0 }}</span>
-              </div>
-              <div class="flex justify-between text-xs">
-                <span class="text-purple-600 dark:text-purple-400">💎 Epic</span>
-                <span class="font-semibold">{{ achievement_stats.rarity_breakdown.epic|default:0 }}</span>
-              </div>
-              <div class="flex justify-between text-xs">
-                <span class="text-blue-600 dark:text-blue-400">💠 Rare</span>
-                <span class="font-semibold">{{ achievement_stats.rarity_breakdown.rare|default:0 }}</span>
-              </div>
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-3">Rarity Breakdown</p>
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-yellow-600 dark:text-yellow-400">⭐ Legendary</span>
+              <span class="font-semibold">{{ achievement_stats.rarity_breakdown.legendary|default:0 }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-purple-600 dark:text-purple-400">💎 Epic</span>
+              <span class="font-semibold">{{ achievement_stats.rarity_breakdown.epic|default:0 }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-blue-600 dark:text-blue-400">💠 Rare</span>
+              <span class="font-semibold">{{ achievement_stats.rarity_breakdown.rare|default:0 }}</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark p-4">
-          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">Next Achievements</p>
-          <div class="space-y-1">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-3">Next Achievements</p>
+          <div class="space-y-1.5">
             {% for achievement in next_achievements %}
             <div class="text-xs truncate">
               <span class="text-text-light dark:text-text-dark">{{ achievement.name }}</span>
@@ -459,30 +711,37 @@ html.dark .profile-card::before {
         </div>
       </div>
 
-      {# Recent Achievements #}
       <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
         Recent Achievements
-        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ user_achievements|length }})</span>
+        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+          ({{ user_achievements|length }})
+        </span>
       </h3>
 
       {% if not user_achievements %}
       <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-        <i class="fas fa-award text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <i class="fas fa-award text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
         <p class="text-text-secondary-light dark:text-text-secondary-dark">
-          {% if is_owner %}You haven't earned any achievements yet. Start trading to unlock them!{% else %}No achievements earned yet.{% endif %}
+          {% if is_owner %}
+            You haven't earned any achievements yet. Start trading to unlock them!
+          {% else %}
+            No achievements earned yet.
+          {% endif %}
         </p>
       </div>
       {% else %}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for user_achievement in user_achievements %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark p-4 hover:shadow-lg transition">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark hover:shadow-xl transition">
           <div class="flex items-start gap-3">
-            <div class="flex-shrink-0">
-              <img src="{{ user_achievement.achievement.get_icon_url }}" alt="{{ user_achievement.achievement.name }}" class="w-12 h-12 rounded-lg">
-            </div>
+            <img src="{{ user_achievement.achievement.get_icon_url }}"
+                 alt="{{ user_achievement.achievement.name }}"
+                 class="w-14 h-14 rounded-lg flex-shrink-0">
             <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-2">
-                <h4 class="text-sm font-semibold text-text-light dark:text-text-dark truncate">{{ user_achievement.achievement.name }}</h4>
+              <div class="flex items-start justify-between gap-2 mb-1">
+                <h4 class="text-sm font-semibold text-text-light dark:text-text-dark truncate">
+                  {{ user_achievement.achievement.name }}
+                </h4>
                 <span class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full
                   {% if user_achievement.achievement.rarity == 'LEGENDARY' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300
                   {% elif user_achievement.achievement.rarity == 'EPIC' %}bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300
@@ -492,10 +751,14 @@ html.dark .profile-card::before {
                   {{ user_achievement.achievement.get_rarity_display }}
                 </span>
               </div>
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 line-clamp-2">{{ user_achievement.achievement.description }}</p>
-              <div class="flex items-center justify-between mt-2">
-                <span class="text-xs text-primary font-semibold">+{{ user_achievement.achievement.points }} pts</span>
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">{{ user_achievement.earned_at|timesince }} ago</span>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark line-clamp-2 mb-2">
+                {{ user_achievement.achievement.description }}
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-primary">+{{ user_achievement.achievement.points }} pts</span>
+                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  {{ user_achievement.earned_at|timesince }} ago
+                </span>
               </div>
             </div>
           </div>
@@ -510,70 +773,102 @@ html.dark .profile-card::before {
     <div id="tab-watchlist" class="tab-content">
       <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
         {% if is_owner %}My Watchlist{% else %}Watchlist{% endif %}
-        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ watchlist_items|length }})</span>
+        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+          ({{ watchlist_items|length }})
+        </span>
       </h3>
 
       {% if not watchlist_items %}
-      <div id="watchlist-empty" class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-        <i class="fas fa-binoculars text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-bookmark text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
         <p class="text-text-secondary-light dark:text-text-secondary-dark">
-          {% if is_owner %}You haven't added anything to your watchlist yet.{% else %}No watchlist items to display.{% endif %}
+          {% if is_owner %}
+            You haven't added anything to your watchlist yet.
+          {% else %}
+            No watchlist items to display.
+          {% endif %}
         </p>
       </div>
       {% else %}
-      <div id="watchlist-content" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for item in watchlist_items %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-accent-light dark:border-accent-dark overflow-hidden group hover:shadow-lg transition">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-accent-light dark:border-accent-dark hover:shadow-xl transition">
           {% if item.item_type == 'NFT' %}
-            {# NFT Watchlist Item #}
-            <div class="aspect-square relative overflow-hidden">
-              <img src="{{ item.nft.image_url|default:'/static/img/nft-placeholder.png' }}" alt="{{ item.nft.name }}" class="w-full h-full object-cover">
-              <span class="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full">NFT</span>
-            </div>
-            <div class="p-3">
-              <a href="{% url 'nft_data:nft_detail' item.nft.mint_address %}" class="text-sm font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">{{ item.nft.name|default:"Unnamed NFT" }}</a>
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">{{ item.nft.collection.name|default:"Unknown Collection" }}</p>
-              {% if item.notes %}
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2 italic line-clamp-2">{{ item.notes }}</p>
+          <div class="aspect-square relative overflow-hidden">
+            <img src="{{ item.nft.image_url|default:'/static/img/nft-placeholder.png' }}"
+                 alt="{{ item.nft.name }}"
+                 class="w-full h-full object-cover">
+            <span class="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
+              NFT
+            </span>
+          </div>
+          <div class="p-3">
+            <a href="{% url 'nft_data:nft_detail' item.nft.mint_address %}"
+               class="text-sm font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
+              {{ item.nft.name|default:"Unnamed NFT" }}
+            </a>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
+              {{ item.nft.collection.name|default:"Unknown Collection" }}
+            </p>
+            {% if item.notes %}
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2 italic line-clamp-2">
+              {{ item.notes }}
+            </p>
+            {% endif %}
+            <div class="flex items-center justify-between mt-3 text-xs">
+              <span class="text-text-secondary-light dark:text-text-secondary-dark">
+                Added {{ item.added_at|timesince }} ago
+              </span>
+              {% if is_owner %}
+              <form method="post" action="{% url 'profiles:remove_from_watchlist' item.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit"
+                        class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        title="Remove from watchlist">
+                  <i class="fas fa-times"></i>
+                </button>
+              </form>
               {% endif %}
-              <div class="flex items-center justify-between mt-3 text-xs">
-                <span class="text-text-secondary-light dark:text-text-secondary-dark">Added {{ item.added_at|timesince }} ago</span>
-                {% if is_owner %}
-                <form method="post" action="{% url 'profiles:remove_from_watchlist' item.id %}" class="inline">
-                  {% csrf_token %}
-                  <button type="submit" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" title="Remove from watchlist">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </form>
-                {% endif %}
-              </div>
             </div>
+          </div>
           {% else %}
-            {# Collection Watchlist Item #}
-            <div class="aspect-square relative overflow-hidden">
-              <img src="{{ item.collection.image_url|default:'/static/img/collection-placeholder.png' }}" alt="{{ item.collection.name }}" class="w-full h-full object-cover">
-              <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">Collection</span>
-            </div>
-            <div class="p-3">
-              <a href="{% url 'nft_data:collection_detail' item.collection.address %}" class="text-sm font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">{{ item.collection.name }}</a>
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                {% if item.collection.total_supply %}{{ item.collection.total_supply }} items{% endif %}
-              </p>
-              {% if item.notes %}
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2 italic line-clamp-2">{{ item.notes }}</p>
+          <div class="aspect-square relative overflow-hidden">
+            <img src="{{ item.collection.image_url|default:'/static/img/collection-placeholder.png' }}"
+                 alt="{{ item.collection.name }}"
+                 class="w-full h-full object-cover">
+            <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+              Collection
+            </span>
+          </div>
+          <div class="p-3">
+            <a href="{% url 'nft_data:collection_detail' item.collection.address %}"
+               class="text-sm font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
+              {{ item.collection.name }}
+            </a>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+              {% if item.collection.total_supply %}{{ item.collection.total_supply }} items{% endif %}
+            </p>
+            {% if item.notes %}
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2 italic line-clamp-2">
+              {{ item.notes }}
+            </p>
+            {% endif %}
+            <div class="flex items-center justify-between mt-3 text-xs">
+              <span class="text-text-secondary-light dark:text-text-secondary-dark">
+                Added {{ item.added_at|timesince }} ago
+              </span>
+              {% if is_owner %}
+              <form method="post" action="{% url 'profiles:remove_from_watchlist' item.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit"
+                        class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        title="Remove from watchlist">
+                  <i class="fas fa-times"></i>
+                </button>
+              </form>
               {% endif %}
-              <div class="flex items-center justify-between mt-3 text-xs">
-                <span class="text-text-secondary-light dark:text-text-secondary-dark">Added {{ item.added_at|timesince }} ago</span>
-                {% if is_owner %}
-                <form method="post" action="{% url 'profiles:remove_from_watchlist' item.id %}" class="inline">
-                  {% csrf_token %}
-                  <button type="submit" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" title="Remove from watchlist">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </form>
-                {% endif %}
-              </div>
             </div>
+          </div>
           {% endif %}
         </div>
         {% endfor %}
@@ -583,30 +878,33 @@ html.dark .profile-card::before {
     {% endif %}
 
     {# Listings Tab #}
-     {% if is_owner %}
+    {% if is_owner %}
     <div id="tab-listings" class="tab-content">
       <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
         My Active Listings
-        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ active_listings|length }})</span>
+        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+          ({{ active_listings|length }})
+        </span>
       </h3>
 
       {% if not active_listings %}
-      <div id="listings-empty" class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-        <i class="fas fa-tags text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark">You don't have any active listings on TraitKeeper.</p>
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-tags text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">
+          You don't have any active listings on TraitKeeper.
+        </p>
       </div>
       {% else %}
-      <div id="listings-content" class="space-y-3">
+      <div class="space-y-3">
         {% for listing in active_listings %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-accent-light dark:border-accent-dark p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-md transition">
-          {# NFT Image #}
-          <div class="flex-shrink-0">
-            <img src="{{ listing.nft.image_url|default:'/static/img/nft-placeholder.png' }}" alt="{{ listing.nft.name }}" class="w-20 h-20 rounded-lg object-cover">
-          </div>
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light dark:border-accent-dark flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-lg transition">
+          <img src="{{ listing.nft.image_url|default:'/static/img/nft-placeholder.png' }}"
+               alt="{{ listing.nft.name }}"
+               class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
 
-          {# NFT Info #}
           <div class="flex-1 min-w-0">
-            <a href="{% url 'nft_data:nft_detail' listing.nft.mint_address %}" class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
+            <a href="{% url 'nft_data:nft_detail' listing.nft.mint_address %}"
+               class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
               {{ listing.nft.name|default:"Unnamed NFT" }}
             </a>
             <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
@@ -625,10 +923,10 @@ html.dark .profile-card::before {
             </div>
           </div>
 
-          {# Price & Actions #}
           <div class="flex-shrink-0 text-right">
-            <p class="text-lg font-bold text-text-light dark:text-text-dark">{{ listing.price }} SOL</p>
-            <a href="{% url 'nft_data:nft_detail' listing.nft.mint_address %}" class="text-xs text-primary hover:underline mt-1 inline-block">
+            <p class="text-xl font-bold text-text-light dark:text-text-dark">{{ listing.price }} SOL</p>
+            <a href="{% url 'nft_data:nft_detail' listing.nft.mint_address %}"
+               class="text-xs text-primary hover:underline mt-1 inline-block">
               View Listing
             </a>
           </div>
@@ -640,137 +938,97 @@ html.dark .profile-card::before {
 
     {# Auctions Tab #}
     <div id="tab-auctions" class="tab-content">
-      {# Active Auctions Section #}
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
-          My Active Auctions
-          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ active_auctions|length|default:0 }})</span>
-        </h3>
-
-        <div id="active-auctions-content" class="space-y-4">
-          {# Active auction items will be loaded here via JavaScript or Django template #}
-          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-            <i class="fas fa-gavel text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark">You don't have any active auctions.</p>
-          </div>
-        </div>
-      </div>
-
-      {# Auction Bids Received Section #}
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
-          Bids on My Auctions
-          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ auction_bids_received|length|default:0 }})</span>
-        </h3>
-
-        <div id="auction-bids-content" class="space-y-3">
-          {# Auction bid items will be loaded here #}
-          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-            <i class="fas fa-inbox text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark">No bids on your auctions yet.</p>
-          </div>
-        </div>
-      </div>
-
-      {# Completed Auctions Section #}
-      <div>
-        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
-          Completed Auctions
-          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ completed_auctions|length|default:0 }})</span>
-        </h3>
-
-        <div id="completed-auctions-content" class="space-y-3">
-          {# Completed auction items will be loaded here #}
-          <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-            <i class="fas fa-history text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark">No completed auctions yet.</p>
-          </div>
-        </div>
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-gavel text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">
+          You don't have any active auctions.
+        </p>
       </div>
     </div>
 
     {# Bids Tab #}
     <div id="tab-bids" class="tab-content">
-      {# Bids Placed Section #}
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
-          Bids I've Placed
-          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ bids_placed|length }})</span>
-        </h3>
+      <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
+        Bids I've Placed
+        <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+          ({{ bids_placed|length }})
+        </span>
+      </h3>
 
-        {% if not bids_placed %}
-        <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-          <i class="fas fa-gavel text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark">You haven't placed any active bids yet.</p>
-        </div>
-        {% else %}
-        <div class="space-y-3">
-          {% for bid in bids_placed %}
-          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-accent-light dark:border-accent-dark p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-md transition">
-            {# NFT Image #}
-            <div class="flex-shrink-0">
-              <img src="{{ bid.nft.image_url|default:'/static/img/nft-placeholder.png' }}" alt="{{ bid.nft.name }}" class="w-20 h-20 rounded-lg object-cover">
-            </div>
+      {% if not bids_placed %}
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-gavel text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">
+          You haven't placed any active bids yet.
+        </p>
+      </div>
+      {% else %}
+      <div class="space-y-3">
+        {% for bid in bids_placed %}
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light dark:border-accent-dark flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-lg transition">
+          <img src="{{ bid.nft.image_url|default:'/static/img/nft-placeholder.png' }}"
+               alt="{{ bid.nft.name }}"
+               class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
 
-            {# NFT Info #}
-            <div class="flex-1 min-w-0">
-              <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}" class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
-                {{ bid.nft.name|default:"Unnamed NFT" }}
-              </a>
-              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
-                {{ bid.nft.collection.name|default:"Unknown Collection" }}
-              </p>
-              <div class="flex items-center gap-2 mt-1">
-                {% if bid.is_auction_bid %}
-                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                  Auction Bid
-                </span>
-                {% else %}
-                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                  Direct Offer
-                </span>
-                {% endif %}
-                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                  {{ bid.bid_placed_at|timesince }} ago
-                </span>
-              </div>
-            </div>
-
-            {# Bid Amount #}
-            <div class="flex-shrink-0 text-right">
-              <p class="text-lg font-bold text-primary">{{ bid.amount }} SOL</p>
-              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Your Bid</p>
+          <div class="flex-1 min-w-0">
+            <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}"
+               class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
+              {{ bid.nft.name|default:"Unnamed NFT" }}
+            </a>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark truncate">
+              {{ bid.nft.collection.name|default:"Unknown Collection" }}
+            </p>
+            <div class="flex items-center gap-2 mt-1">
+              {% if bid.is_auction_bid %}
+              <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                Auction Bid
+              </span>
+              {% else %}
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                Direct Offer
+              </span>
+              {% endif %}
+              <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                {{ bid.bid_placed_at|timesince }} ago
+              </span>
             </div>
           </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-      </div>
 
-      {# Bids Received Section #}
-      <div>
+          <div class="flex-shrink-0 text-right">
+            <p class="text-xl font-bold text-primary">{{ bid.amount }} SOL</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Your Bid</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="mt-8">
         <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">
           Bids Received on My NFTs
-          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">({{ bids_received|length }})</span>
+          <span class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">
+            ({{ bids_received|length }})
+          </span>
         </h3>
 
         {% if not bids_received %}
         <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-          <i class="fas fa-inbox text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark">You haven't received any bids on your NFTs yet.</p>
+          <i class="fas fa-inbox text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark">
+            You haven't received any bids on your NFTs yet.
+          </p>
         </div>
         {% else %}
         <div class="space-y-3">
           {% for bid in bids_received %}
-          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-accent-light dark:border-accent-dark p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-md transition">
-            {# NFT Image #}
-            <div class="flex-shrink-0">
-              <img src="{{ bid.nft.image_url|default:'/static/img/nft-placeholder.png' }}" alt="{{ bid.nft.name }}" class="w-20 h-20 rounded-lg object-cover">
-            </div>
+          <div class="stat-card bg-white dark:bg-gray-800 rounded-lg p-4 border border-accent-light dark:border-accent-dark flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-lg transition">
+            <img src="{{ bid.nft.image_url|default:'/static/img/nft-placeholder.png' }}"
+                 alt="{{ bid.nft.name }}"
+                 class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
 
-            {# NFT Info #}
             <div class="flex-1 min-w-0">
-              <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}" class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
+              <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}"
+                 class="text-base font-semibold text-text-light dark:text-text-dark hover:text-primary truncate block">
                 {{ bid.nft.name|default:"Unnamed NFT" }}
               </a>
               <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
@@ -781,10 +1039,10 @@ html.dark .profile-card::before {
               </p>
             </div>
 
-            {# Bid Amount #}
             <div class="flex-shrink-0 text-right">
-              <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ bid.amount }} SOL</p>
-              <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}" class="text-xs text-primary hover:underline mt-1 inline-block">
+              <p class="text-xl font-bold text-green-600 dark:text-green-400">{{ bid.amount }} SOL</p>
+              <a href="{% url 'nft_data:nft_detail' bid.nft.mint_address %}"
+                 class="text-xs text-primary hover:underline mt-1 inline-block">
                 View Bid
               </a>
             </div>
@@ -795,129 +1053,113 @@ html.dark .profile-card::before {
       </div>
     </div>
 
+    {# Activity Tab #}
     <div id="tab-activity" class="tab-content">
       <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">Recent Activity</h3>
-       <div id="activity-empty" class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
-         <i class="fas fa-history text-3xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark">No recent buy/sell activity found on TraitKeeper.</p>
-       </div>
-        <div id="activity-feed" class="space-y-3">
-             {# Feed of recent transactions (buys/sales) #}
-        </div>
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-history text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">
+          No recent buy/sell activity found on TraitKeeper.
+        </p>
+      </div>
     </div>
 
+    {# PnL Tab #}
     <div id="tab-pnl" class="tab-content">
       <h3 class="text-lg font-semibold mb-4 text-text-light dark:text-text-dark">PnL Estimate (TraitKeeper Activity)</h3>
-      <div class="bg-accent-light dark:bg-accent-dark p-3 rounded-lg mb-4 border border-border-light dark:border-border-dark">
-          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark flex items-start gap-2">
-             <i class="fas fa-info-circle text-primary mt-0.5 flex-shrink-0"></i>
-             <span>This is an estimate based *only* on buy/sell activity recorded on the TraitKeeper platform across your connected wallets. It does not account for mint costs, transfers, or off-platform transactions. Data freshness depends on indexer updates.</span>
-          </p>
+      <div class="bg-accent-light dark:bg-accent-dark p-4 rounded-lg mb-6 border border-border-light dark:border-border-dark">
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark flex items-start gap-2">
+          <i class="fas fa-info-circle text-primary mt-0.5 flex-shrink-0"></i>
+          <span>This is an estimate based only on buy/sell activity recorded on the TraitKeeper platform across your connected wallets. It does not account for mint costs, transfers, or off-platform transactions.</span>
+        </p>
       </div>
-       <div id="pnl-loading" class="text-center py-10">
-          <div class="spinner w-6 h-6 border-3 border-t-transparent border-primary rounded-full animate-spin mx-auto mb-2"></div>
-          <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Calculating PnL Estimate...</p>
-       </div>
-       <div id="pnl-content" class="hidden">
-           {# Display PnL data here - e.g., Total PnL, PnL per Collection #}
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-accent-light dark:border-accent-dark">
-                   <h4 class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">Total Estimated PnL</h4>
-                   <p class="text-2xl font-bold text-green-600 dark:text-green-400">+15.75 SOL</p> {# Example Data #}
-               </div>
-               {# Add more detailed PnL breakdowns if needed #}
-           </div>
-       </div>
+      <div class="text-center py-10 bg-accent-light dark:bg-accent-dark rounded-lg">
+        <i class="fas fa-chart-line text-4xl text-text-secondary-light dark:text-text-secondary-dark mb-3"></i>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark">
+          No PnL data available yet.
+        </p>
+      </div>
     </div>
-    {% endif %} {#  #}
-
-  </div> {#  #}
-
+    {% endif %}
+  </div>
 </div>
 
 {% block extra_js %}
-{#  #}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    try {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const artViewBtn = document.getElementById('art-view-btn');
-        const listViewBtn = document.getElementById('list-view-btn');
-        const artViewDiv = document.getElementById('portfolio-art-view');
-        const listViewDiv = document.getElementById('portfolio-list-view');
-        const portfolioLoading = document.getElementById('portfolio-loading');
-        const portfolioEmpty = document.getElementById('portfolio-empty');
-        const portfolioPagination = document.getElementById('portfolio-pagination');
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    // Copy Wallet Address
+    window.copyWalletAddress = function(address) {
+      navigator.clipboard.writeText(address).then(() => {
+        const btn = document.getElementById('copy-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check text-xs text-green-500"></i>';
+        btn.classList.add('copy-success');
 
-        // --- Tab Switching Logic ---
-        tabButtons.forEach(button => {
-          button.addEventListener('click', () => {
-            const targetId = button.getAttribute('data-target');
-            
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.classList.remove('copy-success');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy address');
+      });
+    };
 
-            tabContents.forEach(content => {
-              content.classList.toggle('active', content.id === targetId);
-            });
-            // You might want to trigger data loading for the activated tab here
-            // e.g., if (targetId === 'tab-pnl') { loadPnlData(); }
-          });
+    // Tab Switching
+    const tabButtons = document.querySelectorAll('.pill-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        if (!targetId) return; // Skip if it's a link
+
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        tabContents.forEach(content => {
+          content.classList.toggle('active', content.id === targetId);
         });
+      });
+    });
 
-        // --- Portfolio View Toggle Logic ---
-        function setPortfolioView(view) {
-             if (!artViewDiv ||!listViewDiv ||!artViewBtn ||!listViewBtn) return;
-            
-             const isArtView = view === 'art';
-             artViewDiv.classList.toggle('hidden',!isArtView);
-             listViewDiv.classList.toggle('hidden', isArtView);
-             artViewBtn.classList.toggle('active', isArtView);
-             listViewBtn.classList.toggle('active',!isArtView);
-             // Store preference in localStorage?
-             // localStorage.setItem('portfolioView', view);
-        }
+    // Portfolio View Toggle
+    const artViewBtn = document.getElementById('art-view-btn');
+    const listViewBtn = document.getElementById('list-view-btn');
+    const artViewDiv = document.getElementById('portfolio-art-view');
+    const listViewDiv = document.getElementById('portfolio-list-view');
 
-        if (artViewBtn) artViewBtn.addEventListener('click', () => setPortfolioView('art'));
-        if (listViewBtn) listViewBtn.addEventListener('click', () => setPortfolioView('list'));
+    function setPortfolioView(view) {
+      if (!artViewDiv || !listViewDiv || !artViewBtn || !listViewBtn) return;
 
-        // --- Initial Portfolio Load (Example) ---
-         function loadPortfolio() {
-             // Show loading state
-             if (portfolioLoading) portfolioLoading.classList.remove('hidden');
-             if (portfolioEmpty) portfolioEmpty.classList.add('hidden');
-             if (artViewDiv) artViewDiv.innerHTML = ''; // Clear previous
-             if (listViewDiv) listViewDiv.innerHTML = ''; // Clear previous
-             if (portfolioPagination) portfolioPagination.innerHTML = ''; // Clear previous
+      const isArtView = view === 'art';
+      artViewDiv.classList.toggle('hidden', !isArtView);
+      listViewDiv.classList.toggle('hidden', isArtView);
+      artViewBtn.classList.toggle('active', isArtView);
+      listViewBtn.classList.toggle('active', !isArtView);
 
-             // Simulate fetching data (replace with actual fetch/rendering)
-             setTimeout(() => {
-                 if (portfolioLoading) portfolioLoading.classList.add('hidden');
-                 
-                 const nfts = []; // Replace with actual NFT data from context or API
-                 
-                 if (nfts.length === 0) {
-                     if (portfolioEmpty) portfolioEmpty.classList.remove('hidden');
-                 } else {
-                     // Populate artViewDiv and listViewDiv based on fetched 'nfts'
-                     // Render pagination controls in portfolioPagination
-                     // Set initial view based on localStorage or default
-                     setPortfolioView(localStorage.getItem('portfolioView') || 'art');
-                 }
-                // Re-initialize AOS if you added new elements
-                if (typeof AOS !== 'undefined') { AOS.refresh(); } 
-             }, 1500); // Simulate network delay
-         }
-         
-         // Trigger initial load for the portfolio tab
-         loadPortfolio(); 
-         // You might want to reload portfolio data if filters/sort change
-
-    } catch(error) {
-        console.error("Error initializing profile page JS:", error); 
+      localStorage.setItem('portfolioView', view);
     }
-  });
+
+    if (artViewBtn) artViewBtn.addEventListener('click', () => setPortfolioView('art'));
+    if (listViewBtn) listViewBtn.addEventListener('click', () => setPortfolioView('list'));
+
+    // Set initial view from localStorage
+    const savedView = localStorage.getItem('portfolioView') || 'art';
+    setPortfolioView(savedView);
+
+    // Stats Cards Slide-in Animation
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
+      card.classList.add('slide-in-up');
+    });
+
+  } catch(error) {
+    console.error("Error initializing profile page JS:", error);
+  }
+});
 </script>
 {% endblock %}
 
