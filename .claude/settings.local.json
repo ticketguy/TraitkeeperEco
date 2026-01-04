@@ -65,7 +65,15 @@
       "Bash(find:*)",
       "Bash(python3:*)",
       "Bash(docker compose logs:*)",
-      "Bash(git ls-files:*)"
+      "Bash(git ls-files:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Remove invalid select_related on bidder CharField in profile view\n\nFixed the get_user_wallet function to use the correct ''wallets'' relationship  \ninstead of ''wallet_profile''. The WalletProfile model uses related_name=''wallets''\nfor multiple wallet support.\n\nChanges:\n- marketplace/views.py: Updated get_user_wallet\\(\\) to use WalletProfile.get_primary_wallet\\(\\)\n- This fixes the \"User has no associated wallet profile or public key\" error\n  when placing bids\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python -m py_compile:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Critical security fixes and profile template corrections\n\nSECURITY FIXES:\n- Add X-Robots-Tag middleware to prevent admin page indexing\n- Enhanced robots.txt with comprehensive admin blocking\n- Add SecurityHeadersMiddleware with CSP, Referrer-Policy, Permissions-Policy\n- Protect /admin/, /accounts/, /api/internal/, /settings/, /dashboard/ from search engines\n\nTEMPLATE FIXES:\n- Replace all JSX-style comments {/* */} with Django comments {# #} in user_profile.html\n- Fix JavaScript syntax error: incomplete variable assignment \\(line 775\\)\n- Fix JavaScript syntax error: broken OR operator in setPortfolioView \\(line 783-785\\)\n- Clean up code formatting and indentation\n\nThis prevents admin URLs from appearing in Google search results and fixes\nvisible comment text and non-functional tab switching on profile pages.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(poetry lock:*)",
+      "Bash(poetry --version:*)",
+      "Bash(grep:*)",
+      "Bash(git push origin main)"
     ],
     "deny": [],
     "ask": []

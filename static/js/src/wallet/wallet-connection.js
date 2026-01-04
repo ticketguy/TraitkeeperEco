@@ -425,37 +425,61 @@ async function createSessionOnServer(publicKey, signedMessage, url) {
 }
 
 async function disconnectWalletGlobal() {
-    // console.log("Disconnecting wallet globally");
+    console.log("🔴 LOGOUT: disconnectWalletGlobal() called");
+    console.log("🔴 LOGOUT: Current state - isWalletConnected:", isWalletConnected, "publicKey:", publicKey);
+
     try {
+        console.log("🔴 LOGOUT: Showing loading indicator");
         showLoadingIndicator();
 
+        console.log("🔴 LOGOUT: Getting CSRF token");
+        const csrfToken = getCookie('csrftoken');
+        console.log("🔴 LOGOUT: CSRF token:", csrfToken ? 'Found' : 'NOT FOUND');
+
+        console.log("🔴 LOGOUT: Sending POST request to /wallet/disconnect/");
         const response = await fetch('/wallet/disconnect/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': csrfToken
             }
         });
 
+        console.log("🔴 LOGOUT: Response received - status:", response.status, "ok:", response.ok);
+
         if (!response.ok) {
+            console.error("🔴 LOGOUT: Response not OK, throwing error");
             throw new Error('Failed to disconnect wallet');
         }
 
         const data = await response.json();
+        console.log("🔴 LOGOUT: Response data:", data);
+
         if (data.status !== 'success') {
+            console.error("🔴 LOGOUT: Server returned non-success status:", data.status);
             throw new Error('Failed to disconnect wallet');
         }
 
+        console.log("🔴 LOGOUT: Setting isWalletConnected = false");
         isWalletConnected = false;
+        console.log("🔴 LOGOUT: Setting publicKey = null");
         publicKey = null;
 
-        // console.log("Wallet disconnected successfully");
+        console.log("🔴 LOGOUT: Hiding wallet options");
         hideWalletOptions();
+        console.log("🔴 LOGOUT: Updating header wallet state to logged out");
         updateHeaderWalletState(false);
+
+        console.log("🔴 LOGOUT: Logout successful! Reloading page in 500ms");
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     } catch (error) {
-        console.error('Disconnect wallet error:', error);
+        console.error('🔴 LOGOUT: Error occurred:', error);
+        console.error('🔴 LOGOUT: Error stack:', error.stack);
         throw error;
     } finally {
+        console.log("🔴 LOGOUT: Hiding loading indicator (finally block)");
         hideLoadingIndicator();
     }
 }
@@ -902,8 +926,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Handle disconnect/logout
             if (target.matches('#disconnect-wallet-desktop, #disconnect-wallet-mobile')) {
+                console.log('🔴 LOGOUT: Button clicked, target:', target.id);
                 event.preventDefault();
+                console.log('🔴 LOGOUT: Calling disconnectWalletGlobal()');
                 disconnectWalletGlobal().catch(error => {
+                    console.error('🔴 LOGOUT: Error caught in event listener:', error);
                     handleError(error, 'Failed to logout. Please try again.');
                 });
             }
