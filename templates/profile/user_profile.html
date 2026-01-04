@@ -397,7 +397,7 @@ html.dark .view-toggle-btn:not(.active) {
           </a>
           {% endif %}
 
-          <span class="text-xs flex items-center gap-1.5 whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">
+          <span class="text-xs flex items-center gap-2 whitespace-nowrap text-text-secondary-light dark:text-text-secondary-dark">
             <i class="fas fa-calendar-alt"></i>
             Joined {{ profile_user.date_joined|naturalday }}
           </span>
@@ -557,36 +557,45 @@ html.dark .view-toggle-btn:not(.active) {
   <div class="mb-6 sticky top-[80px] bg-background-light dark:bg-background-dark z-30 py-3" data-aos="fade-up" data-aos-delay="300">
     <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
       <button class="pill-tab active" data-target="tab-portfolio">
-        <i class="fas fa-th mr-1"></i>Portfolio
+        <i class="fas fa-th sm:mr-1"></i>
+        <span class="hidden sm:inline">Portfolio</span>
       </button>
       <button class="pill-tab" data-target="tab-achievements">
-        <i class="fas fa-trophy mr-1"></i>Achievements
+        <i class="fas fa-trophy sm:mr-1"></i>
+        <span class="hidden sm:inline">Achievements</span>
       </button>
       {% if is_owner %}
       <a href="{% url 'profiles:quests' %}" class="pill-tab">
-        <i class="fas fa-star mr-1"></i>Quests
+        <i class="fas fa-star sm:mr-1"></i>
+        <span class="hidden sm:inline">Quests</span>
       </a>
       {% endif %}
       {% if is_owner or profile_user.profile.is_public %}
       <button class="pill-tab" data-target="tab-watchlist">
-        <i class="fas fa-bookmark mr-1"></i>Watchlist
+        <i class="fas fa-bookmark sm:mr-1"></i>
+        <span class="hidden sm:inline">Watchlist</span>
       </button>
       {% endif %}
       {% if is_owner %}
       <button class="pill-tab" data-target="tab-listings">
-        <i class="fas fa-tags mr-1"></i>Listings
+        <i class="fas fa-tags sm:mr-1"></i>
+        <span class="hidden sm:inline">Listings</span>
       </button>
       <button class="pill-tab" data-target="tab-auctions">
-        <i class="fas fa-gavel mr-1"></i>Auctions
+        <i class="fas fa-gavel sm:mr-1"></i>
+        <span class="hidden sm:inline">Auctions</span>
       </button>
       <button class="pill-tab" data-target="tab-bids">
-        <i class="fas fa-hand-paper mr-1"></i>Bids
+        <i class="fas fa-hand-paper sm:mr-1"></i>
+        <span class="hidden sm:inline">Bids</span>
       </button>
       <button class="pill-tab" data-target="tab-activity">
-        <i class="fas fa-chart-line mr-1"></i>Activity
+        <i class="fas fa-chart-line sm:mr-1"></i>
+        <span class="hidden sm:inline">Activity</span>
       </button>
       <button class="pill-tab" data-target="tab-pnl">
-        <i class="fas fa-dollar-sign mr-1"></i>PnL
+        <i class="fas fa-dollar-sign sm:mr-1"></i>
+        <span class="hidden sm:inline">PnL</span>
       </button>
       {% endif %}
     </div>
