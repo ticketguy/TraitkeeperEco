@@ -407,78 +407,78 @@ html.dark .view-toggle-btn:not(.active) {
   </div>
 
   {# Stats Cards Row #}
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6" data-aos="fade-up" data-aos-delay="100">
+  <div class="grid grid-cols-5 gap-2 sm:gap-3 lg:gap-4 mb-6 overflow-x-auto" data-aos="fade-up" data-aos-delay="100">
     {# SOL Balance Card #}
-    <div class="stat-card col-span-2 sm:col-span-1 bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 rounded-xl p-4 border border-primary/20">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">SOL Balance</span>
-        <i class="fas fa-coins text-primary text-lg"></i>
+    <div class="stat-card bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 rounded-xl p-3 sm:p-4 border border-primary/20">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">SOL</span>
+        <i class="fas fa-coins text-primary text-sm sm:text-lg"></i>
       </div>
-      <div class="text-2xl sm:text-3xl font-bold gradient-text">
+      <div class="text-lg sm:text-2xl lg:text-3xl font-bold gradient-text">
         {% if wallet_balances %}
           {{ wallet_balances.total_sol|floatformat:2 }}
         {% else %}
           0.00
         {% endif %}
       </div>
-      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-        SOL
+      <div class="text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+        Balance
       </div>
     </div>
 
     {# NFTs Card #}
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">NFTs</span>
-        <i class="fas fa-image text-primary text-lg"></i>
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">NFTs</span>
+        <i class="fas fa-image text-primary text-sm sm:text-lg"></i>
       </div>
-      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+      <div class="text-lg sm:text-2xl lg:text-3xl font-bold text-text-light dark:text-text-dark">
         {{ stats.total_nfts|default:0 }}
       </div>
-      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-        Total Owned
+      <div class="text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+        Owned
       </div>
     </div>
 
     {# Collections Card #}
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Collections</span>
-        <i class="fas fa-layer-group text-primary text-lg"></i>
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Collections</span>
+        <i class="fas fa-layer-group text-primary text-sm sm:text-lg"></i>
       </div>
-      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+      <div class="text-lg sm:text-2xl lg:text-3xl font-bold text-text-light dark:text-text-dark">
         {{ stats.unique_collections|default:0 }}
       </div>
-      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+      <div class="text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
         Unique
       </div>
     </div>
 
     {# Listings Card #}
     {% if is_owner %}
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Listings</span>
-        <i class="fas fa-tags text-primary text-lg"></i>
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Listings</span>
+        <i class="fas fa-tags text-primary text-sm sm:text-lg"></i>
       </div>
-      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+      <div class="text-lg sm:text-2xl lg:text-3xl font-bold text-text-light dark:text-text-dark">
         {{ stats.active_listings_count|default:0 }}
       </div>
-      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+      <div class="text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
         Active
       </div>
     </div>
 
     {# Bids Card #}
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-4 border border-accent-light dark:border-accent-dark">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Bids</span>
-        <i class="fas fa-gavel text-primary text-lg"></i>
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-accent-light dark:border-accent-dark">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] sm:text-xs uppercase tracking-wide text-text-secondary-light dark:text-text-secondary-dark font-semibold">Bids</span>
+        <i class="fas fa-gavel text-primary text-sm sm:text-lg"></i>
       </div>
-      <div class="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark">
+      <div class="text-lg sm:text-2xl lg:text-3xl font-bold text-text-light dark:text-text-dark">
         {{ stats.active_bids_count|default:0 }}
       </div>
-      <div class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+      <div class="text-[9px] sm:text-xs text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
         Placed
       </div>
     </div>
